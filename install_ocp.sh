@@ -15,17 +15,19 @@ set -eu
 
 display_usage() {
   cat <<EOT
-Syndesis Installation Tool (OCP)
+Syndesis Installation Tool for OCP
 
-Usage: syndesis-install --route <hostname> --console <console-url> [options]
+Usage: syndesis-install [--route <hostname>] [--console <console-url>] [options]
 
 with options:
 
 -r --route <host>            The route to install (mandatory)
-   --console <console-url>   The URL to the openshift console
+-c --console <console-url>   The URL to the openshift console
 -p --project <project>       Install into this project. The project will be deleted
                              if it already exists. By default, install into the current
                              project (without deleting)
+-i --is-namespace            Namespace in to which to install the imagestreams.
+                             By default in the same project as Fuse Ignite itself
 -w --watch                   Wait until the installation has completed
 -o --open                    Open Syndesis after installation (implies --watch)
    --help                    This help message
@@ -79,7 +81,7 @@ create_oauthclient() {
 }
 
 create_imagestreams() {
-    create_openshift_resource "fuse-ignite-image-streams.yml"
+    create_openshift_resource "fuse-ignite-image-streams.yml" "$(readopt --is-namespace -i)"
 }
 
 create_and_apply_template() {
@@ -93,12 +95,18 @@ create_and_apply_template() {
 
     create_openshift_resource "fuse-ignite-ocp.yml"
 
+    local is_namespace=$(readopt -i --is-namespace)
+    if [ -z "$is_namespace" ]; then
+        is_namespace="$(oc project -q)"
+    fi
+
     oc new-app --template "fuse-ignite"\
       -p ROUTE_HOSTNAME="${route}" \
       -p OPENSHIFT_CONSOLE_URL="$console" \
       -p OPENSHIFT_MASTER="$(oc whoami --show-server)" \
       -p OPENSHIFT_PROJECT="$(oc project -q)" \
-      -p OPENSHIFT_OAUTH_CLIENT_SECRET=$(oc sa get-token syndesis-oauth-client)
+      -p OPENSHIFT_OAUTH_CLIENT_SECRET=$(oc sa get-token syndesis-oauth-client) \
+      -p IMAGE_STREAM_NAMESPACE="$is_namespace"
 }
 
 guess_route() {
@@ -128,7 +136,11 @@ guess_route() {
 
 create_openshift_resource() {
     local resource=${1}
-    oc create -f https://raw.githubusercontent.com/syndesisio/fuse-ignite-install/${TAG}/resources/${resource}
+    local ns="${2:-}"
+    if [ -n "${ns}" ]; then
+        extra_args="--namespace $ns"
+    fi
+    oc create $extra_args -f https://raw.githubusercontent.com/syndesisio/fuse-ignite-install/${TAG}/resources/${resource}
 }
 
 wait_for_syndesis_to_be_ready() {
