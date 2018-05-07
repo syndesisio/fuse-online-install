@@ -148,7 +148,7 @@ create_templates() {
     echo "==== Cloning syndesisio/syndesis, $syndesis_git_tag"
     git clone https://github.com/syndesisio/syndesis.git
     cd syndesis
-    git co $syndesis_git_tag
+    git checkout $syndesis_git_tag
 
     cd install/generator
 
