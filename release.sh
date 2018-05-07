@@ -127,7 +127,7 @@ check_error() {
 
 extract_minor_version() {
     local version=$1
-    local minor_version=$(echo $version | sed 's/^\([0-9]*\.[0-9]*\)\.[0-9]*\(-.*\)*$/\1/')
+    local minor_version=$(echo $version | sed -r -n 's/([0-9]+\.[0-9]+(\.[0-9]+)?).*/\1/p')
     if [ "$minor_version" = "$version" ]; then
         echo "ERROR: Cannot extract minor version from $version"
         return
@@ -172,7 +172,7 @@ create_templates() {
        "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
 
     echo "==== Patch install script with tag"
-    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i "" $topdir/install_ocp.sh
+    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i $topdir/install_ocp.sh
 
     echo "==== Patch imagestream script with current versions"
     local brew_tag=$(readopt --version-brew)
