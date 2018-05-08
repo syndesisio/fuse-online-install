@@ -248,13 +248,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Get route
-route=$(readopt --route)
-if [ -z "${route}" ]; then
-    route="$(guess_route "$project")"
-    check_error $route
-fi
-
 # Console (if given)
 console=$(readopt --console)
 
@@ -262,6 +255,15 @@ console=$(readopt --console)
 project=$(readopt --project -p)
 if [ -n "${project}" ]; then
     recreate_project $project
+else
+    project=$(oc project -q)
+fi
+
+# Get route
+route=$(readopt --route)
+if [ -z "${route}" ]; then
+    route="$(guess_route "$project")"
+    check_error $route
 fi
 
 # Required OAuthclient
