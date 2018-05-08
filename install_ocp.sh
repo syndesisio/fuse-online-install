@@ -17,11 +17,11 @@ display_usage() {
   cat <<EOT
 Syndesis Installation Tool for OCP
 
-Usage: syndesis-install [--route <hostname>] [--console <console-url>] [options]
+Usage: syndesis-install [options]
 
 with options:
 
--r --route <host>            The route to install (mandatory)
+-r --route <host>            The route to install
 -c --console <console-url>   The URL to the openshift console
 -p --project <project>       Install into this project. The project will be deleted
                              if it already exists. By default, install into the current
