@@ -12,7 +12,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/jboss-fuse-7-tech-preview/fuse-ignite-server:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-server:{{ Tags.Brew }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
@@ -28,7 +28,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/jboss-fuse-7-tech-preview/fuse-ignite-ui:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-ui:{{ Tags.Brew }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
@@ -44,7 +44,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/jboss-fuse-7-tech-preview/fuse-ignite-meta:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-meta:{{ Tags.Brew }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
@@ -92,7 +92,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/jboss-fuse-7-tech-preview/fuse-ignite-s2i:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-s2i:{{ Tags.Brew }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
