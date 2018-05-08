@@ -17,11 +17,11 @@ display_usage() {
   cat <<EOT
 Syndesis Installation Tool for OCP
 
-Usage: syndesis-install [--route <hostname>] [--console <console-url>] [options]
+Usage: syndesis-install [options]
 
 with options:
 
--r --route <host>            The route to install (mandatory)
+-r --route <host>            The route to install
 -c --console <console-url>   The URL to the openshift console
 -p --project <project>       Install into this project. The project will be deleted
                              if it already exists. By default, install into the current
@@ -137,6 +137,7 @@ guess_route() {
 create_openshift_resource() {
     local resource=${1}
     local ns="${2:-}"
+    local extra_args=''
     if [ -n "${ns}" ]; then
         extra_args="--namespace $ns"
     fi
@@ -236,11 +237,15 @@ if [ $(hasflag --help -h) ]; then
     exit 0
 fi
 
-# Get route
-route=$(readopt --route)
-if [ -z "${route}" ]; then
-    route="$(guess_route "$project")"
-    check_error $route
+set +e
+which oc &>/dev/null
+if [ $? -ne 0 ]; then
+    echo The oc binary needs to be available on '$PATH'
+    echo
+    echo The easiest way to download the CLI is by accessing the About page on
+    echo the web console if your cluster administrator has enabled the download
+    echo links.
+    exit 1
 fi
 
 # Console (if given)
@@ -250,6 +255,15 @@ console=$(readopt --console)
 project=$(readopt --project -p)
 if [ -n "${project}" ]; then
     recreate_project $project
+else
+    project=$(oc project -q)
+fi
+
+# Get route
+route=$(readopt --route)
+if [ -z "${route}" ]; then
+    route="$(guess_route "$project")"
+    check_error $route
 fi
 
 # Required OAuthclient
