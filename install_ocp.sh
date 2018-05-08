@@ -137,6 +137,7 @@ guess_route() {
 create_openshift_resource() {
     local resource=${1}
     local ns="${2:-}"
+    local extra_args=''
     if [ -n "${ns}" ]; then
         extra_args="--namespace $ns"
     fi
