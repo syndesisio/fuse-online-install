@@ -236,6 +236,17 @@ if [ $(hasflag --help -h) ]; then
     exit 0
 fi
 
+set +e
+which oc &>/dev/null
+if [ $? -ne 0 ]; then
+    echo The oc binary needs to be available on '$PATH'
+    echo
+    echo The easiest way to download the CLI is by accessing the About page on
+    echo the web console if your cluster administrator has enabled the download
+    echo links.
+    exit 1
+fi
+
 # Get route
 route=$(readopt --route)
 if [ -z "${route}" ]; then
