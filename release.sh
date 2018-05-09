@@ -135,6 +135,16 @@ extract_minor_version() {
     echo $minor_version
 }
 
+read_image_version() {
+    local image=$1
+    local result=$(readopt --version-$1)
+    if [ -z "$result" ]
+    then
+        result=$brew_tag
+    fi
+    echo $result
+}
+
 create_templates() {
     local topdir=$1
     local syndesis_git_tag=$2
@@ -180,8 +190,18 @@ create_templates() {
 
     echo "==== Patch imagestream script with current versions"
     local brew_tag=$(readopt --version-brew)
+
+    local fuse_ignite_server=$(read_image_version fuse-ignite-server)
+    local fuse_ignite_ui=$(read_image_version fuse-ignite-ui)
+    local fuse_ignite_meta=$(read_image_version fuse-ignite-meta)
+    local fuse_ignite_s2i=$(read_image_version fuse-ignite-s2i)
+
+
     sed -e "s/{{[ ]*Tags.Ignite[ ]*}}/$is_tag/g" \
-        -e "s/{{[ ]*Tags.Brew[ ]*}}/$brew_tag/g" \
+        -e "s/{{[ ]*Tags.Ignite.Server[ ]*}}/$fuse_ignite_server/g" \
+        -e "s/{{[ ]*Tags.Ignite.Ui[ ]*}}/$fuse_ignite_ui/g" \
+        -e "s/{{[ ]*Tags.Ignite.Meta[ ]*}}/$fuse_ignite_meta/g" \
+        -e "s/{{[ ]*Tags.Ignite.S2I[ ]*}}/$fuse_ignite_s2i/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$docker_registry/g" \
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$docker_image_repository/g" \
         $topdir/templates/fuse-ignite-image-streams.yml \

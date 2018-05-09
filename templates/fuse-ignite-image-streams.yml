@@ -12,7 +12,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-server:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-server:{{ Tags.Ignite.Server }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
@@ -28,7 +28,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-ui:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-ui:{{ Tags.Ignite.Ui }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
@@ -44,7 +44,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-meta:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-meta:{{ Tags.Ignite.Meta }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
@@ -63,7 +63,7 @@ items:
         name: registry.access.redhat.com/openshift3/oauth-proxy:v3.9.25-1
       importPolicy:
         scheduled: true
-      name: "v3.9.25-1"
+      name: "v1.1.0"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -79,7 +79,7 @@ items:
         name: registry.access.redhat.com/openshift3/prometheus:v3.9.25-1
       importPolicy:
         scheduled: true
-      name: "v3.9.25-1"
+      name: "v2.1.0"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -92,7 +92,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-s2i:{{ Tags.Brew }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-s2i:{{ Tags.Ignite.S2I }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Ignite }}"
