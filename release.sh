@@ -127,7 +127,7 @@ check_error() {
 
 extract_minor_version() {
     local version=$1
-    local minor_version=$(echo $version | sed 's/^\([0-9]*\.[0-9]*\)\.[0-9]*\(-.*\)*$/\1/')
+    local minor_version=$(echo $version | sed -r -n 's/([0-9]+\.[0-9]+).*/\1/p')
     if [ "$minor_version" = "$version" ]; then
         echo "ERROR: Cannot extract minor version from $version"
         return
@@ -139,6 +139,8 @@ create_templates() {
     local topdir=$1
     local syndesis_git_tag=$2
     local fuse_ignite_tag=$3
+    local docker_registry=$4
+    local docker_image_repository=$5
 
     local tempdir=$(mktemp -d)
     trap "rm -rf \"${tempdir}\"" EXIT
@@ -148,7 +150,7 @@ create_templates() {
     echo "==== Cloning syndesisio/syndesis, $syndesis_git_tag"
     git clone https://github.com/syndesisio/syndesis.git
     cd syndesis
-    git co $syndesis_git_tag
+    git checkout $syndesis_git_tag
 
     cd install/generator
 
@@ -172,12 +174,16 @@ create_templates() {
        "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
 
     echo "==== Patch install script with tag"
-    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i "" $topdir/install_ocp.sh
+    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i $topdir/install_ocp.sh
+
+    echo
 
     echo "==== Patch imagestream script with current versions"
     local brew_tag=$(readopt --version-brew)
     sed -e "s/{{[ ]*Tags.Ignite[ ]*}}/$is_tag/g" \
         -e "s/{{[ ]*Tags.Brew[ ]*}}/$brew_tag/g" \
+        -e "s/{{[ ]*Docker.Registry[ ]*}}/$docker_registry/g" \
+        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$docker_image_repository/g" \
         $topdir/templates/fuse-ignite-image-streams.yml \
         > $topdir/resources/fuse-ignite-image-streams.yml
 
@@ -190,7 +196,7 @@ release() {
     local syndesis_tag=$2
     local fuse_ignite_tag=$3
 
-    create_templates $topdir $syndesis_tag $fuse_ignite_tag
+    create_templates $topdir $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository
 
     echo "==== Committing"
     cd $topdir
@@ -238,4 +244,15 @@ fuse_ignite_tag=$(readopt --version-fuse-ignite)
 if [ -z "${fuse_ignite_tag}" ]; then
     fuse_ignite_tag="${syndesis_tag}"
 fi
-release "$(basedir)" $syndesis_tag $fuse_ignite_tag
+
+docker_registry=$(readopt --docker-registry)
+if [ -z "${docker_registry}" ]; then
+    docker_registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+fi
+
+docker_image_repository=$(readopt --docker-image-repository)
+if [ -z "${docker_image_repository}" ]; then
+    docker_image_repository="jboss-fuse-7-tech-preview"
+fi
+
+release "$(basedir)" $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository

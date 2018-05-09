@@ -14,7 +14,7 @@ $ wget https://raw.githubusercontent.com/syndesisio/fuse-ignite-install/1.3.5/in
 # or git clone the repository and switch to tag 1.3.5
 $ git clone https://github.com/syndesisio/fuse-ignite-install
 $ cd fuse-ignite-install
-$ git co 1.3.5
+$ git checkout 1.3.5
 ```
 
 For this script to work you need to be connected to the OCP cluster where you want install Fuse Ignite into.
@@ -86,7 +86,11 @@ These resources are extracted from the associated [syndesis](https://github.com/
 A release is performed with the included `release.sh` script which takes as option `--version-syndesis` the Git tag from syndesis from which the release should be performed.
 This parameter is mandatory.
 An optional second `--version-fuse-ignite` can be provided to specify the fuse-ignite release.
-By default it's the same as `--version-syndesis`.
+By default it's the same as `--version-syndesis`.  
+`--version-brew` is the version stored in the final registry.  
+`--docker-registry` is the endpoint of the docker registry that will be hosting the images, ex: `registry.example.com:9090`  
+`--docker-image-repository` is the docker image repository, ex: `jboss-fuse-7-tech-preview`
+
 
 The release process will perform the following steps:
 
