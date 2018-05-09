@@ -99,7 +99,7 @@ items:
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: fuse-ignite-java-openshift:1.0
+    name: fuse-ignite-java-openshift
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
