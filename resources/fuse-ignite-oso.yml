@@ -1516,7 +1516,7 @@ objects:
     spec:
       containers:
       - name: upgrade
-        image: syndesis/syndesis-upgrade:${SYNDESIS_VERSION}
+        image: fuse7/fuse-ignite-upgrade:1.0-2
         env:
           - name: SYNDESIS_UPGRADE_PROJECT
             valueFrom:

@@ -186,6 +186,11 @@ create_templates() {
         -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_jboss_repository#" \
         -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
+    local fuse_ignite_upgrade=$(read_image_version fuse-ignite-upgrade)
+    echo "==== Patch install script with productized syndesis-upgrade images"
+    sed -e "s#image:\s*syndesis/syndesis-upgrade.*#image: $docker_image_repository/fuse-ignite-upgrade:$fuse_ignite_upgrade#" \
+        -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
+
     echo "==== Copy support SA"
     cp ../support/serviceaccount-as-oauthclient-restricted.yml \
        "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
