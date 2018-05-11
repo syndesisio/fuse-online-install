@@ -90,6 +90,8 @@ By default it's the same as `--version-syndesis`.
 `--version-brew` is the version stored in the final registry.  
 `--docker-registry` is the endpoint of the docker registry that will be hosting the images, ex: `registry.example.com:9090`  
 `--docker-image-repository` is the docker image repository, ex: `jboss-fuse-7-tech-preview`
+`--maven-redhat-repository` is the maven redhat repository, used in s2i images, ex: `https://maven.repository.redhat.com/ga/`
+`--maven-jboss-repository` is the maven jboss repository, used in s2i images, ex: `https://repository.jboss.org/`
 
 
 The release process will perform the following steps:
