@@ -127,7 +127,7 @@ check_error() {
 
 extract_minor_version() {
     local version=$1
-    local minor_version=$(echo $version | sed -r -n 's/([0-9]+\.[0-9]+).*/\1/p')
+    local minor_version=$(echo $version | sed -E -n 's/([0-9]+\.[0-9]+).*/\1/p')
     if [ "$minor_version" = "$version" ]; then
         echo "ERROR: Cannot extract minor version from $version"
         return
@@ -165,6 +165,18 @@ create_templates() {
     git checkout $syndesis_git_tag
 
     cd install/generator
+
+    # temporary ugly hack, due to releasing GA
+    if [ "$syndesis_git_tag" = "1.3.7" ];
+    then
+        sed -e "s#kind: jsondb#kind: jsondb\n{{^Ocp}}#"\
+            -e 's#\(maxDeploymentsPerUser: ${MAX_INTEGRATIONS_PER_USER}\)#\1{{/Ocp}}#' \
+            -i  04-syndesis-server.yml.mustache
+    else
+        echo "This code should not be even executed on versions newer that 1.3.7"
+        echo "Please review this script and remove the whole block altogether"
+        exit -1
+    fi
 
     local is_tag
     if [ "$fuse_ignite_tag" = "master" ]; then
