@@ -1091,8 +1091,8 @@ objects:
       maven:
         repositories:
           01_maven_central: https://repo1.maven.org/maven2
-          02_redhat_ea_repository: https://maven.repository.redhat.com/earlyaccess/all
-          03_jboss_ea: https://repository.jboss.org/nexus/content/groups/ea
+          02_redhat: http://indy.cloud.pnc.engineering.redhat.com/api/group/builds-untested+shared-imports+public/
+          03_jboss: https://repository.jboss.org/nexus/content/groups/ea
       controllers:
         maxIntegrationsPerUser: 0
         maxDeploymentsPerUser: 0

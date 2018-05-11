@@ -151,6 +151,8 @@ create_templates() {
     local fuse_ignite_tag=$3
     local docker_registry=$4
     local docker_image_repository=$5
+    local maven_redhat_repository=$6
+    local maven_jboss_repository=$7
 
     local tempdir=$(mktemp -d)
     trap "rm -rf \"${tempdir}\"" EXIT
@@ -179,6 +181,11 @@ create_templates() {
     sh run.sh --name fuse-ignite --ocp --syndesis-tag=${is_tag}
     cp ../syndesis.yml "$topdir/resources/fuse-ignite-ocp.yml"
 
+    echo "==== Patch install script with correct Maven Repos"
+    sed -e "s#\(02_redhat_ea_repository:\s*\).*#02_redhat: $maven_redhat_repository#" \
+        -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_jboss_repository#" \
+        -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
+
     echo "==== Copy support SA"
     cp ../support/serviceaccount-as-oauthclient-restricted.yml \
        "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
@@ -186,7 +193,6 @@ create_templates() {
     echo "==== Patch install script with tag"
     sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i $topdir/install_ocp.sh
 
-    echo
 
     echo "==== Patch imagestream script with current versions"
     local brew_tag=$(readopt --version-brew)
@@ -216,7 +222,7 @@ release() {
     local syndesis_tag=$2
     local fuse_ignite_tag=$3
 
-    create_templates $topdir $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository
+    create_templates $topdir $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository 
 
     echo "==== Committing"
     cd $topdir
@@ -275,4 +281,14 @@ if [ -z "${docker_image_repository}" ]; then
     docker_image_repository="jboss-fuse-7-tech-preview"
 fi
 
-release "$(basedir)" $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository
+maven_redhat_repository=$(readopt --maven-redhat-repository)
+if [ -z "${maven_redhat_repository}" ]; then
+    maven_redhat_repository="https://maven.repository.redhat.com/ga/"
+fi
+
+maven_jboss_repository=$(readopt --maven-jboss-repository)
+if [ -z "${maven_jboss_repository}" ]; then
+    maven_jboss_repository="https://repository.jboss.org/"
+fi
+
+release "$(basedir)" $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository 
