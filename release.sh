@@ -167,7 +167,7 @@ create_templates() {
     cd install/generator
 
     # temporary ugly hack, due to releasing GA
-    if [ "$syndesis_git_tag" = "1.3.7" ];
+    if [ "$syndesis_git_tag" = "1.3.6" ] || [ "$syndesis_git_tag" = "1.3.7" ] ;
     then
         sed -e "s#kind: jsondb#kind: jsondb\n{{^Ocp}}#"\
             -e 's#\(maxDeploymentsPerUser: ${MAX_INTEGRATIONS_PER_USER}\)#\1{{/Ocp}}#' \
