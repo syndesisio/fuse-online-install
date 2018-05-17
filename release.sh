@@ -198,9 +198,9 @@ create_templates() {
         -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_jboss_repository#" \
         -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
-    local fuse_ignite_upgrade=$(read_image_version fuse-ignite-upgrade)
+    # SYNDESIS_VERSION is provided from template parameter, we should only patch repository coordinates
     echo "==== Patch install script with productized syndesis-upgrade images"
-    sed -e "s#image:\s*syndesis/syndesis-upgrade.*#image: $docker_registry/$docker_image_repository/fuse-ignite-upgrade:$fuse_ignite_upgrade#" \
+    sed -e "s#image:\s*syndesis/syndesis-upgrade.*#image: $docker_registry/$docker_image_repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
         -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
     echo "==== Copy support SA"
@@ -239,7 +239,7 @@ release() {
     local syndesis_tag=$2
     local fuse_ignite_tag=$3
 
-    create_templates $topdir $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository 
+    create_templates $topdir $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository
 
     echo "==== Committing"
     cd $topdir
@@ -308,4 +308,4 @@ if [ -z "${maven_jboss_repository}" ]; then
     maven_jboss_repository="https://repository.jboss.org/"
 fi
 
-release "$(basedir)" $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository 
+release "$(basedir)" $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository
