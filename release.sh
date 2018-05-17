@@ -167,13 +167,13 @@ create_templates() {
     cd install/generator
 
     # temporary ugly hack, due to releasing GA
-    if [ "$syndesis_git_tag" = "1.3.6" ] || [ "$syndesis_git_tag" = "1.3.7" ] ;
+    if [ "$syndesis_git_tag" = "1.3.6" ] || [ "$syndesis_git_tag" = "1.3.7" ] || [ "$syndesis_git_tag" = "1.3.10" ] ;
     then
         sed -e "s#kind: jsondb#kind: jsondb\n{{^Ocp}}#"\
             -e 's#\(maxDeploymentsPerUser: ${MAX_INTEGRATIONS_PER_USER}\)#\1{{/Ocp}}#' \
             -i  04-syndesis-server.yml.mustache
     else
-        echo "This code should not be even executed on versions newer that 1.3.7"
+        echo "This code should not be even executed on versions newer that 1.3.10 !!!!!!!!!!!!!!"
         echo "Please review this script and remove the whole block altogether"
         exit -1
     fi
