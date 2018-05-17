@@ -203,12 +203,12 @@ create_templates() {
 
     local docker_registry=$(readopt --docker-registry)
     if [ -z "${docker_registry}" ]; then
-        docker_registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+        docker_registry="registry.access.redhat.com"
     fi
 
     local docker_image_repository=$(readopt --docker-image-repository)
     if [ -z "${docker_image_repository}" ]; then
-        docker_image_repository="jboss-fuse-7-tech-preview"
+        docker_image_repository="fuse7"
     fi
 
     # TODO: Avoid patching the generated templates as afterthought
