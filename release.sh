@@ -151,10 +151,6 @@ create_templates() {
     local topdir=$1
     local syndesis_git_tag=$2
     local fuse_ignite_tag=$3
-    local docker_registry=$4
-    local docker_image_repository=$5
-    local maven_redhat_repository=$6
-    local maven_jboss_repository=$7
 
     local tempdir=$(mktemp -d)
     trap "rm -rf \"${tempdir}\"" EXIT
@@ -183,12 +179,39 @@ create_templates() {
     sh run.sh --name fuse-ignite --ocp --syndesis-tag=${is_tag}
     cp ../syndesis.yml "$topdir/resources/fuse-ignite-ocp.yml"
 
+
     echo "==== Patch install script with correct Maven Repos"
+
+    # TODO: This sort of adapting the templates should go into templtes
+    # generator in syndesis and used with an option, to reduce coupling
+    # between the content of those templates and this script
+    local maven_redhat_repository=$(readopt --maven-redhat-repository)
+    if [ -z "${maven_redhat_repository}" ]; then
+        maven_redhat_repository="https://maven.repository.redhat.com/ga/"
+    fi
+
+    local maven_jboss_repository=$(readopt --maven-jboss-repository)
+    if [ -z "${maven_jboss_repository}" ]; then
+        maven_jboss_repository="https://repository.jboss.org/"
+    fi
+
     sed -e "s#\(02_redhat_ea_repository:\s*\).*#02_redhat: $maven_redhat_repository#" \
         -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_jboss_repository#" \
         -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
     # SYNDESIS_VERSION is provided from template parameter, we should only patch repository coordinates
+
+    local docker_registry=$(readopt --docker-registry)
+    if [ -z "${docker_registry}" ]; then
+        docker_registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+    fi
+
+    local docker_image_repository=$(readopt --docker-image-repository)
+    if [ -z "${docker_image_repository}" ]; then
+        docker_image_repository="jboss-fuse-7-tech-preview"
+    fi
+
+    # TODO: Avoid patching the generated templates as afterthought
     echo "==== Patch install script with productized syndesis-upgrade images"
     sed -e "s#image:\s*syndesis/syndesis-upgrade.*#image: $docker_registry/$docker_image_repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
         -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
@@ -213,7 +236,6 @@ create_templates() {
     local fuse_ignite_s2i=$(read_image_version fuse-ignite-s2i $brew_tag)
     check_error $fuse_ignite_s2i
 
-
     sed -e "s/{{[ ]*Tags.Ignite[ ]*}}/$is_tag/g" \
         -e "s/{{[ ]*Tags.Ignite.Server[ ]*}}/$fuse_ignite_server/g" \
         -e "s/{{[ ]*Tags.Ignite.Ui[ ]*}}/$fuse_ignite_ui/g" \
@@ -233,8 +255,7 @@ release() {
     local syndesis_tag=$2
     local fuse_ignite_tag=$3
 
-    create_templates $topdir $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository
-
+    create_templates $topdir $syndesis_tag $fuse_ignite_tag
     echo "==== Committing"
     cd $topdir
     git_commit "releases/" "Update OpenShift templates and install script for Syndesis upstream $syndesis_tag" "$fuse_ignite_tag"
@@ -282,24 +303,4 @@ if [ -z "${fuse_ignite_tag}" ]; then
     fuse_ignite_tag="${syndesis_tag}"
 fi
 
-docker_registry=$(readopt --docker-registry)
-if [ -z "${docker_registry}" ]; then
-    docker_registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
-fi
-
-docker_image_repository=$(readopt --docker-image-repository)
-if [ -z "${docker_image_repository}" ]; then
-    docker_image_repository="jboss-fuse-7-tech-preview"
-fi
-
-maven_redhat_repository=$(readopt --maven-redhat-repository)
-if [ -z "${maven_redhat_repository}" ]; then
-    maven_redhat_repository="https://maven.repository.redhat.com/ga/"
-fi
-
-maven_jboss_repository=$(readopt --maven-jboss-repository)
-if [ -z "${maven_jboss_repository}" ]; then
-    maven_jboss_repository="https://repository.jboss.org/"
-fi
-
-release "$(basedir)" $syndesis_tag $fuse_ignite_tag $docker_registry $docker_image_repository $maven_redhat_repository $maven_jboss_repository
+release "$(basedir)" $syndesis_tag $fuse_ignite_tag
