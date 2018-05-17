@@ -3,8 +3,6 @@
 # Save global script args
 ARGS=("$@")
 
-
-
 # Exit if any error occurs
 # Fail on a single failed command in a pipeline (if supported)
 set -o pipefail
@@ -137,12 +135,16 @@ extract_minor_version() {
 
 read_image_version() {
     local image=$1
+    local brew_tag=$2
     local result=$(readopt --version-$1)
-    if [ -z "$result" ]
-    then
+    if [ -z "$result" ]; then
         result=$brew_tag
     fi
-    echo $result
+    if [ -n "$result" ]; then
+        echo $result
+    else
+        echo "ERROR: No version given for $image and no --version-brew specified"
+    fi
 }
 
 create_templates() {
@@ -165,18 +167,6 @@ create_templates() {
     git checkout $syndesis_git_tag
 
     cd install/generator
-
-    # temporary ugly hack, due to releasing GA
-    if [ "$syndesis_git_tag" = "1.3.6" ] || [ "$syndesis_git_tag" = "1.3.7" ] ;
-    then
-        sed -e "s#kind: jsondb#kind: jsondb\n{{^Ocp}}#"\
-            -e 's#\(maxDeploymentsPerUser: ${MAX_INTEGRATIONS_PER_USER}\)#\1{{/Ocp}}#' \
-            -i  04-syndesis-server.yml.mustache
-    else
-        echo "This code should not be even executed on versions newer that 1.3.7"
-        echo "Please review this script and remove the whole block altogether"
-        exit -1
-    fi
 
     local is_tag
     if [ "$fuse_ignite_tag" = "master" ]; then
@@ -214,10 +204,14 @@ create_templates() {
     echo "==== Patch imagestream script with current versions"
     local brew_tag=$(readopt --version-brew)
 
-    local fuse_ignite_server=$(read_image_version fuse-ignite-server)
-    local fuse_ignite_ui=$(read_image_version fuse-ignite-ui)
-    local fuse_ignite_meta=$(read_image_version fuse-ignite-meta)
-    local fuse_ignite_s2i=$(read_image_version fuse-ignite-s2i)
+    local fuse_ignite_server=$(read_image_version fuse-ignite-server $brew_tag)
+    check_error $fuse_ignite_server
+    local fuse_ignite_ui=$(read_image_version fuse-ignite-ui $brew_tag)
+    check_error $fuse_ignite_ui
+    local fuse_ignite_meta=$(read_image_version fuse-ignite-meta $brew_tag)
+    check_error $fuse_ignite_meta
+    local fuse_ignite_s2i=$(read_image_version fuse-ignite-s2i $brew_tag)
+    check_error $fuse_ignite_s2i
 
 
     sed -e "s/{{[ ]*Tags.Ignite[ ]*}}/$is_tag/g" \
