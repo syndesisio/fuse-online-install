@@ -197,7 +197,7 @@ create_templates() {
 
     sed -e "s#\(02_redhat_ea_repository:\s*\).*#02_redhat: $maven_redhat_repository#" \
         -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_jboss_repository#" \
-        -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
+        -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
     # SYNDESIS_VERSION is provided from template parameter, we should only patch repository coordinates
 
@@ -213,15 +213,15 @@ create_templates() {
 
     # TODO: Avoid patching the generated templates as afterthought
     echo "==== Patch install script with productized syndesis-upgrade images"
-    sed -e "s#image:\s*syndesis/syndesis-upgrade.*#image: $docker_registry/$docker_image_repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
-        -i "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
+    sed -e "s#image:.*syndesis/syndesis-upgrade.*#image: $docker_registry/$docker_image_repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
+        -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
     echo "==== Copy support SA"
     cp ../support/serviceaccount-as-oauthclient-restricted.yml \
        "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
 
     echo "==== Patch install script with tag"
-    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i $topdir/install_ocp.sh
+    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i "" $topdir/install_ocp.sh
 
 
     echo "==== Patch imagestream script with current versions"
