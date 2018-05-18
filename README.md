@@ -83,33 +83,64 @@ Fuse Ignite can be installed in two flavors:
 
 This repository holds the corresponding templates and other resoruces which holds references to the Fuse Ignite product images.
 These resources are extracted from the associated [syndesis](https://github.com/syndesisio/syndesis) upstream project.
-A release is performed with the included `release.sh` script which takes as option `--version-syndesis` the Git tag from syndesis from which the release should be performed.
-This parameter is mandatory.
-An optional second `--version-fuse-ignite` can be provided to specify the fuse-ignite release.
-By default it's the same as `--version-syndesis`.  
-`--version-brew` is the version stored in the final registry.  
-`--docker-registry` is the endpoint of the docker registry that will be hosting the images, ex: `registry.example.com:9090`  
-`--docker-image-repository` is the docker image repository, ex: `jboss-fuse-7-tech-preview`
-`--maven-redhat-repository` is the maven redhat repository, used in s2i images, ex: `https://maven.repository.redhat.com/ga/`
-`--maven-jboss-repository` is the maven jboss repository, used in s2i images, ex: `https://repository.jboss.org/`
+A release is performed with the included `release.sh` script.
 
+All configuration is set in `fuse_ignite_config.sh`:
 
-The release process will perform the following steps:
+```
+# Git Tags:
+
+# Upstream Syndesis release
+git_syndesis="1.3.10"
+# Tag to create for the templates
+git_fuse_ignite_install="1.3.10-CR"
+
+# Tags used for the productised images
+tag_server="1.0-6"
+tag_ui="1.0-5"
+tag_meta="1.0-5"
+tag_s2i="1.0-5"
+
+# Test:
+registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+repository="jboss-fuse-7-tech-preview"
+
+# Official:
+# local registry="registry.access.redhat.com"
+# local repository="fuse7"
+```
+
+The release process will perform the following steps (the variables are taken from `fuse_ignite_config.sh`):
 
 * Clone https://github.com/syndesisio/syndesis
-* Switch to tag `--version-syndesis`
+* Switch to tag `$git_syndesis`
 * Recreate templates in the productised flavors. The templates created are `resources/fuse-ignite-ocp.yml` and `resources/fuse-ignite-oso.yml`
-* Update `install_ocp.sh` with the tag from `--version-fuse-ignite`
-* Insert `--version-fuse-ignite` and `--version-brew` in image stream template and store the processed file under `resources/fuse-ignite-image-streams.yml`
+* Update `install_ocp.sh` with the tag from `$git_fuse_ignite_install`
+* Insert tags from the config file into image stream template and store the processed file under `resources/fuse-ignite-image-streams.yml`
 * Commit everything
-* Git tag with `--version-fuse-ignite`
+* Git tag with `$git_fuse_ignite`
 * Create a moving tag up to the minor number (e.g. 1.5) pointing to the tag just created
 * Git push if `--git-push` is given
 
 The imagestream which are installed for the OCP variant are included in `resources/fuse-ignite-image-streams.yml` and need to be updated manually for the moment for new releases.
 The streams file needs to be updated before the release is started.
 
+The script understands some additional options:
 
+```
+Release tool for fuse-ignite templats
+
+Usage: bash release.sh [options]
+
+with options:
+
+--help                       This help message
+--create-templates           Only create templates but do not commit or push
+--git-push                   Push to git directly
+--verbose                    Verbose log output
+
+Please check also "fuse_ignite_config.sh" for the configuration values.
+```
 
 ### Fuse Online Templates
 
