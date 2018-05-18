@@ -179,7 +179,6 @@ create_templates() {
     sh run.sh --name fuse-ignite --ocp --syndesis-tag=${is_tag}
     cp ../syndesis.yml "$topdir/resources/fuse-ignite-ocp.yml"
 
-
     echo "==== Patch install script with correct Maven Repos"
 
     # TODO: This sort of adapting the templates should go into templtes
@@ -201,19 +200,12 @@ create_templates() {
 
     # SYNDESIS_VERSION is provided from template parameter, we should only patch repository coordinates
 
-    local docker_registry=$(readopt --docker-registry)
-    if [ -z "${docker_registry}" ]; then
-        docker_registry="registry.access.redhat.com"
-    fi
-
-    local docker_image_repository=$(readopt --docker-image-repository)
-    if [ -z "${docker_image_repository}" ]; then
-        docker_image_repository="fuse7"
-    fi
+    # Read in config variables
+    source $topdir/fuse_ignite_config.sh
 
     # TODO: Avoid patching the generated templates as afterthought
     echo "==== Patch install script with productized syndesis-upgrade images"
-    sed -e "s#image:.*syndesis/syndesis-upgrade.*#image: $docker_registry/$docker_image_repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
+    sed -e "s#image:.*syndesis/syndesis-upgrade.*#image: $registry/$repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
         -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
     echo "==== Copy support SA"
@@ -223,26 +215,15 @@ create_templates() {
     echo "==== Patch install script with tag"
     sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i "" $topdir/install_ocp.sh
 
-
     echo "==== Patch imagestream script with current versions"
-    local brew_tag=$(readopt --version-brew)
-
-    local fuse_ignite_server=$(read_image_version fuse-ignite-server $brew_tag)
-    check_error $fuse_ignite_server
-    local fuse_ignite_ui=$(read_image_version fuse-ignite-ui $brew_tag)
-    check_error $fuse_ignite_ui
-    local fuse_ignite_meta=$(read_image_version fuse-ignite-meta $brew_tag)
-    check_error $fuse_ignite_meta
-    local fuse_ignite_s2i=$(read_image_version fuse-ignite-s2i $brew_tag)
-    check_error $fuse_ignite_s2i
 
     sed -e "s/{{[ ]*Tags.Ignite[ ]*}}/$is_tag/g" \
-        -e "s/{{[ ]*Tags.Ignite.Server[ ]*}}/$fuse_ignite_server/g" \
-        -e "s/{{[ ]*Tags.Ignite.Ui[ ]*}}/$fuse_ignite_ui/g" \
-        -e "s/{{[ ]*Tags.Ignite.Meta[ ]*}}/$fuse_ignite_meta/g" \
-        -e "s/{{[ ]*Tags.Ignite.S2I[ ]*}}/$fuse_ignite_s2i/g" \
-        -e "s/{{[ ]*Docker.Registry[ ]*}}/$docker_registry/g" \
-        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$docker_image_repository/g" \
+        -e "s/{{[ ]*Tags.Ignite.Server[ ]*}}/$tag_server/g" \
+        -e "s/{{[ ]*Tags.Ignite.Ui[ ]*}}/$tag_ui/g" \
+        -e "s/{{[ ]*Tags.Ignite.Meta[ ]*}}/$tag_meta/g" \
+        -e "s/{{[ ]*Tags.Ignite.S2I[ ]*}}/$tag_s2i/g" \
+        -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
+        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
         $topdir/templates/fuse-ignite-image-streams.yml \
         > $topdir/resources/fuse-ignite-image-streams.yml
 
@@ -252,31 +233,46 @@ create_templates() {
 # Left over from 'syndesis release'
 release() {
     local topdir=$1
-    local syndesis_tag=$2
-    local fuse_ignite_tag=$3
 
-    create_templates $topdir $syndesis_tag $fuse_ignite_tag
-    echo "==== Committing"
-    cd $topdir
-    git_commit "releases/" "Update OpenShift templates and install script for Syndesis upstream $syndesis_tag" "$fuse_ignite_tag"
-    git_commit "install_ocp.sh" "Update OpenShift templates and install script for Syndesis upstream $syndesis_tag" "$fuse_ignite_tag"
+    source $topdir/fuse_ignite_config.sh
 
-    # No tagging when just running on master
-    if [ $fuse_ignite_tag = "master" ]; then
+    if [ -z "$git_syndesis" ]; then
+        echo "ERROR: No config property git_syndesis configured in 'fuse_ignite_config.sh'"
+        exit 1
+    fi
+
+    if [ -z "$git_fuse_ignite_install" ]; then
+        git_fuse_ignite_install="$git_syndesis"
+    fi
+
+    create_templates $topdir $git_syndesis $git_fuse_ignite_install
+
+    if [ $(hasflag --template-only) ]; then
         return
     fi
 
-    echo "=== Tagging $fuse_ignite_tag"
-    git tag -f "${fuse_ignite_tag}"
+    echo "==== Committing"
+    cd $topdir
+    git_commit "resources/" "Update OpenShift templates and install script for Syndesis upstream $git_syndesis" "$git_fuse_ignite_install"
+    git_commit "fuse_ignite_config.sh" "Update release config for $git_fuse_ignite_install" "$git_fuse_ignite_install"
+    git_commit "install_ocp.sh" "Update OpenShift templates and install script for Syndesis upstream $git_syndesis" "$git_fuse_ignite_install"
 
-    local moving_tag=$(extract_minor_version $fuse_ignite_tag)
+    # No tagging when just running on master
+    if [ $git_fuse_ignite_install = "master" ]; then
+        return
+    fi
+
+    echo "=== Tagging $git_fuse_ignite_install"
+    git tag -f "${git_fuse_ignite_install}"
+
+    local moving_tag=$(extract_minor_version $git_fuse_ignite_install)
     check_error $moving_tag
 
     echo "=== Moving tag $moving_tag"
     git tag -f "${moving_tag}"
 
     # Push release tag only
-    git_push "$topdir" "$fuse_ignite_tag" "$moving_tag"
+    git_push "$topdir" "$git_fuse_ignite_install" "$moving_tag"
 }
 
 
@@ -287,20 +283,4 @@ if [ $(hasflag --verbose) ]; then
     set -x
 fi
 
-syndesis_tag=$(readopt --version-syndesis)
-if [ -z "${syndesis_tag}" ]; then
-    echo "ERROR: No version given with --version-syndesis"
-    exit 1
-fi
-
-if [ -z "$(readopt --version-brew)" ]; then
-    echo "ERROR: The brew version for the imagestreams needs to be specified"
-    exit 1
-fi
-
-fuse_ignite_tag=$(readopt --version-fuse-ignite)
-if [ -z "${fuse_ignite_tag}" ]; then
-    fuse_ignite_tag="${syndesis_tag}"
-fi
-
-release "$(basedir)" $syndesis_tag $fuse_ignite_tag
+release "$(basedir)"
