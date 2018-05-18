@@ -11,6 +11,23 @@ set -o pipefail
 set -eu
 
 
+display_usage() {
+  cat <<EOT
+Release tool for fuse-ignite templats
+
+Usage: bash release.sh [options]
+
+with options:
+
+--help                       This help message
+--create-templates           Only create templates but do not commit or push
+--git-push                   Push to git directly
+--verbose                    Verbose log output
+
+Please check also "fuse_ignite_config.sh" for the configuration values.
+EOT
+}
+
 # Dir where this script is located
 basedir() {
     # Default is current directory
@@ -152,6 +169,9 @@ create_templates() {
     local syndesis_git_tag=$2
     local fuse_ignite_tag=$3
 
+    # Read in config variables
+    source $topdir/fuse_ignite_config.sh
+
     local tempdir=$(mktemp -d)
     trap "rm -rf \"${tempdir}\"" EXIT
 
@@ -184,24 +204,11 @@ create_templates() {
     # TODO: This sort of adapting the templates should go into templtes
     # generator in syndesis and used with an option, to reduce coupling
     # between the content of those templates and this script
-    local maven_redhat_repository=$(readopt --maven-redhat-repository)
-    if [ -z "${maven_redhat_repository}" ]; then
-        maven_redhat_repository="https://maven.repository.redhat.com/ga/"
-    fi
-
-    local maven_jboss_repository=$(readopt --maven-jboss-repository)
-    if [ -z "${maven_jboss_repository}" ]; then
-        maven_jboss_repository="https://repository.jboss.org/"
-    fi
-
-    sed -e "s#\(02_redhat_ea_repository:\s*\).*#02_redhat: $maven_redhat_repository#" \
-        -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_jboss_repository#" \
+    sed -e "s#\(02_redhat_ea_repository:\s*\).*#02_redhat: $maven_repo_redhat#" \
+        -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_repo_jboss#" \
         -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
     # SYNDESIS_VERSION is provided from template parameter, we should only patch repository coordinates
-
-    # Read in config variables
-    source $topdir/fuse_ignite_config.sh
 
     # TODO: Avoid patching the generated templates as afterthought
     echo "==== Patch install script with productized syndesis-upgrade images"
@@ -277,6 +284,11 @@ release() {
 
 
 # ==========================================================================================
+
+if [ $(hasflag --help -h) ]; then
+    display_usage
+    exit 0
+fi
 
 if [ $(hasflag --verbose) ]; then
     export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
