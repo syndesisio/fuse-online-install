@@ -60,7 +60,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: docker.io/openshift/oauth-proxy:v1.1.0
+        name: registry.access.redhat.com/openshift3/oauth-proxy:v3.9.25
       importPolicy:
         scheduled: true
       name: "v1.1.0"
