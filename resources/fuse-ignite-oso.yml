@@ -1526,7 +1526,7 @@ objects:
     spec:
       containers:
       - name: upgrade
-        image: registry.access.redhat.com/fuse7/fuse-ignite-upgrade:${SYNDESIS_VERSION}
+        image: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-upgrade:${SYNDESIS_VERSION}
         env:
           - name: SYNDESIS_UPGRADE_PROJECT
             valueFrom:
