@@ -14,11 +14,11 @@ tag_s2i="1.0-5"
 # Maven repositories
 maven_repo_redhat="https://maven.repository.redhat.com/ga/"
 maven_repo_jboss="https://repository.jboss.org/"
+repository="fuse7"
 
 # Test:
 registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
-repository="jboss-fuse-7-tech-preview"
 
 # Official:
-# local registry="registry.access.redhat.com"
-# local repository="fuse7"
+# registry="registry.access.redhat.com"
+
