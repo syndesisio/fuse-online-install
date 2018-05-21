@@ -6,7 +6,7 @@
 
 # ================
 # Tag updated by release script
-TAG=1.3.10-CR
+TAG=1.3.10
 # ================
 
 ARGS="$@"
