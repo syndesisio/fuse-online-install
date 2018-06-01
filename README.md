@@ -157,3 +157,35 @@ The product template support is currently very specific to the Fuse Ignite Clust
 So it is likely that it might change in the future.
 
 NOTE: An extra step is required to import productised Syndesis Docker images into the Fuse Ignite cluster. This step should be documented here, and probably added to the release script.
+
+### Importing images
+
+You can easily import images from one registry to an OpenShift internal registry, where these images then appear as Imagestreams in the project which is called like the image's repo.
+
+You call e.g. with
+
+```
+perl ./import_images.pl --registry docker.io --repo fuseignitetest
+```
+
+where `--registry` is the target registry an `--repo` is the repository part of the target image name (default: `fuse-ignite`)
+
+This script will pick up the version numbers defined in `fuse_ignite_config.sh` and should be called right after a release from a release tag, e.g.
+
+```
+# Be sure to be oc-connected with the target OpenShift cluster
+$ oc login ...
+
+# Clone repo
+$ git clone https://github.com/syndesisio/fuse-ignite-install.git
+$ cd fuse-ignite-install
+
+# Checkout tag
+$ git co 1.3.11
+
+# Login into the target registry for your docker daemon
+$ docker login -u $(oc whoami) -p $(oc whoami -t) mytarget.registry.openshift.com
+
+# Import images
+$ perl import_images.pl --registry mytarget.registry.openshift.com
+```
