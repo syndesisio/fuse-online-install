@@ -181,7 +181,7 @@ $ git clone https://github.com/syndesisio/fuse-ignite-install.git
 $ cd fuse-ignite-install
 
 # Checkout tag
-$ git co 1.3.11
+$ git checkout 1.3.11
 
 # Login into the target registry for your docker daemon
 $ docker login -u $(oc whoami) -p $(oc whoami -t) mytarget.registry.openshift.com
