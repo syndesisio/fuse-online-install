@@ -110,6 +110,8 @@ repository="jboss-fuse-7-tech-preview"
 # local repository="fuse7"
 ```
 
+When the config file is setup a release is performed by simply calling `bash release.sh`. Some options are available, see below for which one.
+
 The release process will perform the following steps (the variables are taken from `fuse_ignite_config.sh`):
 
 * Clone https://github.com/syndesisio/syndesis
@@ -150,13 +152,9 @@ For a different setup to referencing different images (i.e. the images that are 
 
 For this the option `--product-templates` can be used, which generates templates _without image stream definitions_, but referencing supposedly already existing image streams.
 
-These templates are created with a tag `fuse-ignite-<minor>` (e.g. `fuse-ignite-1.2`) in the Git repository and so directly accessed from GitHub.
+These templates are created with a tag `fuse-ignite-<minor>` (e.g. `fuse-ignite-1.2`) in the Git repository and so can be directly accessed from GitHub.
 
-The product template support is currently very specific to the Fuse Ignite Cluster, which is used for the Technical Preview phase of Fuse Ignite.
-
-So it is likely that it might change in the future.
-
-NOTE: An extra step is required to import productised Syndesis Docker images into the Fuse Ignite cluster. This step should be documented here, and probably added to the release script.
+An extra step is required to import productised Fuse Ignite Docker images into the Fuse Ignite cluster. This is described in the next section.
 
 ### Importing images
 
