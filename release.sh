@@ -192,7 +192,7 @@ create_templates() {
     fi
 
     echo "==== Creating OSO product template for $is_tag"
-    sh run.sh --name fuse-ignite --oso --syndesis-tag=${is_tag}
+    sh run.sh --name syndesis-fuse-ignite --oso --syndesis-tag=${is_tag}
     cp ../syndesis.yml "$topdir/resources/fuse-ignite-oso.yml"
 
     echo "==== Creating OCP product template for $is_tag"
