@@ -199,22 +199,6 @@ create_templates() {
     sh run.sh --name fuse-ignite --ocp --syndesis-tag=${is_tag}
     cp ../syndesis.yml "$topdir/resources/fuse-ignite-ocp.yml"
 
-    echo "==== Patch install script with correct Maven Repos"
-
-    # TODO: This sort of adapting the templates should go into templtes
-    # generator in syndesis and used with an option, to reduce coupling
-    # between the content of those templates and this script
-    sed -e "s#\(02_redhat_ea_repository:\s*\).*#02_redhat: $maven_repo_redhat#" \
-        -e "s#\(03_jboss_ea:\s*\).*#03_jboss: $maven_repo_jboss#" \
-        -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
-
-    # SYNDESIS_VERSION is provided from template parameter, we should only patch repository coordinates
-
-    # TODO: Avoid patching the generated templates as afterthought
-    echo "==== Patch install script with productized syndesis-upgrade images"
-    sed -e "s#image:.*syndesis/syndesis-upgrade.*#image: $registry/$repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
-        -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
-
     echo "==== Copy support SA"
     cp ../support/serviceaccount-as-oauthclient-restricted.yml \
        "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
