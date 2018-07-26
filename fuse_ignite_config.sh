@@ -11,9 +11,7 @@ tag_ui="1.0-6"
 tag_meta="1.0-7"
 tag_s2i="1.0-7"
 
-# Maven repositories
-maven_repo_redhat="https://maven.repository.redhat.com/ga/"
-maven_repo_jboss="https://repository.jboss.org/"
+# Docker repository for productised images
 repository="fuse7"
 
 # Test:
