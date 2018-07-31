@@ -199,12 +199,17 @@ create_templates() {
     sh run.sh --name fuse-ignite --ocp --syndesis-tag=${is_tag}
     cp ../syndesis.yml "$topdir/resources/fuse-ignite-ocp.yml"
 
+    
+    echo "==== Patch templates with Upgrade container latest image"
+    echo $tag_upgrade
+    sed -e 's#syndesis/syndesis-upgrade:${SYNDESIS_VERSION}#'syndesis/syndesis-upgrade:$tag_upgrade#g -i  "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
+
     echo "==== Copy support SA"
     cp ../support/serviceaccount-as-oauthclient-restricted.yml \
        "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
 
     echo "==== Patch install script with tag"
-    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i "" $topdir/install_ocp.sh
+    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i  $topdir/install_ocp.sh
 
     echo "==== Patch imagestream script with current versions"
 
@@ -217,6 +222,7 @@ create_templates() {
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
         $topdir/templates/fuse-ignite-image-streams.yml \
         > $topdir/resources/fuse-ignite-image-streams.yml
+
 
     popd
 }
