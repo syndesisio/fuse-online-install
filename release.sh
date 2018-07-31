@@ -215,10 +215,14 @@ create_templates() {
     sed -e "s#image:.*syndesis/syndesis-upgrade.*#image: $registry/$repository/fuse-ignite-upgrade:\${SYNDESIS_VERSION}#" \
         -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
 
-    
-    echo "==== Patch templates with Upgrade container latest image"
-    echo $tag_upgrade
-    sed -e 's#syndesis/syndesis-upgrade:${SYNDESIS_VERSION}#'syndesis/syndesis-upgrade:$tag_upgrade#g -i "" "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
+    echo "==== Create Upgrade Pod descriptor"
+
+    sed -e "s/{{[ ]*Tags.Ignite[ ]*}}/$fuse_ignite_tag/g" \
+        -e "s/{{[ ]*Tags.Ignite.Upgrade[ ]*}}/$tag_server/g" \
+        -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
+        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
+        $topdir/templates/fuse-ignite-upgrade.yml \
+        > $topdir/resources/fuse-ignite-upgrade.yml
 
     echo "==== Copy support SA"
     cp ../support/serviceaccount-as-oauthclient-restricted.yml \
@@ -238,7 +242,6 @@ create_templates() {
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
         $topdir/templates/fuse-ignite-image-streams.yml \
         > $topdir/resources/fuse-ignite-image-streams.yml
-
 
     popd
 }
