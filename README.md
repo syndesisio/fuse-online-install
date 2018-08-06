@@ -3,30 +3,114 @@
 
 ## Installation
 
-You can directly install from this repository for a specific fuse-ignite version.
+You can directly install from this repository for a specific fuse-online version.
 Installation is performed with `install_ocp.sh`.
 This script can be downloaded or executed directly from a cloned git repository:
 
 ```
-# Execute directly for version 1.3.5
-$ wget https://raw.githubusercontent.com/syndesisio/fuse-ignite-install/1.3.5/install_ocp.sh
+# Execute directly for version 1.4.2
+$ wget https://raw.githubusercontent.com/syndesisio/fuse-online-install/1.4.5/install_ocp.sh
 
-# or git clone the repository and switch to tag 1.3.5
-$ git clone https://github.com/syndesisio/fuse-ignite-install
-$ cd fuse-ignite-install
-$ git checkout 1.3.5
+# or git clone the repository and switch to tag 1.4.2
+$ git clone https://github.com/syndesisio/fuse-onlineinstall
+$ cd fuse-online-install
+$ git checkout 1.4.2
 ```
 
-For this script to work you need to be connected to the OCP cluster where you want install Fuse Ignite into.
-Verify that you are properly connected and check your current project:
+Installation of Fuse Online consiste of two steps:
+
+1. You have to register first a custom resource on cluster level and allow a user to install Syndesis in his project. You need cluster admin permissions for this.
+2. Fuse Online itself is then installed in a  second step, which is performed as a regular user.
+
+
+### One-off admin action to register Custom Resource
+
+For the first step you have to be connected as a *cluster admin* to the OCP cluster where you want install Fuse Online into.
+
+Verify that you are properly connected and can list custom resources
 
 ```
-$ oc project
+$ oc get crd
 ```
 
-When you call `install_ocp.sh` it will install Fuse Ignite in this current project.
+When this command works for you without error you can call `install_ocp` to register the CRD on cluster level.
+
+```
+$ bash install_ocp.sh --setup-as-admin
+```
+
+You can also grant permissions to a the user who will eventually install Fuse Online in his project.
+In order to allow user `developer` to install Fuse Online into the currently connect project use
+
+```
+$ bash install_ocp.sh --prepare-for-user developer
+```
+
+(You can read the current project with `oc project`). However, if the user deletes this project and recreates it, or want to install Fuse Online into a different project use the following command to grant cluster wide usage:
+
+```
+$ bash install_ocp.sh --prepare-for-user developer --cluster
+```
+
+You can also combine both calls to a single call
+
+```
+$ bash install_ocp.sh --setup-as-admin --prepare-for-user developer --cluster
+```
+
+These steps need to be performed only once.
+However, if you want to add additional users, just call `--prepare-for-user` for each user to add.
+
+### Install Fuse Online
+
+If this setup has been performed successfully, you can switch to _admin user_ who you just have granted access (e.g. "developer" in the example above):
+
+```
+$ oc login developer
+```
+
+Then you can install Fuse Online with just
+
+```
+$ bash install_ocp.sh
+```
+
+You can use several options to tune the installation process.
+Call `bash install_ocp.sh --help` for all options possible:
+
+```
+$ bash install_ocp.sh --help
+
+Syndesis Installation Tool for OCP
+
+Usage: syndesis-install [options]
+
+with options:
+
+-s  --setup-crd               Install CRDs clusterwide. Use --prepare-for-user if you want a specific user to be
+                              able to install Syndesis. You have to run this option once as cluster admin.
+-u  --prepare-for-user <user> Add permissions for the given user so that user can install the operator
+                              in her projects
+    --cluster                 Add the permission for all projects in the cluster
+                              (only when used together with --prepare-for-user)
+    --route                   Route to use. If not given, the route is trying to be detected from the currently
+                              connected cluster.
+   --console <console-url>    The URL to the openshift console
+   --force                    Override an existing "Syndesis" if present
+
+-p --project <project>        Install into this project. The project will be deleted
+                              if it already exists. By default, install into the current project (without deleting)
+-w --watch                    Wait until the installation has completed
+-o --open                     Open Syndesis after installation (implies --watch)
+   --help                     This help message
+-v --verbose                  Verbose logging
+```
+
+
+When you call `install_ocp.sh` it will install Fuse Online in this current project.
 You can choose a different project with the option `--project <project>`.
 Please be aware that this project will be deleted if it already exists.
+Also, you must have used the option `--cluster` when you set up the CRDs.
 
 The route under which Fuse Ignite can be reached will be calculated by default with some heuristics.
 When this should fail or when you want to be more specific you can specify the route explicitly with `--route`.
