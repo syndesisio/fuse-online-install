@@ -43,23 +43,23 @@ You can also grant permissions to a the user who will eventually install Fuse On
 In order to allow user `developer` to install Fuse Online into the currently connect project use
 
 ```
-$ bash install_ocp.sh --setup-user developer
+$ bash install_ocp.sh --grant developer
 ```
 
 (You can read the current project with `oc project`). However, if the user deletes this project and recreates it, or want to install Fuse Online into a different project use the following command to grant cluster wide usage:
 
 ```
-$ bash install_ocp.sh --setup-user developer --cluster
+$ bash install_ocp.sh --grant developer --cluster
 ```
 
 You can also combine both calls to a single call
 
 ```
-$ bash install_ocp.sh --setup-as-admin --setup-user developer --cluster
+$ bash install_ocp.sh --setup-as-admin --grant developer --cluster
 ```
 
 These steps need to be performed only once.
-However, if you want to add additional users, just call `--setup-user` for each user to add.
+However, if you want to add additional users, just call `--grant` for each user to add.
 
 ### Install Fuse Online
 
@@ -87,21 +87,21 @@ Usage: syndesis-install [options]
 
 with options:
 
--s  --setup-crd               Install CRDs clusterwide. Use --setup-user if you want a specific user to be
-                              able to install Syndesis. You have to run this option once as cluster admin.
--u  --setup-user <user> Add permissions for the given user so that user can install the operator
-                              in her projects
+-s  --setup                   Install CRDs clusterwide. Use --grant if you want a specific user to be
+                              able to install Fuse Online. You have to run this option once as cluster admin.
+-u  --grant <user>            Add permissions for the given user so that user can install the operator
+                              in her projects. You have to run this as cluster-admin
     --cluster                 Add the permission for all projects in the cluster
-                              (only when used together with --setup-user)
+                              (only when used together with --grant)
     --route                   Route to use. If not given, the route is trying to be detected from the currently
                               connected cluster.
    --console <console-url>    The URL to the openshift console
-   --force                    Override an existing "Syndesis" if present
+   --force                    Override an existing installation if present
 
 -p --project <project>        Install into this project. The project will be deleted
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
--o --open                     Open Syndesis after installation (implies --watch)
+-o --open                     Open Fuse Online after installation (implies --watch)
    --help                     This help message
 -v --verbose                  Verbose logging
 ```
