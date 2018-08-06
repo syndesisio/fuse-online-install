@@ -43,23 +43,23 @@ You can also grant permissions to a the user who will eventually install Fuse On
 In order to allow user `developer` to install Fuse Online into the currently connect project use
 
 ```
-$ bash install_ocp.sh --prepare-for-user developer
+$ bash install_ocp.sh --setup-user developer
 ```
 
 (You can read the current project with `oc project`). However, if the user deletes this project and recreates it, or want to install Fuse Online into a different project use the following command to grant cluster wide usage:
 
 ```
-$ bash install_ocp.sh --prepare-for-user developer --cluster
+$ bash install_ocp.sh --setup-user developer --cluster
 ```
 
 You can also combine both calls to a single call
 
 ```
-$ bash install_ocp.sh --setup-as-admin --prepare-for-user developer --cluster
+$ bash install_ocp.sh --setup-as-admin --setup-user developer --cluster
 ```
 
 These steps need to be performed only once.
-However, if you want to add additional users, just call `--prepare-for-user` for each user to add.
+However, if you want to add additional users, just call `--setup-user` for each user to add.
 
 ### Install Fuse Online
 
@@ -87,12 +87,12 @@ Usage: syndesis-install [options]
 
 with options:
 
--s  --setup-crd               Install CRDs clusterwide. Use --prepare-for-user if you want a specific user to be
+-s  --setup-crd               Install CRDs clusterwide. Use --setup-user if you want a specific user to be
                               able to install Syndesis. You have to run this option once as cluster admin.
--u  --prepare-for-user <user> Add permissions for the given user so that user can install the operator
+-u  --setup-user <user> Add permissions for the given user so that user can install the operator
                               in her projects
     --cluster                 Add the permission for all projects in the cluster
-                              (only when used together with --prepare-for-user)
+                              (only when used together with --setup-user)
     --route                   Route to use. If not given, the route is trying to be detected from the currently
                               connected cluster.
    --console <console-url>    The URL to the openshift console
