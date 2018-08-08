@@ -1,4 +1,4 @@
-# fuse-ignite-install
+# fuse-online-install
 
 
 ## Installation
