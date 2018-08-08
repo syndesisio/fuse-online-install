@@ -3,7 +3,7 @@ items:
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: syndesis-upgrade-1.3.12
+    name: syndesis-upgrade-1.3.13
   spec:
     serviceAccountName: syndesis-operator
     containers:
