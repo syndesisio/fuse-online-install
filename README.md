@@ -12,7 +12,7 @@ This script can be downloaded or executed directly from a cloned git repository:
 $ wget https://raw.githubusercontent.com/syndesisio/fuse-online-install/1.4.5/install_ocp.sh
 
 # or git clone the repository and switch to tag 1.4.2
-$ git clone https://github.com/syndesisio/fuse-onlineinstall
+$ git clone https://github.com/syndesisio/fuse-online-install
 $ cd fuse-online-install
 $ git checkout 1.4.2
 ```
