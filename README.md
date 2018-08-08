@@ -36,7 +36,7 @@ $ oc get crd
 When this command works for you without error you can call `install_ocp` to register the CRD on cluster level.
 
 ```
-$ bash install_ocp.sh --setup-as-admin
+$ bash install_ocp.sh --setup
 ```
 
 You can also grant permissions to a the user who will eventually install Fuse Online in his project.
@@ -55,7 +55,7 @@ $ bash install_ocp.sh --grant developer --cluster
 You can also combine both calls to a single call
 
 ```
-$ bash install_ocp.sh --setup-as-admin --grant developer --cluster
+$ bash install_ocp.sh --setup --grant developer --cluster
 ```
 
 These steps need to be performed only once.
