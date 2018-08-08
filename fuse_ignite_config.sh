@@ -3,7 +3,7 @@
 # Upstream Syndesis release
 git_syndesis="1.3.10"
 # Tag to create for the templates
-git_fuse_ignite_install="1.3.12"
+git_fuse_ignite_install="1.3.11"
 
 # Tags used for the productised images
 tag_server="1.0-17"

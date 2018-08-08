@@ -1,0 +1,29 @@
+kind: List
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: syndesis-upgrade-1.3.12
+  spec:
+    serviceAccountName: syndesis-operator
+    containers:
+    - name: upgrade
+      image: registry.access.redhat.com/fuse7/fuse-ignite-upgrade:1.0-17
+      env:
+        - name: SYNDESIS_UPGRADE_PROJECT
+          valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+      imagePullPolicy: IfNotPresent
+      args:
+        - "--backup"
+        - "/opt/backup"
+      volumeMounts:
+      - mountPath: /opt/backup
+        subPath: backup
+        name: backup-dir
+    volumes:
+    - name: backup-dir
+      persistentVolumeClaim:
+        claimName: syndesis-db
+    restartPolicy: Never
