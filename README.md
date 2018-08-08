@@ -8,13 +8,13 @@ Installation is performed with `install_ocp.sh`.
 This script can be downloaded or executed directly from a cloned git repository:
 
 ```
-# Execute directly for version 1.4.2
+# Execute directly for version 1.4.5
 $ wget https://raw.githubusercontent.com/syndesisio/fuse-online-install/1.4.5/install_ocp.sh
 
-# or git clone the repository and switch to tag 1.4.2
+# or git clone the repository and switch to tag 1.4.5
 $ git clone https://github.com/syndesisio/fuse-online-install
 $ cd fuse-online-install
-$ git checkout 1.4.2
+$ git checkout 1.4.5
 ```
 
 Installation of Fuse Online consiste of two steps:
