@@ -145,7 +145,7 @@ sub exec_cmd {
 
 sub parse_configuration() {
   # Parse configuration
-  my $config_file = $FindBin::Bin . "/fuse_ignite_config.sh";
+  my $config_file = $FindBin::Bin . "/fuse_online_config.sh";
   open(CONFIG,$config_file) || die "Cannot open $config_file: $!";
   my $config = {};
   while (my $line = <CONFIG>) {

@@ -1,16 +1,13 @@
-# Git Tags:
-
-# Upstream Syndesis release
-git_syndesis="1.3.10"
-# Tag to create for the templates
-git_fuse_ignite_install="1.3.12"
+# Tag for release. Update this before running release.sh
+git_fuse_online_install="master"
 
 # Tags used for the productised images
-tag_server="1.0-17"
-tag_ui="1.0-22"
-tag_meta="1.0-15"
-tag_s2i="1.0-15"
-tag_upgrade="1.0-18"
+tag_server="1.1-4"
+tag_ui="1.1-3"
+tag_meta="1.1-2"
+tag_s2i="1.1-3"
+tag_upgrade="1.1-2"
+tag_operator="1.1-1"
 
 # Docker repository for productised images
 repository="fuse7"
