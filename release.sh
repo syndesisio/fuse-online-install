@@ -207,6 +207,12 @@ create_resources() {
         $topdir/templates/fuse-online-image-streams.yml \
         > $topdir/resources/fuse-online-image-streams.yml
 
+    sed -e "s/{{[ ]*Tags.Online.Upgrade[ ]*}}/$tag_upgrade/g" \
+        -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
+        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g"
+        $topdir/templates/fuse-online-upgrade.yml \
+        > $topdir/resources/fuse-online-upgrade.yml
+
     echo "==== Extract Template from Operator image"
     docker run -v $(pwd)/resources:/resources \
                --entrypoint bash \
