@@ -183,7 +183,6 @@ create_resources() {
     rm $topdir/install_ocp.sh.bak
 
     echo "==== Patch imagestream script with current versions"
-
     sed -e "s/{{[ ]*Tags.Online[ ]*}}/$is_tag/g" \
         -e "s/{{[ ]*Tags.Online.Operator[ ]*}}/$tag_operator/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
@@ -200,6 +199,12 @@ create_resources() {
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
         $topdir/templates/fuse-online-image-streams.yml \
         > $topdir/resources/fuse-online-image-streams.yml
+
+    echo "==== Extract Template from Operator image"
+    docker run -v $(pwd)/resources:/resources \
+               --entrypoint bash \
+               $registry/$repository/fuse-online-operator:$tag_operator \
+               -c "cp /conf/syndesis-template.yml /resources/fuse-online-template.yml"
 }
 
 release() {
