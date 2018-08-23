@@ -12,10 +12,10 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-server:{{ Tags.Ignite.Server }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-server:{{ Tags.Online.Server }}
       importPolicy:
         scheduled: true
-      name: "{{ Tags.Ignite }}"
+      name: "{{ Tags.Online }}"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -28,10 +28,10 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-ui:{{ Tags.Ignite.Ui }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-ui:{{ Tags.Online.Ui }}
       importPolicy:
         scheduled: true
-      name: "{{ Tags.Ignite }}"
+      name: "{{ Tags.Online }}"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -44,10 +44,10 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-meta:{{ Tags.Ignite.Meta }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-meta:{{ Tags.Online.Meta }}
       importPolicy:
         scheduled: true
-      name: "{{ Tags.Ignite }}"
+      name: "{{ Tags.Online }}"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -92,7 +92,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-s2i:{{ Tags.Ignite.S2I }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-ignite-s2i:{{ Tags.Online.S2I }}
       importPolicy:
         scheduled: true
-      name: "{{ Tags.Ignite }}"
+      name: "{{ Tags.Online }}"

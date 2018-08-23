@@ -203,19 +203,19 @@ The release process will perform the following steps (the variables are taken fr
 * Switch to tag `$git_syndesis`
 * Recreate templates in the productised flavors. The templates created are `resources/fuse-ignite-ocp.yml` and `resources/fuse-ignite-oso.yml`
 * Update `install_ocp.sh` with the tag from `$git_fuse_ignite_install`
-* Insert tags from the config file into image stream template and store the processed file under `resources/fuse-ignite-image-streams.yml`
+* Insert tags from the config file into image stream template and store the processed file under `resources/fuse-online-image-streams.yml`
 * Commit everything
 * Git tag with `$git_fuse_ignite`
 * Create a moving tag up to the minor number (e.g. 1.5) pointing to the tag just created
 * Git push if `--git-push` is given
 
-The imagestream which are installed for the OCP variant are included in `resources/fuse-ignite-image-streams.yml` and need to be updated manually for the moment for new releases.
+The imagestream which are installed for the OCP variant are included in `resources/fuse-online-image-streams.yml` and need to be updated manually for the moment for new releases.
 The streams file needs to be updated before the release is started.
 
 The script understands some additional options:
 
 ```
-Release tool for fuse-ignite templats
+Release tool for fuse-online OCP
 
 Usage: bash release.sh [options]
 

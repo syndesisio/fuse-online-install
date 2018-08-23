@@ -13,7 +13,7 @@ set -eu
 
 display_usage() {
   cat <<EOT
-Release tool for fuse-ignite templats
+Release tool for fuse-online templats
 
 Usage: bash release.sh [options]
 
@@ -24,7 +24,7 @@ with options:
 --git-push                   Push to git directly
 --verbose                    Verbose log output
 
-Please check also "fuse_ignite_config.sh" for the configuration values.
+Please check also "fuse_online_config.sh" for the configuration values.
 EOT
 }
 
@@ -164,85 +164,55 @@ read_image_version() {
     fi
 }
 
-create_templates() {
+create_resources() {
     local topdir=$1
-    local syndesis_git_tag=$2
-    local fuse_ignite_tag=$3
+    local fuse_online_tag=$2
 
     # Read in config variables
-    source $topdir/fuse_ignite_config.sh
-
-    local tempdir=$(mktemp -d)
-    trap "rm -rf \"${tempdir}\"" EXIT
-
-    # Check out git first
-    pushd $tempdir
-    echo "==== Cloning syndesisio/syndesis, $syndesis_git_tag"
-    git clone https://github.com/syndesisio/syndesis.git
-    cd syndesis
-    git checkout $syndesis_git_tag
-
-    cd install/generator
+    source $topdir/fuse_online_config.sh
 
     local is_tag
-    if [ "$fuse_ignite_tag" = "master" ]; then
+    if [ "$fuse_online_tag" = "master" ]; then
         is_tag="latest"
     else
-        is_tag=$(extract_minor_version $fuse_ignite_tag)
+        is_tag=$(extract_minor_version $fuse_online_tag)
     fi
 
-    echo "==== Creating OSO product template for $is_tag"
-    sh run.sh --name syndesis-fuse-ignite --oso --syndesis-tag=${is_tag}
-    cp ../syndesis.yml "$topdir/resources/fuse-ignite-oso.yml"
-
-    echo "==== Creating OCP product template for $is_tag"
-    sh run.sh --name fuse-ignite --ocp --syndesis-tag=${is_tag}
-    cp ../syndesis.yml "$topdir/resources/fuse-ignite-ocp.yml"
-
-    
-    echo "==== Patch templates with Upgrade container latest image"
-    echo $tag_upgrade
-    sed -e 's#syndesis/syndesis-upgrade:${SYNDESIS_VERSION}#'syndesis/syndesis-upgrade:$tag_upgrade#g -i  "$topdir/resources/fuse-ignite-oso.yml" "$topdir/resources/fuse-ignite-ocp.yml"
-
-    echo "==== Copy support SA"
-    cp ../support/serviceaccount-as-oauthclient-restricted.yml \
-       "$topdir/resources/serviceaccount-as-oauthclient-restricted.yml"
-
     echo "==== Patch install script with tag"
-    sed -e "s/^TAG=.*\$/TAG=$fuse_ignite_tag/" -i  $topdir/install_ocp.sh
+    sed -e "s/^TAG=.*\$/TAG=$fuse_online_tag/" -i.bak  $topdir/install_ocp.sh
+    rm $topdir/install_ocp.sh.bak
 
     echo "==== Patch imagestream script with current versions"
 
-    sed -e "s/{{[ ]*Tags.Ignite[ ]*}}/$is_tag/g" \
-        -e "s/{{[ ]*Tags.Ignite.Server[ ]*}}/$tag_server/g" \
-        -e "s/{{[ ]*Tags.Ignite.Ui[ ]*}}/$tag_ui/g" \
-        -e "s/{{[ ]*Tags.Ignite.Meta[ ]*}}/$tag_meta/g" \
-        -e "s/{{[ ]*Tags.Ignite.S2I[ ]*}}/$tag_s2i/g" \
+    sed -e "s/{{[ ]*Tags.Online[ ]*}}/$is_tag/g" \
+        -e "s/{{[ ]*Tags.Online.Operator[ ]*}}/$tag_operator/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
-        $topdir/templates/fuse-ignite-image-streams.yml \
-        > $topdir/resources/fuse-ignite-image-streams.yml
+        $topdir/templates/fuse-online-operator.yml \
+        > $topdir/resources/fuse-online-operator.yml
 
-
-    popd
+    sed -e "s/{{[ ]*Tags.Online[ ]*}}/$is_tag/g" \
+        -e "s/{{[ ]*Tags.Online.Server[ ]*}}/$tag_server/g" \
+        -e "s/{{[ ]*Tags.Online.Ui[ ]*}}/$tag_ui/g" \
+        -e "s/{{[ ]*Tags.Online.Meta[ ]*}}/$tag_meta/g" \
+        -e "s/{{[ ]*Tags.Online.S2I[ ]*}}/$tag_s2i/g" \
+        -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
+        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
+        $topdir/templates/fuse-online-image-streams.yml \
+        > $topdir/resources/fuse-online-image-streams.yml
 }
 
-# Left over from 'syndesis release'
 release() {
     local topdir=$1
 
-    source $topdir/fuse_ignite_config.sh
+    source $topdir/fuse_online_config.sh
 
-    if [ -z "$git_syndesis" ]; then
-        echo "ERROR: No config property git_syndesis configured in 'fuse_ignite_config.sh'"
+    if [ -z "$git_fuse_online_install" ]; then
+        echo "ERROR: No config property git_fuse_online_install configured in 'fuse_online_config.sh'"
         exit 1
     fi
 
-    if [ -z "$git_fuse_ignite_install" ]; then
-        git_fuse_ignite_install="$git_syndesis"
-    fi
-
-    create_templates $topdir $git_syndesis $git_fuse_ignite_install
+    create_resources $topdir $git_fuse_online_install
 
     if [ $(hasflag --template-only) ]; then
         return
@@ -250,26 +220,26 @@ release() {
 
     echo "==== Committing"
     cd $topdir
-    git_commit "resources/" "Update OpenShift templates and install script for Syndesis upstream $git_syndesis" "$git_fuse_ignite_install"
-    git_commit "fuse_ignite_config.sh" "Update release config for $git_fuse_ignite_install" "$git_fuse_ignite_install"
-    git_commit "install_ocp.sh" "Update OpenShift templates and install script for Syndesis upstream $git_syndesis" "$git_fuse_ignite_install"
+    git_commit "resources/" "Update Operator resources" "$git_fuse_online_install"
+    git_commit "fuse_online_config.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
+    git_commit "install_ocp.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
 
     # No tagging when just running on master
-    if [ $git_fuse_ignite_install = "master" ]; then
+    if [ $git_fuse_online_install = "master" ]; then
         return
     fi
 
-    echo "=== Tagging $git_fuse_ignite_install"
-    git tag -f "${git_fuse_ignite_install}"
+    echo "=== Tagging $git_fuse_online_install"
+    git tag -f "${git_fuse_online_install}"
 
-    local moving_tag=$(extract_minor_version $git_fuse_ignite_install)
+    local moving_tag=$(extract_minor_version $git_fuse_online_install)
     check_error $moving_tag
 
     echo "=== Moving tag $moving_tag"
     git tag -f "${moving_tag}"
 
     # Push release tag only
-    git_push "$topdir" "$git_fuse_ignite_install" "$moving_tag"
+    git_push "$topdir" "$git_fuse_online_install" "$moving_tag"
 }
 
 

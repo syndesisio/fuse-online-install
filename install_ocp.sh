@@ -7,7 +7,7 @@
 
 # ================
 # Tag updated by release script
-TAG=1.4.2-CR
+TAG=master
 # ================
 
 # Minimal version for OC
@@ -26,9 +26,9 @@ ARGS=("$@")
 
 display_usage() {
   cat <<EOT
-Syndesis Installation Tool for OCP
+Fuse Online Installation Tool for OCP
 
-Usage: syndesis-install [options]
+Usage: install_ocp.sh [options]
 
 with options:
 
@@ -134,7 +134,7 @@ install_syndesis_crd() {
 
     local crd_installed=$(oc get crd -o name | grep syndesises.syndesis.io)
     if [ -z "$crd_installed" ]; then
-        local result=$(create_openshift_resource "install/operator/deploy/syndesis-crd.yml")
+        local result=$(create_openshift_resource "resources/syndesis-crd.yml")
         check_error $result
     fi
 }
@@ -338,16 +338,27 @@ compare_oc_version() {
     echo "OK"
 }
 
+ensure_image_streams() {
+    local is_installed=$(oc get imagesstream -o name | grep fuse-ignite-server)
+    if [ -n "$is_installed" ]; then
+        local result=$(delete_openshift_resource "resources/fuse-online-image-streams.yml")
+        check_error $result
+    fi
+
+    local result=$(create_openshift_resource "resources/fuse-online-image-streams.yml")
+    check_error $result
+}
+
 # Deploy operator
 deploy_syndesis_operator() {
     local operator_installed=$(oc get dc -o name | grep syndesis-operator)
     if [ -n "$operator_installed" ]; then
-        local result=$(delete_openshift_resource "install/operator/deploy/syndesis-operator.yml")
+        local result=$(delete_openshift_resource "resources/syndesis-operator.yml")
         check_error $result
         wait_for_deployments 0 syndesis-operator >/dev/null 2>&1
     fi
 
-    local result=$(create_openshift_resource "install/operator/deploy/syndesis-operator.yml")
+    local result=$(create_openshift_resource "resources/syndesis-operator.yml")
     check_error $result
 }
 
@@ -365,7 +376,7 @@ create_or_delete_openshift_resource() {
     local result
 
     set +e
-    local url="https://raw.githubusercontent.com/syndesisio/fuse-ignite-install/${TAG}/${resource}"
+    local url="https://raw.githubusercontent.com/syndesisio/fuse-online-install/${TAG}/${resource}"
     result=$(oc $what -f $url >$ERROR_FILE 2>&1)
     if [ $? -ne 0 ]; then
         echo "ERROR: Cannot create remote resource $url"
@@ -377,6 +388,7 @@ create_or_delete_openshift_resource() {
 create_syndesis() {
     local route="${1:-}"
     local console="${2:-}"
+    local image_stream_namespace="${3:-}"
 
     local syndesis_installed=$(oc get syndesis -o name | wc -l)
     local force=$(hasflag --force)
@@ -392,21 +404,33 @@ kind: "Syndesis"
 metadata:
   name: "app"
 spec:
+  integration:
+    # No limitations by default on OCP
+    limit: 0
 EOT
 )
     local extra=""
     if [ -n "$console" ]; then
         extra=$(cat <<EOT
 
-  openShiftConsoleUrl: $console
+  openShiftConsoleUrl: "$console"
 EOT
 )
         syndesis="${syndesis}${extra}"
     fi
+
     if [ -n "$route" ]; then
         extra=$(cat <<EOT
 
-  routeHostname: $route
+  routeHostname: "$route"
+EOT
+)
+        syndesis="${syndesis}${extra}"
+    fi
+
+    if [ -n "$image_stream_namespace" ]; then
+        extra=$(cat <<EOT
+  imageStreamNamespace: "$image_stream_namespace"
 EOT
 )
         syndesis="${syndesis}${extra}"
@@ -516,6 +540,8 @@ fi
 project=$(readopt --project -p)
 if [ -n "${project}" ]; then
     recreate_project $project
+else
+    project=$(oc project -q)
 fi
 
 # Check for OC
@@ -529,6 +555,9 @@ if [ $? -ne 0 ]; then
 fi
 set -e
 
+echo "Ensuring imagestreams in $project"
+ensure_image_streams
+
 # Deploy operator and wait until its up
 echo "Deploying Syndesis operator"
 result=$(deploy_syndesis_operator)
@@ -539,7 +568,7 @@ wait_for_deployments 1 syndesis-operator
 echo "Creating Syndesis resource"
 route=$(readopt --route)
 console=$(readopt --console)
-result=$(create_syndesis "$route" "$console")
+result=$(create_syndesis "$route" "$console" "$project")
 check_error "$result"
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
