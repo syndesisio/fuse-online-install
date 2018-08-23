@@ -4,6 +4,8 @@ items:
   kind: ImageStream
   metadata:
     name: fuse-ignite-server
+    annotations:
+      openshift.io/image.insecureRepository: "{{ Docker.Registry.Insecure }}"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -20,6 +22,8 @@ items:
   kind: ImageStream
   metadata:
     name: fuse-ignite-ui
+    annotations:
+      openshift.io/image.insecureRepository: "{{ Docker.Registry.Insecure }}"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -36,6 +40,8 @@ items:
   kind: ImageStream
   metadata:
     name: fuse-ignite-meta
+    annotations:
+      openshift.io/image.insecureRepository: "{{ Docker.Registry.Insecure }}"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -84,6 +90,8 @@ items:
   kind: ImageStream
   metadata:
     name: fuse-ignite-s2i
+    annotations:
+      openshift.io/image.insecureRepository: "{{ Docker.Registry.Insecure }}"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
