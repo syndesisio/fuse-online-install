@@ -145,7 +145,7 @@ spec:
       name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-online-operator:1.1-1
     importPolicy:
       scheduled: true
-    name: "latest"
+    name: "1.4"
 ---
 apiVersion: v1
 kind: DeploymentConfig
@@ -190,6 +190,6 @@ spec:
       - syndesis-operator
       from:
         kind: ImageStreamTag
-        name: fuse-online-operator:latest
+        name: fuse-online-operator:1.4
     type: ImageChange
   - type: ConfigChange

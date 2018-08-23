@@ -37,10 +37,12 @@ my $RELEASE_MAP =
      "repository" => $target_repository,
      "images" =>
        {
-        "fuse-ignite-server" => "1.3",
-        "fuse-ignite-ui" => "1.3",
-        "fuse-ignite-meta" => "1.3",
-        "fuse-ignite-s2i" => "1.3"
+        "fuse-ignite-server" => "1.4",
+        "fuse-ignite-ui" => "1.4",
+        "fuse-ignite-meta" => "1.4",
+        "fuse-ignite-s2i" => "1.4",
+        "fuse-ignite-upgrade" => "1.4",
+        "fuse-online-operator" => "1.4"
        }
     },
   "source" =>
@@ -52,7 +54,9 @@ my $RELEASE_MAP =
         "fuse-ignite-server" => $config->{tag_server},
         "fuse-ignite-ui" => $config->{tag_ui},
         "fuse-ignite-meta" => $config->{tag_meta},
-        "fuse-ignite-s2i" => $config->{tag_s2i}
+        "fuse-ignite-s2i" => $config->{tag_s2i},
+        "fuse-ignite-upgrade" => $config->{tag_upgrade},
+        "fuse-online-operator" => $config->{tag_operator}
        }
     }
 };
