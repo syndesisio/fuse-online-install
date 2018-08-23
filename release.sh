@@ -178,6 +178,11 @@ create_resources() {
         is_tag=$(extract_minor_version $fuse_online_tag)
     fi
 
+    local insecure="false"
+    if [ "${registry//brew/}" != "${registry}" ]; then
+        insecure="true"
+    fi
+
     echo "==== Patch install script with tag"
     sed -e "s/^TAG=.*\$/TAG=$fuse_online_tag/" -i.bak  $topdir/install_ocp.sh
     rm $topdir/install_ocp.sh.bak
@@ -187,6 +192,7 @@ create_resources() {
         -e "s/{{[ ]*Tags.Online.Operator[ ]*}}/$tag_operator/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
+        -e "s/{{[ ]*Docker.Registry.Insecure[ ]*}}/$insecure/g" \
         $topdir/templates/fuse-online-operator.yml \
         > $topdir/resources/fuse-online-operator.yml
 
@@ -197,6 +203,7 @@ create_resources() {
         -e "s/{{[ ]*Tags.Online.S2I[ ]*}}/$tag_s2i/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
+        -e "s/{{[ ]*Docker.Registry.Insecure[ ]*}}/$insecure/g" \
         $topdir/templates/fuse-online-image-streams.yml \
         > $topdir/resources/fuse-online-image-streams.yml
 
