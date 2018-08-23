@@ -339,7 +339,7 @@ compare_oc_version() {
 }
 
 ensure_image_streams() {
-    local is_installed=$(oc get imagesstream -o name | grep fuse-ignite-server)
+    local is_installed=$(oc get imagestream -o name | grep fuse-ignite-server)
     if [ -n "$is_installed" ]; then
         local result=$(delete_openshift_resource "resources/fuse-online-image-streams.yml")
         check_error $result
@@ -353,13 +353,12 @@ ensure_image_streams() {
 deploy_syndesis_operator() {
     local operator_installed=$(oc get dc -o name | grep syndesis-operator)
     if [ -n "$operator_installed" ]; then
-        local result=$(delete_openshift_resource "resources/syndesis-operator.yml")
+        local result=$(delete_openshift_resource "resources/fuse-online-operator.yml")
         check_error $result
         wait_for_deployments 0 syndesis-operator >/dev/null 2>&1
     fi
 
-    local result=$(create_openshift_resource "resources/syndesis-operator.yml")
-    check_error $result
+    create_openshift_resource "resources/fuse-online-operator.yml"
 }
 
 create_openshift_resource() {

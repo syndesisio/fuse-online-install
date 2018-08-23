@@ -13,7 +13,7 @@ tag_operator="1.1-1"
 repository="fuse7"
 
 # Test:
-#registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
 
 # Official:
-registry="registry.access.redhat.com"
+# registry="registry.access.redhat.com"
