@@ -76,23 +76,25 @@ hasflag() {
 # Read the value of an option.
 readopt() {
     filters="$@"
-    next=false
-    for var in "${ARGS[@]}"; do
-        if $next; then
-            echo $var
-            break;
-        fi
-        for filter in $filters; do
-            if [[ "$var" = ${filter}* ]]; then
-                local value="${var//${filter}=/}"
-                if [ "$value" != "$var" ]; then
-                    echo $value
-                    return
-                fi
-                next=true
+    if [[ ! -z ${ARGS+x} ]]; then
+        next=false
+        for var in "${ARGS[@]}"; do
+            if $next; then
+                echo $var
+                break;
             fi
+            for filter in $filters; do
+                if [[ "$var" = ${filter}* ]]; then
+                    local value="${var//${filter}=/}"
+                    if [ "$value" != "$var" ]; then
+                        echo $value
+                        return
+                    fi
+                    next=true
+                fi
+            done
         done
-    done
+    fi
 }
 
 
