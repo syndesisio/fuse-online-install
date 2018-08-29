@@ -66,7 +66,7 @@ However, if you want to add additional users, just call `--grant` for each user 
 If this setup has been performed successfully, you can switch to _admin user_ who you just have granted access (e.g. "developer" in the example above):
 
 ```
-$ oc login developer
+$ oc login -u developer
 ```
 
 Then you can install Fuse Online with just

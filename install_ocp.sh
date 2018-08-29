@@ -60,36 +60,41 @@ EOT
 # Checks if a flag is present in the arguments.
 hasflag() {
     filters="$@"
-    for var in "${ARGS[@]}"; do
-        for filter in $filters; do
-          if [ "$var" = "$filter" ]; then
-              echo 'true'
-              return
-          fi
+
+    if [[ ! -z ${ARGS+x} ]]; then
+        for var in "${ARGS[@]}"; do
+            for filter in $filters; do
+              if [ "$var" = "$filter" ]; then
+                  echo 'true'
+                  return
+              fi
+            done
         done
-    done
+    fi
 }
 
 # Read the value of an option.
 readopt() {
     filters="$@"
-    next=false
-    for var in "${ARGS[@]}"; do
-        if $next; then
-            echo $var
-            break;
-        fi
-        for filter in $filters; do
-            if [[ "$var" = ${filter}* ]]; then
-                local value="${var//${filter}=/}"
-                if [ "$value" != "$var" ]; then
-                    echo $value
-                    return
-                fi
-                next=true
+    if [[ ! -z ${ARGS+x} ]]; then
+        next=false
+        for var in "${ARGS[@]}"; do
+            if $next; then
+                echo $var
+                break;
             fi
+            for filter in $filters; do
+                if [[ "$var" = ${filter}* ]]; then
+                    local value="${var//${filter}=/}"
+                    if [ "$value" != "$var" ]; then
+                        echo $value
+                        return
+                    fi
+                    next=true
+                fi
+            done
         done
-    done
+    fi
 }
 
 
@@ -429,6 +434,7 @@ EOT
 
     if [ -n "$image_stream_namespace" ]; then
         extra=$(cat <<EOT
+
   imageStreamNamespace: "$image_stream_namespace"
 EOT
 )
@@ -493,9 +499,19 @@ probe_commands() {
     done
 }
 
+get_route_when_ready() {
+    local name="${1}"
+    local route=$(get_route $name)
+    while [ -z "$route" ]; do
+        sleep 10
+        route=$(get_route $name)
+    done
+    echo $route
+}
+
 get_route() {
   local name="${1}"
-  oc get route $name -o jsonpath="{.spec.host}"
+  oc get route $name -o jsonpath="{.spec.host}" 2>/dev/null
 }
 
 # ==============================================================
@@ -576,7 +592,8 @@ fi
 
 # ==========================================================
 
-route=$(get_route "syndesis")
+echo "Getting Syndesis route"
+route=$(get_route_when_ready "syndesis")
 
 cat <<EOT
 ========================================================
