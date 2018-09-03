@@ -186,7 +186,7 @@ objects:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
   stringData:
-    syndesis: "1.4"
+    syndesis: "1.1"
     postgresql: "9.5"
     oauthproxy: "v1.1.0"
     prometheus: "v2.1.0"
@@ -1615,9 +1615,9 @@ objects:
       openshift.io/documentation-url: "https://syndesis.io"
       openshift.io/support-url: "https://access.redhat.com"
   parameters:
-  - name: SYNDESIS_VERSION
-    description: 'The version to upgrade to or "latest" for the newest version'
-    value: latest
+  - name: UPGRADE_REGISTRY
+    description: 'Registry from where to pick up the upgrade pod'
+    value: docker.io
     required: true
   message: |-
     Syndesis upgrade process started
@@ -1625,12 +1625,12 @@ objects:
   - apiVersion: v1
     kind: Pod
     metadata:
-      name: syndesis-upgrade-${SYNDESIS_VERSION}
+      name: syndesis-upgrade-1.1-8
     spec:
       serviceAccountName: syndesis-operator
       containers:
       - name: upgrade
-        image: fuse7/fuse-ignite-upgrade:1.1-2
+        image: ${UPGRADE_REGISTRY}/fuse7/fuse-ignite-upgrade:1.1-8
         env:
           - name: SYNDESIS_UPGRADE_PROJECT
             valueFrom:
