@@ -209,7 +209,7 @@ create_resources() {
 
     sed -e "s/{{[ ]*Tags.Online.Upgrade[ ]*}}/$tag_upgrade/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
-        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g"
+        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
         $topdir/templates/fuse-online-upgrade.yml \
         > $topdir/resources/fuse-online-upgrade.yml
 
