@@ -20,7 +20,6 @@ Usage: bash release.sh [options]
 with options:
 
 --help                       This help message
---create-templates           Only create templates but do not commit or push
 --git-push                   Push to git directly
 --verbose                    Verbose log output
 

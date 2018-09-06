@@ -8,22 +8,22 @@ Installation is performed with `install_ocp.sh`.
 This script can be downloaded or executed directly from a cloned git repository:
 
 ```
-# Execute directly for version 1.4.5
-$ wget https://raw.githubusercontent.com/syndesisio/fuse-online-install/1.4.5/install_ocp.sh
+# Execute directly for version 1.4.8
+$ wget https://raw.githubusercontent.com/syndesisio/fuse-online-install/1.4.8/install_ocp.sh
 
-# or git clone the repository and switch to tag 1.4.5
+# or git clone the repository and switch to tag 1.4.8
 $ git clone https://github.com/syndesisio/fuse-online-install
 $ cd fuse-online-install
-$ git checkout 1.4.5
+$ git checkout 1.4.8
 ```
 
-Installation of Fuse Online consiste of two steps:
+Installation of Fuse Online consists of two steps:
 
-1. You have to register first a custom resource on cluster level and allow a user to install Syndesis in his project. You need cluster admin permissions for this.
-2. Fuse Online itself is then installed in a  second step, which is performed as a regular user.
+1. You have to register first a custom resource on cluster level and allow a user to install Syndesis in his project. You need cluster admin permissions for doing this.
+2. Fuse Online itself is then installed in a second step, which is performed as a regular user.
 
 
-### One-off admin action to register Custom Resource
+### One-off admin setup step
 
 For the first step you have to be connected as a *cluster admin* to the OCP cluster where you want install Fuse Online into.
 
@@ -33,7 +33,7 @@ Verify that you are properly connected and can list custom resources
 $ oc get crd
 ```
 
-When this command works for you without error you can call `install_ocp` to register the CRD on cluster level.
+When this command works for you without error you can call `install_ocp.sh` to register the CRD on cluster level.
 
 ```
 $ bash install_ocp.sh --setup
@@ -158,15 +158,11 @@ with options:
 ```
 
 ## Release
-Installation templates and other objects for installing Red Hat Fuse Ignite (based on Syndesis)
 
-Fuse Ignite can be installed in two flavors:
+This section describes the release process.
+Each tag of this repository corresponds to the same tag in syndesisio/syndesis.
+A release consists of a set of files created in the `resources/` directory and updating the `install_ocp.sh` script to point to the proper release version.
 
-* Red Hat Fuse Ignite Online on OpenShift Online (OSO)
-* Red Hat Fuse Ignite on OpenShift Cluster Platform (OCP)
-
-This repository holds the corresponding templates and other resoruces which holds references to the Fuse Ignite product images.
-These resources are extracted from the associated [syndesis](https://github.com/syndesisio/syndesis) upstream project.
 A release is performed with the included `release.sh` script.
 
 All configuration is set in `fuse_ignite_config.sh`:
@@ -175,18 +171,16 @@ All configuration is set in `fuse_ignite_config.sh`:
 # Git Tags:
 
 # Upstream Syndesis release
-git_syndesis="1.3.10"
-# Tag to create for the templates
-git_fuse_ignite_install="1.3.10-CR"
+git_syndesis="1.4.8"
 
 # Tags used for the productised images
-tag_server="1.0-17"
-tag_ui="1.0-22"
-tag_meta="1.0-15"
-tag_s2i="1.0-15"
-tag_upgrade="1.0-18"
+tag_server="1.1-17"
+tag_ui="1.1-22"
+tag_meta="1.1-15"
+tag_s2i="1.1-15"
+tag_upgrade="1.1-18"
 
-# Test:
+# Test & Staging:
 registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
 repository="jboss-fuse-7-tech-preview"
 
@@ -195,18 +189,16 @@ repository="jboss-fuse-7-tech-preview"
 # local repository="fuse7"
 ```
 
-When the config file is setup a release is performed by simply calling `bash release.sh`. Some options are available, see below for which one.
+When the config file is setup a, release is performed by simply calling `bash release.sh`. Some options are available, see below for which one.
 
 The release process will perform the following steps (the variables are taken from `fuse_ignite_config.sh`):
 
-* Clone https://github.com/syndesisio/syndesis
-* Switch to tag `$git_syndesis`
-* Recreate templates in the productised flavors. The templates created are `resources/fuse-ignite-ocp.yml` and `resources/fuse-ignite-oso.yml`
+* Create resources by using the templates in `templates/` and substituting the version numbers from `fuse_online_config.sh`
+* Extract the Fuse Online template from the operator image with the proper version. **Note**: The template must be used for legacy setups, but not for an operator based installation.
 * Update `install_ocp.sh` with the tag from `$git_fuse_ignite_install`
-* Insert tags from the config file into image stream template and store the processed file under `resources/fuse-online-image-streams.yml`
 * Commit everything
 * Git tag with `$git_fuse_ignite`
-* Create a moving tag up to the minor number (e.g. 1.5) pointing to the tag just created
+* Create a moving tag up to the minor number (e.g. 1.4) pointing to the tag just created
 * Git push if `--git-push` is given
 
 The imagestream which are installed for the OCP variant are included in `resources/fuse-online-image-streams.yml` and need to be updated manually for the moment for new releases.
@@ -222,24 +214,11 @@ Usage: bash release.sh [options]
 with options:
 
 --help                       This help message
---create-templates           Only create templates but do not commit or push
 --git-push                   Push to git directly
 --verbose                    Verbose log output
 
 Please check also "fuse_ignite_config.sh" for the configuration values.
 ```
-
-### Fuse Online Templates
-
-The templates checked in and tagged with _regular_ tags in pure numeric form (e.g. `1.2.8`) are always referencing upstream images that are available at Docker Hub.
-
-For a different setup to referencing different images (i.e. the images that are produced by the Red Hat productisation process), yet another set of templates can be generated.
-
-For this the option `--product-templates` can be used, which generates templates _without image stream definitions_, but referencing supposedly already existing image streams.
-
-These templates are created with a tag `fuse-ignite-<minor>` (e.g. `fuse-ignite-1.2`) in the Git repository and so can be directly accessed from GitHub.
-
-An extra step is required to import productised Fuse Ignite Docker images into the Fuse Ignite cluster. This is described in the next section.
 
 ### Importing images
 
