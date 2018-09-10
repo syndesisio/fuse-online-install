@@ -5,7 +5,7 @@ git_fuse_online_install="1.4.8"
 tag_server="1.1-13"
 tag_ui="1.1-8"
 tag_meta="1.1-12"
-tag_s2i="1.1-10"
+tag_s2i="1.1-13"
 tag_upgrade="1.1-10"
 tag_operator="1.1-6"
 
