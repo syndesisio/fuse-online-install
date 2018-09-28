@@ -157,6 +157,37 @@ with options:
 -v --verbose                 Verbose logging
 ```
 
+## Update
+
+For updating an existing installation you should use the script `update_ocp.sh`.
+This script know the following options (which you get with `--help`):
+
+```
+Fuse Online Update Tool for OCP
+
+Usage: update_ocp.sh [options]
+
+with options:
+
+   --version                  Print target version to update to and exit.
+-v --verbose                  Verbose logging
+```
+
+To start the update, call it without any option.
+The installation will be updated to
+the version to which this update script belogns.
+Use `--version` to see what are you going to update to:
+
+```
+$ bash update_ocp.sh --version
+Update to Fuse Online version 1.4.9
+
+fuse-ignite-server: 1.1-13
+fuse-ignite-ui:     1.1-8
+fuse-ignite-meta:   1.1-12
+fuse-ignite-s2i:    1.1-13
+```
+
 ## Release
 
 This section describes the release process.
