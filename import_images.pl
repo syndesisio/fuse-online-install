@@ -29,6 +29,7 @@ GetOptions("registry=s",\$target_registry,
 
 my $config = &parse_configuration();
 
+
 my $RELEASE_MAP =
 {
    "target" =>
@@ -37,12 +38,12 @@ my $RELEASE_MAP =
      "repository" => $target_repository,
      "images" =>
        {
-        "fuse-ignite-server" => "1.4",
-        "fuse-ignite-ui" => "1.4",
-        "fuse-ignite-meta" => "1.4",
-        "fuse-ignite-s2i" => "1.4",
-        "fuse-ignite-upgrade" => "1.4",
-        "fuse-online-operator" => "1.4"
+        "fuse-ignite-server" => "$config->{target_version}",
+        "fuse-ignite-ui" => "$config->{target_version}",
+        "fuse-ignite-meta" => "$config->{target_version}",
+        "fuse-ignite-s2i" => "$config->{target_version}",
+        "fuse-ignite-upgrade" => "$config->{target_version}",
+        "fuse-online-operator" => "$config->{target_version}"
        }
     },
   "source" =>
@@ -162,9 +163,13 @@ sub parse_configuration() {
 
   die "No registry given in $config_file" unless $config->{registry};
   die "No repository given in $config_file" unless $config->{repository};
-  for my $img ("ui","server","meta","s2i") {
+  for my $img ("ui","server","meta","s2i", "upgrade") {
     die "No tag for $img provided in $config_file" unless $config->{"tag_" . $img}
   }
+  die "No git_fuse_online_install given in $config_file" unless $config->{git_fuse_online_install};
+  my $target_version = $1 if $config->{git_fuse_online_install} =~ /^(\d+\.\d+)(\.\d+)?$/;
+  die "Could not extract target version (format: <major>.<minor>) from given git_fuse_online_install \"", $config->{git_fuse_online_install},"\" in $config_file" unless $target_version;
+  $config->{target_version} = $target_version;
   return $config;
 }
 
