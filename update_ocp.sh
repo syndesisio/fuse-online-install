@@ -369,7 +369,7 @@ update_operator_imagestream() {
 
   if [ -z "$istag" ]; then
       echo "No existing operator tag found, assuming a major upgrade. Skipping update ..."
-      // TODO: Import new major image stream and update deployment of the operator
+      # TODO: Import new major image stream and update deployment of the operator
       return
   fi
 
