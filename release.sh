@@ -241,7 +241,8 @@ release() {
     cd $topdir
     git_commit "resources/" "Update Operator resources" "$git_fuse_online_install"
     git_commit "fuse_online_config.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
-    git_commit "install_ocp.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
+    # Matches install_ocp.sh and update_ocp.sh
+    git_commit "_ocp.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
 
     # No tagging when just running on master
     if [ $git_fuse_online_install = "master" ]; then
