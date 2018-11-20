@@ -183,7 +183,9 @@ create_resources() {
     fi
 
     echo "==== Patch install script with tag"
-    sed -e "s/^TAG=.*\$/TAG=$fuse_online_tag/" -i.bak  $topdir/install_ocp.sh
+    for file in install_ocp.sh update_ocp.sh; do
+        sed -e "s/^TAG=.*\$/TAG=$fuse_online_tag/" -i.bak  $topdir/$file
+    done
     rm $topdir/install_ocp.sh.bak
 
     echo "==== Patch imagestream script with current versions"
