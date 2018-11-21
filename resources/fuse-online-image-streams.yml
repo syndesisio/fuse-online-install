@@ -17,7 +17,7 @@ items:
         name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-server:1.2-1
       importPolicy:
         scheduled: true
-      name: "1.5"
+      name: "latest"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -35,7 +35,7 @@ items:
         name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-ui:1.2-1
       importPolicy:
         scheduled: true
-      name: "1.5"
+      name: "latest"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -53,7 +53,7 @@ items:
         name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-meta:1.2-1
       importPolicy:
         scheduled: true
-      name: "1.5"
+      name: "latest"
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -103,4 +103,4 @@ items:
         name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-s2i:1.2-2
       importPolicy:
         scheduled: true
-      name: "1.5"
+      name: "latest"
