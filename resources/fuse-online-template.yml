@@ -4,7 +4,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: fuse-ignite-1.2
+  name: fuse-ignite-1.5
 #
 # Template flavor:
 #
