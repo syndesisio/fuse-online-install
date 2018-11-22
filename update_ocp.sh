@@ -5,14 +5,15 @@
 
 # ================
 # Target version to update to
-TAG=1.5.2
+TAG=1.5.8
 # ================
 
 # Minimal version for OC
 OC_MIN_VERSION=3.9.0
 
 # Image name prefix
-IMAGE_NAME_PREFIX="fuse-ignite"
+IMAGE_NAME_PREFIX="syndesis"
+IMAGE_NAME_PREFIX_NEW="syndesis"
 
 # Exit if any error occurs
 # Fail on a single failed command in a pipeline (if supported)
@@ -315,25 +316,14 @@ has_istag() {
 update_imagestreams() {
   local tag="${1}"
   local minor_version="${2}"
-
-  local istag=""
-  if $(has_istag "${IMAGE_NAME_PREFIX}-server:$minor_version"); then
-      istag="$minor_version"
-  elif $(has_istag "${IMAGE_NAME_PREFIX}-server:$tag"); then
-      istag="$tag"
-  fi
-
-  if [ -z "$istag" ]; then
-      echo "No existing imagestreamtags found, assuming major update"
-      ensure_image_streams
-      return
-  fi
+  local create_moving_tag="false";
 
   for image in "server" "ui" "meta" "s2i"; do
       local is=${IMAGE_NAME_PREFIX}-$image
       eval tag_image=\$tag_${image}
 
-      import_image "$is:$tag_image" "$is:${istag}"
+      import_image "$is:$tag_image" "$is:${minor_version}"
+      import_image "$is:$tag_image" "$is:${tag}"
   done
 }
 
@@ -341,7 +331,7 @@ import_image() {
     local source=${1}
     local target=${2}
 
-    echo "Importing $source"
+    echo "Importing ${registry}/${repository}/$source to $target"
     local import_out="$(mktemp /tmp/oc-import-output-XXXXX)"
     trap "rm $import_out" EXIT
     oc tag --source docker "${registry}/${repository}/${source}" "${target}" >$import_out 2>&1
@@ -356,24 +346,23 @@ import_image() {
     set -e
 }
 
+update_operator_deployment_for_new_imagestream() {
+    local new_is="${1}"
+    local replace_is="[{\"op\": \"replace\", \"path\": \"/spec/triggers/0/imageChangeParams/from/name\", \"value\": \"$new_is\"}]"
+    local operator="${IMAGE_NAME_PREFIX_NEW}-operator"
+    echo "Patching $operator to use $new_is"
+    oc patch dc $operator --type json -p "$replace_is"
+}
+
 update_operator_imagestream() {
   local tag="${1}"
   local minor_version="${2}"
+  local create_moving_tag="false"
 
-  local istag=""
-  if $(has_istag "fuse-online-operator:$minor_version"); then
-      istag="$minor_version"
-  elif $(has_istag "fuse-online-operator:$tag"); then
-      istag="$tag"
-  fi
-
-  if [ -z "$istag" ]; then
-      echo "No existing operator tag found, assuming a major upgrade. Skipping update ..."
-      # TODO: Import new major image stream and update deployment of the operator
-      return
-  fi
-
-  import_image "fuse-online-operator:$tag_operator" "fuse-online-operator:${istag}"
+  local moving_is=${IMAGE_NAME_PREFIX_NEW}-operator:${minor_version}
+  import_image "${IMAGE_NAME_PREFIX_NEW}-operator:$tag_operator" "$moving_is"
+  import_image "${IMAGE_NAME_PREFIX_NEW}-operator:$tag_operator" "${IMAGE_NAME_PREFIX_NEW}-operator:${tag}"
+  update_operator_deployment_for_new_imagestream "$moving_is"
 }
 
 # ==============================================================
@@ -399,7 +388,7 @@ source $(basedir)/fuse_online_config.sh
 if [ $(hasflag --version) ]; then
     echo "Update to Fuse Online $TAG"
     echo
-    echo "fuse-online-operator: $tag_operator"
+    echo "${IMAGE_NAME_PREFIX_NEW}-operator: $tag_operator"
     echo "${IMAGE_NAME_PREFIX}-server:   $tag_server"
     echo "${IMAGE_NAME_PREFIX}-ui:       $tag_ui"
     echo "${IMAGE_NAME_PREFIX}-meta:     $tag_meta"
