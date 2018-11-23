@@ -12,8 +12,8 @@ TAG=1.5.8
 OC_MIN_VERSION=3.9.0
 
 # Image name prefix
-IMAGE_NAME_PREFIX="syndesis"
-IMAGE_NAME_PREFIX_NEW="syndesis"
+IMAGE_NAME_PREFIX="fuse-ignite"
+IMAGE_NAME_PREFIX_NEW="fuse-online"
 
 # Exit if any error occurs
 # Fail on a single failed command in a pipeline (if supported)
