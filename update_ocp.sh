@@ -349,9 +349,8 @@ import_image() {
 update_operator_deployment_for_new_imagestream() {
     local new_is="${1}"
     local replace_is="[{\"op\": \"replace\", \"path\": \"/spec/triggers/0/imageChangeParams/from/name\", \"value\": \"$new_is\"}]"
-    local operator="${IMAGE_NAME_PREFIX_NEW}-operator"
-    echo "Patching $operator to use $new_is"
-    oc patch dc $operator --type json -p "$replace_is"
+    echo "Patching syndesis-operator to use $new_is"
+    oc patch dc syndesis-operator --type json -p "$replace_is"
 }
 
 update_operator_imagestream() {
