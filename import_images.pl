@@ -66,7 +66,7 @@ my $RELEASE_MAP =
 my $EXTRA_IMAGES =
   [
     {
-      source => "docker.io/openshift/oauth-proxy:v1.1.0",
+      source => "registry.access.redhat.com/openshift3/oauth-proxy:v3.10.45",
       target =>  "oauth-proxy:v1.1.0"
     },
     {
