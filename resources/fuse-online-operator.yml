@@ -144,7 +144,7 @@ spec:
   - from:
       kind: DockerImage
       # Keep tag 'latest' here, its used as an anchor in the release script
-      name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-online-operator:1.2-5
+      name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-online-operator:1.2-6
     importPolicy:
       scheduled: true
     name: "1.5"
