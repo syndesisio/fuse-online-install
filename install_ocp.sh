@@ -244,7 +244,7 @@ recreate_project() {
 check_oc_version()
 {
     local minimum=${OC_MIN_VERSION}
-    local test=$(oc version | grep oc | tr -d oc\ v | cut -f1 -d "+")
+    local test=$(oc version | grep ^oc | tr -d oc\ v | cut -f1 -d "+")
 
     echo $(compare_oc_version $test $minimum)
 }
