@@ -4,13 +4,13 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: fuse-ignite-1.4
+  name: fuse-ignite-1.5
 #
 # Template flavor:
 #
 # Allow localhost refs: false
 # Use docker images: false
-# Syndesis Tag: 1.4
+# Syndesis Tag: 1.5
 # Prometheus Tag: v2.1.0
 # Postgresql Tag: 9.5
 # OAuthProxy Tag: v1.1.0
@@ -32,6 +32,10 @@ parameters:
 - name: OPENSHIFT_PROJECT
   description: The name of the OpenShift project Syndesis is being deployed into.
   displayName: OpenShift project to deploy into
+  required: true
+- name: SAR_PROJECT
+  description: The user needs to have permissions to at least get a list of pods in the given project in order to be granted access to the Syndesis installation in the $OPENSHIFT_PROJECT
+  displayName: OpenShift project to be used to authenticate the user against
   required: true
 - name: OPENSHIFT_OAUTH_CLIENT_SECRET
   description: OpenShift OAuth client secret
@@ -82,10 +86,6 @@ parameters:
   name: DEMO_DATA_ENABLED
   required: true
   value: "false"
-- description: Registry from where to fetch Syndesis images
-  displayName: Syndesis Image Registry
-  name: SYNDESIS_REGISTRY
-  value: 'registry.fuse-ignite.openshift.com'
 - description: Should deployment of integrations be enabled?
   displayName: Enable Integration Deployment
   name: CONTROLLERS_INTEGRATION_ENABLED
@@ -152,6 +152,16 @@ parameters:
   generate: expression
   name: CLIENT_STATE_ENCRYPTION_KEY
   required: true
+- description: Volume space available for the upgrade process (backup data), e.g. 512Mi, 2Gi.
+  displayName: Upgrade Volume Capacity
+  name: UPGRADE_VOLUME_CAPACITY
+  required: true
+  value: 1Gi
+- description: How to expose services, via OpenShift Route (false) or via 3scale (true)
+  displayName: Expose services via 3scale
+  name: CONTROLLERS_EXPOSE_VIA3SCALE
+  required: true
+  value: 'false'
 message: |-
   Syndesis is deployed to ${ROUTE_HOSTNAME}.
 objects:
@@ -186,7 +196,7 @@ objects:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
   stringData:
-    syndesis: "1.4"
+    syndesis: "1.2"
     postgresql: "9.5"
     oauthproxy: "v1.1.0"
     prometheus: "v2.1.0"
@@ -204,7 +214,6 @@ objects:
       POSTGRESQL_SAMPLEDB_PASSWORD=${POSTGRESQL_SAMPLEDB_PASSWORD}
       TEST_SUPPORT_ENABLED=${TEST_SUPPORT_ENABLED}
       DEMO_DATA_ENABLED=${DEMO_DATA_ENABLED}
-      SYNDESIS_REGISTRY=${SYNDESIS_REGISTRY}
       CONTROLLERS_INTEGRATION_ENABLED=${CONTROLLERS_INTEGRATION_ENABLED}
       IMAGE_STREAM_NAMESPACE=${IMAGE_STREAM_NAMESPACE}
       OAUTH_COOKIE_SECRET=${OAUTH_COOKIE_SECRET}
@@ -306,7 +315,7 @@ objects:
         - syndesis-ui
         from:
           kind: ImageStreamTag
-          name: fuse-ignite-ui:1.4
+          name: fuse-ignite-ui:1.5
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
 
@@ -332,7 +341,8 @@ objects:
           "baseMappingServiceUrl": "https://${ROUTE_HOSTNAME}/api/v1/atlas/",
           "baseJavaInspectionServiceUrl": "https://${ROUTE_HOSTNAME}/api/v1/atlas/java/",
           "baseXMLInspectionServiceUrl": "https://${ROUTE_HOSTNAME}/api/v1/atlas/xml/",
-          "baseJSONInspectionServiceUrl": "https://${ROUTE_HOSTNAME}/api/v1/atlas/json/"
+          "baseJSONInspectionServiceUrl": "https://${ROUTE_HOSTNAME}/api/v1/atlas/json/",
+          "disableMappingPreviewMode": false
         },
         "features" : {
           "logging": false
@@ -524,6 +534,8 @@ objects:
   data:
     syndesis-postgresql.conf: |
       log_autovacuum_min_duration = 0
+      log_line_prefix = '%t %a %i %e %c '
+      logging_collector = off
       autovacuum_max_workers = 6
       autovacuum_naptime = 15s
       autovacuum_vacuum_threshold = 25
@@ -531,7 +543,7 @@ objects:
       autovacuum_analyze_threshold = 10
       autovacuum_analyze_scale_factor = 0.05
       autovacuum_vacuum_cost_delay = 10ms
-      autovacuum_vacuum_cost_limit = 1000
+      autovacuum_vacuum_cost_limit = 2000
 
 - apiVersion: v1
   kind: Service
@@ -806,7 +818,7 @@ objects:
         - syndesis-meta
         from:
           kind: ImageStreamTag
-          name: fuse-ignite-meta:1.4
+          name: fuse-ignite-meta:1.5
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
 
@@ -929,7 +941,7 @@ objects:
             - --skip-auth-preflight
             - --openshift-ca=/etc/pki/tls/certs/ca-bundle.crt
             - --openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-            - --openshift-sar={"namespace":"${OPENSHIFT_PROJECT}","resource":"pods","verb":"get"}
+            - --openshift-sar={"namespace":"${SAR_PROJECT}","resource":"pods","verb":"get"}
             # Disabled for now: --pass-user-bearer-token as this requires extra permission which only
             # can be given by a cluster-admin
           env:
@@ -1089,6 +1101,8 @@ objects:
             value: ${MAX_INTEGRATIONS_PER_USER}
           - name: INTEGRATION_STATE_CHECK_INTERVAL
             value: ${INTEGRATION_STATE_CHECK_INTERVAL}
+          - name: CONTROLLERS_EXPOSE_VIA3SCALE
+            value: ${CONTROLLERS_EXPOSE_VIA3SCALE}
           image: ' '
 
           imagePullPolicy: IfNotPresent
@@ -1139,7 +1153,7 @@ objects:
         - syndesis-server
         from:
           kind: ImageStreamTag
-          name: fuse-ignite-server:1.4
+          name: fuse-ignite-server:1.5
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
 
@@ -1204,7 +1218,7 @@ objects:
         apiBaseUrl: ${OPENSHIFT_MASTER}/oapi/v1
         namespace: ${NAMESPACE}
         imageStreamNamespace: ${IMAGE_STREAM_NAMESPACE}
-        builderImageStreamTag: fuse-ignite-s2i:1.4
+        builderImageStreamTag: fuse-ignite-s2i:1.5
         deploymentMemoryRequestMi: 200
         deploymentMemoryLimitMi: 512
         mavenOptions: "-XX:+UseG1GC -XX:+UseStringDeduplication -Xmx310m"
@@ -1617,6 +1631,20 @@ objects:
       type: ImageChange
 
     - type: ConfigChange
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: syndesis-upgrade
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/type: infrastructure
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${UPGRADE_VOLUME_CAPACITY}
 - apiVersion: template.openshift.io/v1
   kind: Template
   metadata:
@@ -1639,22 +1667,32 @@ objects:
       openshift.io/documentation-url: "https://syndesis.io"
       openshift.io/support-url: "https://access.redhat.com"
   parameters:
-  - name: SYNDESIS_VERSION
-    description: 'The version to upgrade to or "latest" for the newest version'
-    value: latest
+  - name: UPGRADE_REGISTRY
+    description: 'Registry from where to pick up the upgrade pod'
+    value: docker.io
     required: true
   message: |-
     Syndesis upgrade process started
   objects:
   - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: syndesis-upgrade
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: ${UPGRADE_VOLUME_CAPACITY}
+  - apiVersion: v1
     kind: Pod
     metadata:
-      name: syndesis-upgrade-${SYNDESIS_VERSION}
+      name: syndesis-upgrade-1.2-6
     spec:
       serviceAccountName: syndesis-operator
       containers:
       - name: upgrade
-        image: fuse7/fuse-ignite-upgrade:1.1-2
+        image: ${UPGRADE_REGISTRY}/fuse7/fuse-ignite-upgrade:1.2-6
         env:
           - name: SYNDESIS_UPGRADE_PROJECT
             valueFrom:
@@ -1666,10 +1704,9 @@ objects:
           - "/opt/backup"
         volumeMounts:
         - mountPath: /opt/backup
-          subPath: backup
           name: backup-dir
       volumes:
       - name: backup-dir
         persistentVolumeClaim:
-          claimName: syndesis-db
+          claimName: syndesis-upgrade
       restartPolicy: Never

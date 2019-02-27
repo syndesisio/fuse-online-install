@@ -183,8 +183,10 @@ create_resources() {
     fi
 
     echo "==== Patch install script with tag"
-    sed -e "s/^TAG=.*\$/TAG=$fuse_online_tag/" -i.bak  $topdir/install_ocp.sh
-    rm $topdir/install_ocp.sh.bak
+    for file in install_ocp.sh update_ocp.sh; do
+        sed -e "s/^TAG=.*\$/TAG=$fuse_online_tag/" -i.bak  $topdir/$file
+        rm $topdir/${file}.bak
+    done
 
     echo "==== Patch imagestream script with current versions"
     sed -e "s/{{[ ]*Tags.Online[ ]*}}/$is_tag/g" \
@@ -239,7 +241,8 @@ release() {
     cd $topdir
     git_commit "resources/" "Update Operator resources" "$git_fuse_online_install"
     git_commit "fuse_online_config.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
-    git_commit "install_ocp.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
+    # Matches install_ocp.sh and update_ocp.sh
+    git_commit "_ocp.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
 
     # No tagging when just running on master
     if [ $git_fuse_online_install = "master" ]; then
