@@ -47,6 +47,10 @@ with options:
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
+   --camel-k <version>        Install camel-k operator version <version>
+                              (version is optional)
+   --camel-k-options "opts"   Options used when installing the camel-k operator.
+                              Use quotes and start with a space before appending the options.
    --help                     This help message
 -v --verbose                  Verbose logging
 
@@ -514,6 +518,92 @@ get_route() {
   oc get route $name -o jsonpath="{.spec.host}" 2>/dev/null
 }
 
+# ==================================================================
+
+# Default Camel-K version
+CAMEL_K_DEFAULT_VERSION="0.2.0"
+
+# Deploy Camel-K operator
+deploy_camel_k_operator() {
+  local version=${1:-$CAMEL_K_DEFAULT_VERSION}
+  local project=${2:-}
+  local opts=${3:-}
+  local extra_opts=""
+  if [ -n "$project" ]; then
+    extra_opts="--namespace $project"
+  fi
+  if [ -n "$opts" ]; then
+    extra_opts="$extra_opts $opts"
+  fi
+  local kamel=$(get_camel_k_bin "$version")
+  $kamel install --skip-cluster-setup --context jvm $extra_opts
+}
+
+# Install Camel-K CRD
+install_camel_k_crds() {
+  local version=${1:-$CAMEL_K_DEFAULT_VERSION}
+  local kamel=$(get_camel_k_bin "$version")
+  $kamel install --cluster-setup
+}
+
+isMacOs() {
+    if [ -z "${OSTYPE}" ]; then
+        if [ $(uname) == "Darwin" ]; then
+            echo "true"
+        fi
+    elif [ "${OSTYPE#darwin}" != "${OSTYPE}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+isWindows() {
+    if [ -z "${OSTYPE}" ]; then
+        if [ $(uname) == "Windows" ]; then
+            echo "true"
+        fi
+    elif [ "${OSTYPE#windows}" != "${OSTYPE}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+# Download `kamel` cli
+# TODO: Adapt this for the productised version of Camel-K
+# Currently it just download from GitHub
+get_camel_k_bin() {
+  local version=${1:-$CAMEL_K_DEFAULT_VERSION}
+  local bin_dir=${2:-/tmp}
+
+  local kamel_command="$bin_dir/kamel-${version}"
+  if [ -e $kamel_command ]; then
+    echo $kamel_command
+    return
+  fi
+
+  # Check for proper operating system
+  local os="linux"
+  if $(isMacOs); then
+    os="mac"
+  elif $(isWindows); then
+    os="windows"
+  fi
+
+  local download_url="https://github.com/apache/camel-k/releases/download/$version/camel-k-client-$version-$os-64bit.tar.gz"
+  local archive=$(mktemp $bin_dir/camel-k-${version}.tar-XXXX)
+  # Download from Camel-K site
+  curl -sL -o $archive $download_url
+  local tmp_dir=$(mktemp -d $bin_dir/camel-k-${version}-XXXX)
+  pushd $tmp_dir >/dev/null
+  tar xf $archive
+  mv ./kamel $kamel_command
+  popd >/dev/null
+  [ -n "$tmp_dir" ] && [ -d "$tmp_dir" ] && rm -rf $tmp_dir
+  echo $kamel_command
+}
+
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -534,6 +624,11 @@ if [ $(hasflag -s --setup) ]; then
     echo "Installing Syndesis CRD"
     result=$(install_syndesis_crd)
     check_error "$result"
+    if [ $(hasflag --camel-k) ]; then
+      echo "Installing Camel-K CRDs"
+      result=$(install_camel_k_crds "$(readopt --camel-k)")
+      check_error "$result"
+    fi
     prep_only="true"
 fi
 
@@ -568,6 +663,13 @@ oc get syndesis >/dev/null 2>&1
 if [ $? -ne 0 ]; then
     check_error "ERROR: No CRD Syndesis installed or no permissions to read them. Please run --setup and/or --grant as cluster-admin. Please use '--help' for more information."
 fi
+
+if [ $(hasflag --camel-k) ]; then
+    oc get integration >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        check_error "ERROR: Camel-K installation requested but no Camel-K CRDs accessible. Please run --setup --camel-k to register the proper CRDs."
+    fi
+fi
 set -e
 
 echo "Ensuring imagestreams in $project"
@@ -577,6 +679,14 @@ ensure_image_streams
 echo "Deploying Syndesis operator"
 result=$(deploy_syndesis_operator)
 check_error "$result"
+
+if [ $(hasflag --camel-k) ]; then
+    echo "Deploying Camel-K operator"
+    result=$(deploy_camel_k_operator "$(readopt --camel-k)" "$(oc project -q)" "$(readopt --camel-k-options)")
+    check_error "$result"
+fi
+
+# Wait for deployment
 wait_for_deployments 1 syndesis-operator
 
 # Create syndesis resource
