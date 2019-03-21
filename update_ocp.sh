@@ -414,6 +414,8 @@ minor_tag=$(extract_minor_tag $TAG)
 # 7.2 to 7.3
 if [ "git_fuse_online_install" = "1.6.x" ]; then
   create_secret_if_not_present
+  local result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+  check_error $result
 fi
 
 # Add new ImageStream tags from the version in fuse_online_config.sh
