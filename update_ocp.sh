@@ -365,6 +365,7 @@ update_operator_imagestream() {
 }
 
 # ==============================================================
+[[ -f "$(basedir)/helpers.sh" ]] && source $(basedir)/helpers.sh
 
 if [ $(hasflag --help -h) ]; then
     display_usage
@@ -408,6 +409,12 @@ setup_oc
 check_error "$(check_syndesis)"
 
 minor_tag=$(extract_minor_tag $TAG)
+
+# make sure pull secret is present, only required from
+# 7.2 to 7.3
+if [ "git_fuse_online_install" = "1.6.x" ]; then
+  create_secret_if_not_present
+fi
 
 # Add new ImageStream tags from the version in fuse_online_config.sh
 echo "Update imagestreams in $project"

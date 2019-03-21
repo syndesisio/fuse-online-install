@@ -2,12 +2,12 @@
 git_fuse_online_install="master"
 
 # Tags used for the productised images
-tag_server="1.2-4"
-tag_ui="1.2-2"
-tag_meta="1.2-3"
-tag_s2i="1.2-3"
-tag_upgrade="1.2-6"
-tag_operator="1.2-5"
+tag_server="1.2-12"
+tag_ui="1.2-6"
+tag_meta="1.2-12"
+tag_s2i="1.2-9"
+tag_upgrade="1.2-18"
+tag_operator="1.2-13"
 
 # Docker repository for productised images
 repository="fuse7"

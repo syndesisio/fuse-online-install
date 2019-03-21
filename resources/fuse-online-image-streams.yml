@@ -14,7 +14,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-server:1.2-4
+        name: registry.redhat.io/fuse7/fuse-ignite-server:1.2-12
       importPolicy:
         scheduled: true
       name: "latest"
@@ -32,7 +32,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-ui:1.2-2
+        name: registry.redhat.io/fuse7/fuse-ignite-ui:1.2-6
       importPolicy:
         scheduled: true
       name: "latest"
@@ -50,7 +50,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-meta:1.2-3
+        name: registry.redhat.io/fuse7/fuse-ignite-meta:1.2-12
       importPolicy:
         scheduled: true
       name: "latest"

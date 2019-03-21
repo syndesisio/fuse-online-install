@@ -61,6 +61,31 @@ EOT
 # ============================================================
 # Helper functions taken over from "syndesis" CLI:
 
+
+# Dir where this script is located
+basedir() {
+    # Default is current directory
+    local script=${BASH_SOURCE[0]}
+
+    # Resolve symbolic links
+    if [ -L $script ]; then
+        if readlink -f $script >/dev/null 2>&1; then
+            script=$(readlink -f $script)
+        elif readlink $script >/dev/null 2>&1; then
+            script=$(readlink $script)
+        elif realpath $script >/dev/null 2>&1; then
+            script=$(realpath $script)
+        else
+            echo "ERROR: Cannot resolve symbolic link $script"
+            exit 1
+        fi
+    fi
+
+    local dir=$(dirname "$script")
+    local full_dir=$(cd "${dir}" && pwd)
+    echo ${full_dir}
+}
+
 # Checks if a flag is present in the arguments.
 hasflag() {
     filters="$@"
@@ -389,7 +414,7 @@ create_or_delete_openshift_resource() {
 
     set +e
     local url="https://raw.githubusercontent.com/syndesisio/fuse-online-install/${TAG}/${resource}"
-    #local url="./${resource}"
+    # local url="./${resource}"
     result=$(oc $what -f $url >$ERROR_FILE 2>&1)
     if [ $? -ne 0 ]; then
         echo "ERROR: Cannot create remote resource $url"
@@ -609,23 +634,8 @@ get_camel_k_bin() {
   echo $kamel_command
 }
 
-# Check whether syndesis-pull-secret secret is present and create
-# it otherwise
-#
-create_secret_if_not_present() {
-  if oc get secret syndesis-pull-secret >/dev/null 2>&1 ; then
-    echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
-  else
-    echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
-    echo "enter username for registry.redhat.io and press [ENTER]: "
-    read username
-    echo "enter password for registry.redhat.io and press [ENTER]: "
-    read -s password
-    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password)
-    check_error $result
-  fi
-}
 # ==============================================================
+[[ -f "$(basedir)/helpers.sh" ]] && source $(basedir)/helpers.sh
 
 if [ $(hasflag --help -h) ]; then
     display_usage
