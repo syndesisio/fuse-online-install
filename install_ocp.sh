@@ -360,6 +360,7 @@ ensure_image_streams() {
 
 # Deploy operator
 deploy_syndesis_operator() {
+
     local operator_installed=$(oc get dc -o name | grep syndesis-operator)
     if [ -n "$operator_installed" ]; then
         local result=$(delete_openshift_resource "resources/fuse-online-operator.yml")
@@ -368,6 +369,9 @@ deploy_syndesis_operator() {
     fi
 
     create_openshift_resource "resources/fuse-online-operator.yml"
+
+    local result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+    check_error $result
 }
 
 create_openshift_resource() {
@@ -385,6 +389,7 @@ create_or_delete_openshift_resource() {
 
     set +e
     local url="https://raw.githubusercontent.com/syndesisio/fuse-online-install/${TAG}/${resource}"
+    #local url="./${resource}"
     result=$(oc $what -f $url >$ERROR_FILE 2>&1)
     if [ $? -ne 0 ]; then
         echo "ERROR: Cannot create remote resource $url"
@@ -642,6 +647,24 @@ fi
 
 if $prep_only; then
     exit 0
+fi
+
+# ==================================================================
+# pull secret setup (required since 7.3)
+
+if oc get secret syndesis-pull-secret >/dev/null 2>&1 ; then
+    echo "pull secret 'syndesis-pull-secret' present"
+else
+  echo "pull secret 'syndesis-pull-secret' is missing. You can create one with:"
+  cat <<EOT
+
+oc create secret docker-registry syndesis-pull-secret
+--docker-server=registry.redhat.io
+--docker-username=<user>
+--docker-password=<pass>
+
+EOT
+exit 1
 fi
 
 # ==================================================================
