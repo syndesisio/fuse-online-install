@@ -414,7 +414,7 @@ create_or_delete_openshift_resource() {
 
     set +e
     local url="https://raw.githubusercontent.com/syndesisio/fuse-online-install/${TAG}/${resource}"
-    # local url="./${resource}"
+    #local url="./${resource}"
     result=$(oc $what -f $url >$ERROR_FILE 2>&1)
     if [ $? -ne 0 ]; then
         echo "ERROR: Cannot create remote resource $url"
@@ -567,6 +567,9 @@ deploy_camel_k_operator() {
   fi
   local kamel=$(get_camel_k_bin "$version")
   $kamel install --skip-cluster-setup --context jvm $extra_opts
+
+  local result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+  check_error $result
 }
 
 # Install Camel-K CRD
