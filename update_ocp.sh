@@ -364,8 +364,36 @@ update_operator_imagestream() {
   update_operator_deployment_for_new_imagestream "$moving_is"
 }
 
+# Check if a resource exist in OCP
+check_resource() {
+  local kind=$1
+  local name=$2
+  oc get $kind $name -o name >/dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "false"
+  else
+    echo "true"
+  fi
+}
+
+# Check whether syndesis-pull-secret secret is present and create
+# it otherwise
+#
+create_secret_if_not_present() {
+  if $(check_resource secret syndesis-pull-secret) ; then
+    echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
+  else
+    echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
+    echo "enter username for registry.redhat.io and press [ENTER]: "
+    read username
+    echo "enter password for registry.redhat.io and press [ENTER]: "
+    read -s password
+    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password)
+    check_error $result
+  fi
+}
+
 # ==============================================================
-[[ -f "$(basedir)/helpers.sh" ]] && source $(basedir)/helpers.sh
 
 if [ $(hasflag --help -h) ]; then
     display_usage
@@ -416,7 +444,7 @@ if [ "git_fuse_online_install" = "1.6.x" ]; then
   create_secret_if_not_present
   for sa in syndesis-operator camel-k-operator
   do
-    if oc get sa $sa >/dev/null 2>&1 ; then
+    if $(check_resource sa $sa) ; then
       local result=$(oc secrets link $sa syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
       check_error $result
     fi
