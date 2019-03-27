@@ -215,6 +215,8 @@ create_resources() {
         > $topdir/resources/fuse-online-upgrade.yml
 
     echo "==== Extract Template from Operator image"
+    chmod a+rwx ./resources
+    chmod a+rw ./resources/*
     docker run -v $(pwd)/resources:/resources \
                --entrypoint bash \
                $registry/$repository/fuse-online-operator:$tag_operator \
