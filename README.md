@@ -20,19 +20,14 @@ $ git checkout 1.4.8
 Installation of Fuse Online consists of three steps:
 
 1. You need setup authentication for `registry.redhat.io`. Fuse Online requires a pull secret named `syndesis-pull-secret` to be present (See https://access.redhat.com/RegistryAuthentication)
+
 2. You have to register first a custom resource on cluster level and allow a user to install Syndesis in his project. You need cluster admin permissions for doing this.
+
 3. Fuse Online itself is then installed in a third step, which is performed as a regular user.
 
 ### Registry Authentication
 
-First you need create an image pull secret, to be able to access images in the Red Hat registry (registry.redhat.io). The secret needs to be named `syndesis-pull-secret` and present in the namespace where you want to install Fuse Online:
-
-```
-oc create secret docker-registry syndesis-pull-secret \
-    --docker-server=registry.redhat.io \
-    --docker-username=<user> \
-    --docker-password=<pass>
-```
+The install script will create an image pull secret in order to access images in the Red Hat registry (registry.redhat.io). If the secret is present, this step is skipped.
 
 ### One-off admin setup step
 

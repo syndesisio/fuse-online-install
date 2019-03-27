@@ -542,6 +542,9 @@ deploy_camel_k_operator() {
   fi
   local kamel=$(get_camel_k_bin "$version")
   $kamel install --skip-cluster-setup --context jvm $extra_opts
+
+  local result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+  check_error $result
 }
 
 # Install Camel-K CRD
@@ -609,6 +612,35 @@ get_camel_k_bin() {
   echo $kamel_command
 }
 
+# Check if a resource exist in OCP
+check_resource() {
+  local kind=$1
+  local name=$2
+  oc get $kind $name -o name >/dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "false"
+  else
+    echo "true"
+  fi
+}
+
+# Check whether syndesis-pull-secret secret is present and create
+# it otherwise
+#
+create_secret_if_not_present() {
+  if $(check_resource secret syndesis-pull-secret) ; then
+    echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
+  else
+    echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
+    echo "enter username for registry.redhat.io and press [ENTER]: "
+    read username
+    echo "enter password for registry.redhat.io and press [ENTER]: "
+    read -s password
+    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password)
+    check_error $result
+  fi
+}
+
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -650,22 +682,8 @@ if $prep_only; then
 fi
 
 # ==================================================================
-# pull secret setup (required since 7.3)
-
-if oc get secret syndesis-pull-secret >/dev/null 2>&1 ; then
-    echo "pull secret 'syndesis-pull-secret' present"
-else
-  echo "pull secret 'syndesis-pull-secret' is missing. You can create one with:"
-  cat <<EOT
-
-oc create secret docker-registry syndesis-pull-secret
---docker-server=registry.redhat.io
---docker-username=<user>
---docker-password=<pass>
-
-EOT
-exit 1
-fi
+# make sure pull secret is present (required since 7.3)
+create_secret_if_not_present
 
 # ==================================================================
 
