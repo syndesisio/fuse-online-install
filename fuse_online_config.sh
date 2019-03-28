@@ -6,8 +6,8 @@ tag_server="1.3-4"
 tag_ui="1.3-4"
 tag_meta="1.3-4"
 tag_s2i="1.3-4"
-tag_upgrade="1.3-2"
-tag_operator="1.3-2"
+tag_upgrade="1.3-3"
+tag_operator="1.3-3"
 
 
 # Docker repository for productised images
