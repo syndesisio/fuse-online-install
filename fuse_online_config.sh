@@ -1,5 +1,5 @@
 # Tag for release. Update this before running release.sh
-git_fuse_online_install="1.6.5"
+git_fuse_online_install="1.5.1"
 
 # Tags used for the productised images
 tag_server="1.3-4"
