@@ -1,11 +1,11 @@
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: syndesis-upgrade-1.2-6
+    name: syndesis-upgrade-1.3-4
   spec:
     containers:
     - name: upgrade
-      image: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-uprade:1.2-6
+      image: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-uprade:1.3-4
       env:
         - name: SYNDESIS_UPGRADE_PROJECT
           valueFrom:
