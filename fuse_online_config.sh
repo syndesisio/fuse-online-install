@@ -10,7 +10,6 @@ tag_s2i="1.3-4"
 tag_upgrade="1.3-4"
 tag_operator="1.3-4"
 
-
 # Docker repository for productised images
 repository="fuse7"
 
@@ -18,4 +17,4 @@ repository="fuse7"
 registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
 
 # Official:
-# registry="registry.access.redhat.com"
+#registry="registry.redhat.io"

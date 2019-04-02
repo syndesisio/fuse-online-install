@@ -17,15 +17,21 @@ $ cd fuse-online-install
 $ git checkout 1.4.8
 ```
 
-Installation of Fuse Online consists of two steps:
+Installation of Fuse Online consists of three steps:
 
-1. You have to register first a custom resource on cluster level and allow a user to install Syndesis in his project. You need cluster admin permissions for doing this.
-2. Fuse Online itself is then installed in a second step, which is performed as a regular user.
+1. You need setup authentication for `registry.redhat.io`. Fuse Online requires a pull secret named `syndesis-pull-secret` to be present (See https://access.redhat.com/RegistryAuthentication)
 
+2. You have to register first a custom resource on cluster level and allow a user to install Syndesis in his project. You need cluster admin permissions for doing this.
+
+3. Fuse Online itself is then installed in a third step, which is performed as a regular user.
+
+### Registry Authentication
+
+The install script will create an image pull secret in order to access images in the Red Hat registry (registry.redhat.io). If the secret is present, this step is skipped.
 
 ### One-off admin setup step
 
-For the first step you have to be connected as a *cluster admin* to the OCP cluster where you want install Fuse Online into.
+For the second step you have to be connected as a *cluster admin* to the OCP cluster where you want install Fuse Online into.
 
 Verify that you are properly connected and can list custom resources
 
