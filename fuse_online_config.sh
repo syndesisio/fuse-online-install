@@ -9,6 +9,9 @@ tag_s2i="1.3-4"
 tag_upgrade="1.3-5"
 tag_operator="1.3-5"
 
+tag_upgrade="1.3-4"
+tag_operator="1.3-4"
+
 
 # Docker repository for productised images
 repository="fuse7"
