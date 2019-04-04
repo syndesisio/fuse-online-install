@@ -8,6 +8,7 @@ tag_meta="1.3-4"
 tag_s2i="1.3-4"
 tag_upgrade="1.3-5"
 tag_operator="1.3-5"
+tag_postgres_exporter="1.3"
 
 tag_upgrade="1.3-5"
 tag_operator="1.3-5"
