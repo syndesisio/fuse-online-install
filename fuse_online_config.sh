@@ -8,6 +8,7 @@ tag_meta="1.2-12"
 tag_s2i="1.2-9"
 tag_upgrade="1.2-18"
 tag_operator="1.2-13"
+tag_postgres_exporter="1.3"
 
 # Docker repository for productised images
 repository="fuse7"
