@@ -5,7 +5,7 @@ items:
   metadata:
     name: fuse-ignite-server
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -23,7 +23,7 @@ items:
   metadata:
     name: fuse-ignite-ui
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -41,7 +41,7 @@ items:
   metadata:
     name: fuse-ignite-meta
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -91,7 +91,7 @@ items:
   metadata:
     name: fuse-ignite-s2i
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -100,7 +100,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-s2i:1.2-3
+        name: registry.redhat.io/fuse7/fuse-ignite-s2i:1.2-9
       importPolicy:
         scheduled: true
       name: "latest"

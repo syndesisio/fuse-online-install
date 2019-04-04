@@ -22,9 +22,9 @@ rules:
 - apiGroups:
   - syndesis.io
   resources:
-  - syndesises
-  - syndesises/finalizers
-  verbs: [ get, list, create, update, delete, deletecollection, watch ]
+  - "*"
+  - "*/finalizers"
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
 - apiGroups:
   - ""
   resources:
@@ -44,6 +44,7 @@ rules:
 - apiGroups:
   - rbac.authorization.k8s.io
   resources:
+  - roles
   - rolebindings
   verbs: [ get, list, create, update, delete, deletecollection, watch]
 - apiGroups:
@@ -65,7 +66,6 @@ rules:
   - build.openshift.io
   resources:
   - buildconfigs
-  verbs:
   verbs: [ get, list, create, update, delete, deletecollection, watch]
 - apiGroups:
   - authorization.openshift.io
@@ -77,6 +77,24 @@ rules:
   resources:
   - routes
   - routes/custom-host
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - camel.apache.org
+  resources:
+  - "*"
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - alertmanagers
+  - prometheuses
+  - servicemonitors
+  - prometheusrules
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - integreatly.org
+  resources:
+  - grafanadashboards
   verbs: [ get, list, create, update, delete, deletecollection, watch]
 ---
 kind: RoleBinding
@@ -130,7 +148,7 @@ apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   annotations:
-    openshift.io/image.insecureRepository: "true"
+    openshift.io/image.insecureRepository: "false"
   labels:
     app: syndesis
     syndesis.io/app: syndesis
@@ -178,11 +196,20 @@ spec:
         - name: syndesis-operator
           image: ' '
           imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 60000
+              name: metrics
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "syndesis-operator"
   triggers:
   - imageChangeParams:
       automatic: true
