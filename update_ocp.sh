@@ -6,7 +6,6 @@
 # ================
 # Target version to update to
 TAG=1.6.5
-# ================
 
 # Minimal version for OC
 OC_MIN_VERSION=3.9.0
@@ -364,6 +363,35 @@ update_operator_imagestream() {
   update_operator_deployment_for_new_imagestream "$moving_is"
 }
 
+# Check if a resource exist in OCP
+check_resource() {
+  local kind=$1
+  local name=$2
+  oc get $kind $name -o name >/dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "false"
+  else
+    echo "true"
+  fi
+}
+
+# Check whether syndesis-pull-secret secret is present and create
+# it otherwise
+#
+create_secret_if_not_present() {
+  if $(check_resource secret syndesis-pull-secret) ; then
+    echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
+  else
+    echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
+    echo "enter username for registry.redhat.io and press [ENTER]: "
+    read username
+    echo "enter password for registry.redhat.io and press [ENTER]: "
+    read -s password
+    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password)
+    check_error $result
+  fi
+}
+
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -408,6 +436,19 @@ setup_oc
 check_error "$(check_syndesis)"
 
 minor_tag=$(extract_minor_tag $TAG)
+
+# make sure pull secret is present, only required from
+# 7.2 to 7.3. Link operator SAs to the secret.
+if [ "git_fuse_online_install" = "1.6.x" ]; then
+  create_secret_if_not_present
+  for sa in syndesis-operator camel-k-operator
+  do
+    if $(check_resource sa $sa) ; then
+      local result=$(oc secrets link $sa syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+      check_error $result
+    fi
+  done
+fi
 
 # Add new ImageStream tags from the version in fuse_online_config.sh
 echo "Update imagestreams in $project"
