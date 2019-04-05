@@ -11,6 +11,7 @@ tag_s2i="version.tag.s2i"
 
 tag_upgrade="version.tag.upgrade"
 tag_operator="version.tag.operator"
+tag_postgres_exporter="version.tag.postgres"
 
 
 # Docker repository for productised images
