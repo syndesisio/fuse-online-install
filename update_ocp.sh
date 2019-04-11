@@ -445,7 +445,7 @@ if [[ $git_fuse_online_install =~ ^1\.6\.[0-9]+$ ]]; then
   for sa in syndesis-operator camel-k-operator
   do
     if $(check_resource sa $sa) ; then
-      local result=$(oc secrets link $sa syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+      result=$(oc secrets link $sa syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
       check_error $result
     fi
   done
