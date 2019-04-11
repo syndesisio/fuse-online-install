@@ -439,12 +439,12 @@ minor_tag=$(extract_minor_tag $TAG)
 
 # make sure pull secret is present, only required from
 # 7.2 to 7.3. Link operator SAs to the secret.
-if [ "git_fuse_online_install" = "1.6.x" ]; then
+if [[ $git_fuse_online_install =~ ^1\.6\.[0-9]+$ ]]; then
   create_secret_if_not_present
   for sa in syndesis-operator camel-k-operator
   do
     if $(check_resource sa $sa) ; then
-      local result=$(oc secrets link $sa syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+      result=$(oc secrets link $sa syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
       check_error $result
     fi
   done
