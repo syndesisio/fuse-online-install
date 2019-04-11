@@ -461,3 +461,4 @@ update_operator_imagestream "$TAG" "$minor_tag"
 cat <<EOT
 ========================================================
 Congratulation, Fuse Online has been updated to $TAG !
+EOT
