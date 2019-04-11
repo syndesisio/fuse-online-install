@@ -546,6 +546,11 @@ deploy_camel_k_operator() {
   local kamel=$(get_camel_k_bin "$version")
   $kamel install --skip-cluster-setup --repository $MAVEN_REPOSITORY --context jvm $extra_opts
 
+  if [ -z "$version" ]; then
+    # Patching Camel K image
+    oc patch deployment camel-k-operator --type='json' -p="[{\"op\": \"replace\", \"path\": \"/spec/template/spec/containers/0/image\", \"value\":\"$REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG\"}]"
+  fi
+
   local result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
   check_error $result
 }
