@@ -543,6 +543,11 @@ deploy_camel_k_operator() {
     extra_opts="$extra_opts $opts"
   fi
   local kamel=$(get_camel_k_bin "$version")
+  if [ "${kamel//ERROR/}" != "${kamel}" ]; then
+    echo $kamel
+    return
+  fi
+
   $kamel install --skip-cluster-setup --repository $MAVEN_REPOSITORY --context jvm $extra_opts
 
   if [ -z "$version" ]; then
@@ -558,6 +563,11 @@ deploy_camel_k_operator() {
 install_camel_k_crds() {
   local version=${1:-}
   local kamel=$(get_camel_k_bin "$version")
+  if [ "${kamel//ERROR/}" != "${kamel}" ]; then
+    echo $kamel
+    return
+  fi
+
   $kamel install --cluster-setup
 }
 
@@ -635,6 +645,16 @@ get_product_camel_k_bin() {
   chmod a+rw $tmp_dir
 
   local image=$REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG
+
+  set +e
+  docker pull $image >$ERROR_FILE 2>&1
+  local err=$?
+  set -e
+  if [ $err -ne 0 ]; then
+      echo "ERROR: Cannot pull image $image."
+      return
+  fi
+
   local image_sha=$(docker inspect $image --format='{{index .RepoDigests 0}}' | sed 's/.*\://')
 
   local kamel_command="$bin_dir/kamel-prod-$image_sha"
@@ -651,10 +671,17 @@ get_product_camel_k_bin() {
     os="windows"
   fi
 
+  set +e
   docker run -v $tmp_dir/:/client \
                  --entrypoint bash \
                  $REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG\
-                 -c "tar xf /opt/clients/camel-k-client-$os.tar.gz; cp kamel /client/"
+                 -c "tar xf /opt/clients/camel-k-client-$os.tar.gz; cp kamel /client/" >$ERROR_FILE 2>&1
+  local err=$?
+  set -e
+  if [ $err -ne 0 ]; then
+      echo "ERROR: Cannot copy client binary from Camel K image."
+      return
+  fi
 
   mv -f $tmp_dir/kamel $kamel_command
   [ -n "$tmp_dir" ] && [ -d "$tmp_dir" ] && rm -rf $tmp_dir
