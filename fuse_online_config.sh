@@ -1,6 +1,9 @@
 # Tag for release. Update this before running release.sh
 git_fuse_online_install="master"
 
+# Image Streams to be updated
+imagestreams="server ui meta s2i postgres_exporter"
+
 # Tags used for the productised images
 tag_server="1.2-12"
 tag_ui="1.2-6"
