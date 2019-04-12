@@ -2,7 +2,6 @@
 git_fuse_online_install="master"
 
 # Tags used for the productised images
-imagestreams="server ui meta s2i postgres_exporter"
 tag_server="1.2-12"
 tag_ui="1.2-6"
 tag_meta="1.2-12"
