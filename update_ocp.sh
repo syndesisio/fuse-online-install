@@ -301,6 +301,14 @@ create_or_delete_openshift_resource() {
     set -e
 }
 
+recreate_openshift_resource() {
+    local resource=${1:-}
+
+    set +e
+    local url="https://raw.githubusercontent.com/syndesisio/fuse-online-install/${TAG}/${resource}"
+    oc create -f $url >/dev/null 2>&1
+    set -e
+}
 
 has_istag() {
   set +e
@@ -316,9 +324,10 @@ has_istag() {
 update_imagestreams() {
   local tag="${1}"
   local minor_version="${2}"
+  local images="${3}"
   local create_moving_tag="false";
 
-  for image in "server" "ui" "meta" "s2i"; do
+  for image in $images; do
       local is=${IMAGE_NAME_PREFIX}-$image
       eval tag_image=\$tag_${image}
 
@@ -393,6 +402,7 @@ create_secret_if_not_present() {
   fi
 }
 
+
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -438,6 +448,8 @@ check_error "$(check_syndesis)"
 
 minor_tag=$(extract_minor_tag $TAG)
 
+imagestreams=${imagestreams:-server ui meta s2i}
+
 # make sure pull secret is present, only required from
 # 7.2 to 7.3. Link operator SAs to the secret.
 if [[ $git_fuse_online_install =~ ^1\.6\.[0-9]+$ ]]; then
@@ -445,7 +457,7 @@ if [[ $git_fuse_online_install =~ ^1\.6\.[0-9]+$ ]]; then
   delete_openshift_resource "resources/fuse-online-operator.yml"
   create_openshift_resource "resources/fuse-online-operator.yml"
 
-  create_secret_if_not_present
+  recreate_openshift_resource "resources/fuse-online-image-streams.yml"
 
   # link operator accounts to created or existing registry.redhat.io
   # secret
@@ -460,7 +472,7 @@ fi
 
 # Add new ImageStream tags from the version in fuse_online_config.sh
 echo "Update imagestreams in $project"
-update_imagestreams "$TAG" "$minor_tag"
+update_imagestreams "$TAG" "$minor_tag" "$imagestreams"
 
 # Update operator's image stream, which will trigger a redeployment
 echo "Update operator imagestream"
