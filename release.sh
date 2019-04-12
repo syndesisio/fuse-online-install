@@ -222,7 +222,7 @@ create_resources() {
                -c "cp /conf/syndesis-template.yml /resources/fuse-online-template.yml"
 
     echo "==== Patch template removing camel-k related resources"
-    sed -i '/# BOF CLEAN/,/EOF CLEAN/d' $topdir/resources/fuse-online-template.yml
+    sed -i '/# START:CAMEL-K/,/# END:CAMEL-K/d' $topdir/resources/fuse-online-template.yml
 }
 
 release() {
