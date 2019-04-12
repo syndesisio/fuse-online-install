@@ -441,7 +441,14 @@ minor_tag=$(extract_minor_tag $TAG)
 # make sure pull secret is present, only required from
 # 7.2 to 7.3. Link operator SAs to the secret.
 if [[ $git_fuse_online_install =~ ^1\.6\.[0-9]+$ ]]; then
+  # replace operator resources to include missing envs and roles
+  delete_openshift_resource "resources/fuse-online-operator.yml"
+  create_openshift_resource "resources/fuse-online-operator.yml"
+
   create_secret_if_not_present
+
+  # link operator accounts to created or existing registry.redhat.io
+  # secret
   for sa in syndesis-operator camel-k-operator
   do
     if $(check_resource sa $sa) ; then
