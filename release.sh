@@ -220,6 +220,9 @@ create_resources() {
                --entrypoint bash \
                $registry/$repository/fuse-online-operator:$tag_operator \
                -c "cp /conf/syndesis-template.yml /resources/fuse-online-template.yml"
+
+    echo "==== Patch template removing camel-k related resources"
+    sed -i '/# START:CAMEL-K/,/# END:CAMEL-K/d' $topdir/resources/fuse-online-template.yml
 }
 
 release() {
