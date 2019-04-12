@@ -19,6 +19,8 @@ repository="repo.name"
 
 # Test:
 registry="registry.name"
+maven_repository="maven.repository"
 
 # Official:
 # registry="registry.access.redhat.com"
+# maven_repository="https://maven.repository.redhat.com/ga@id=redhat.ga"
