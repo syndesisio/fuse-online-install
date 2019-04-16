@@ -529,6 +529,7 @@ eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo MAVEN_REPOSITORY=$m
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo CAMEL_K_TAG=$tag_camel_k)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REPOSITORY=$repository)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REGISTRY=$registry)
+eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo JAVA_BASE_IMAGE_TAG=$tag_java_base_image)
 
 # Deploy Camel-K operator
 deploy_camel_k_operator() {
@@ -548,7 +549,7 @@ deploy_camel_k_operator() {
     return
   fi
 
-  $kamel install --skip-cluster-setup --repository $MAVEN_REPOSITORY --context jvm $extra_opts
+  $kamel install --skip-cluster-setup --repository $MAVEN_REPOSITORY --base-image $REGISTRY/$REPOSITORY/fuse-java-openshift:$JAVA_BASE_IMAGE_TAG --context jvm $extra_opts
 
   if [ -z "$version" ]; then
     # Patching Camel K image
