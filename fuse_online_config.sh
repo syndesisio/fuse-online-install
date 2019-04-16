@@ -13,6 +13,7 @@ tag_upgrade="1.2-18"
 tag_operator="1.2-13"
 tag_postgres_exporter="1.3"
 tag_camel_k="1.3"
+tag_java_base_image="1.3"
 
 # Docker repository for productised images
 repository="fuse7"
