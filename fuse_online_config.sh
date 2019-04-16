@@ -11,6 +11,7 @@ tag_operator="1.3-5"
 
 tag_postgres_exporter="1.3"
 tag_camel_k="1.3"
+tag_java_base_image="1.3"
 
 tag_upgrade="1.3-5"
 tag_operator="1.3-5"
