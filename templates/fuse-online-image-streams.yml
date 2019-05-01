@@ -119,7 +119,7 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: {{ Docker.Registry }}/{{ Docker.Image.Repository }}/fuse-postgres-exporter:{{ Tags.Online.PostgresExporter }}
+          name: {{ Docker.Registry }}/fuse7-tech-preview/fuse-postgres-exporter:{{ Tags.Online.PostgresExporter }}
         importPolicy:
           scheduled: true
         name: "v0.4.7"
