@@ -148,7 +148,7 @@ apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   annotations:
-    openshift.io/image.insecureRepository: "true"
+    openshift.io/image.insecureRepository: "false"
   labels:
     app: syndesis
     syndesis.io/app: syndesis
@@ -162,7 +162,7 @@ spec:
   - from:
       kind: DockerImage
       # Keep tag 'latest' here, its used as an anchor in the release script
-      name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-online-operator:1.3-5
+      name: registry.access.redhat.com/fuse7/fuse-online-operator:1.3-9
     importPolicy:
       scheduled: true
     name: "1.6"
