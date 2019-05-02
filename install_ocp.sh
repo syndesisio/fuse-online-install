@@ -553,7 +553,7 @@ deploy_camel_k_operator() {
 
   if [ -z "$version" ]; then
     # Patching Camel K image
-    oc patch deployment camel-k-operator --type='json' -p="[{\"op\": \"replace\", \"path\": \"/spec/template/spec/containers/0/image\", \"value\":\"$REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG\"}]"
+    oc patch deployment camel-k-operator --type='json' -p="[{\"op\": \"replace\", \"path\": \"/spec/template/spec/containers/0/image\", \"value\":\"registry.redhat.io/fuse7-tech-preview/fuse-camel-k:$CAMEL_K_TAG\"}]"
   fi
 
   local result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
@@ -645,7 +645,7 @@ get_product_camel_k_bin() {
   mkdir -p $tmp_dir
   chmod a+rw $tmp_dir
 
-  local image=$REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG
+  local image=registry.redhat.io/fuse7-tech-preview/fuse-camel-k:$CAMEL_K_TAG
 
   set +e
   docker pull $image >$ERROR_FILE 2>&1
@@ -675,7 +675,7 @@ get_product_camel_k_bin() {
   set +e
   docker run -v $tmp_dir/:/client \
                  --entrypoint bash \
-                 $REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG\
+                 registry.redhat.io/fuse7-tech-preview/fuse-camel-k:$CAMEL_K_TAG\
                  -c "tar xf /opt/clients/camel-k-client-$os.tar.gz; cp kamel /client/" >$ERROR_FILE 2>&1
   local err=$?
   set -e
