@@ -19,10 +19,5 @@ tag_java_base_image="1.3-10"
 # Docker repository for productised images
 repository="fuse7"
 
-# Test:
-registry="registry.access.redhat.com"
+registry="registry.redhat.io"
 maven_repository="https://maven.repository.redhat.com/ga@id=redhat.ga"
-
-# Official:
-# registry="registry.access.redhat.com"
-# maven_repository="https://maven.repository.redhat.com/ga@id=redhat.ga"

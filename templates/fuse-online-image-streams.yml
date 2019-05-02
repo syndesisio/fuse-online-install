@@ -66,7 +66,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.access.redhat.com/openshift3/oauth-proxy:v3.10.45
+        name: registry.redhat.io/openshift3/oauth-proxy:v3.10.45
       importPolicy:
         scheduled: true
       name: "v1.1.0"
@@ -82,7 +82,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.access.redhat.com/openshift3/prometheus:v3.9.25
+        name: registry.redhat.io/openshift3/prometheus:v3.9.25
       importPolicy:
         scheduled: true
       name: "v2.1.0"
