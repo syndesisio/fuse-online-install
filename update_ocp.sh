@@ -455,9 +455,9 @@ if [[ $git_fuse_online_install =~ ^1\.6\.[0-9]+$ ]]; then
   delete_openshift_resource "resources/fuse-online-operator.yml"
   create_openshift_resource "resources/fuse-online-operator.yml"
 
-  recreate_openshift_resource "resources/fuse-online-image-streams.yml"
 
   create_secret_if_not_present
+  recreate_openshift_resource "resources/fuse-online-image-streams.yml"
   for sa in syndesis-operator camel-k-operator
   do
     if $(check_resource sa $sa) ; then
