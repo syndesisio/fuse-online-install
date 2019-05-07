@@ -1,7 +1,7 @@
 # This template is used in Jenkins to enable property substitution at runtime
 
 # Tag for release. Update this before running release.sh
-git_fuse_online_install="1.6.17"
+git_fuse_online_install="1.6.20"
 
 # Tags used for the productised images
 tag_server="1.3-16"
