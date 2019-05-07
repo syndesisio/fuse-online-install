@@ -182,14 +182,32 @@ rules:
 - apiGroups:
   - syndesis.io
   resources:
-  - syndesises
-  - syndesises/finalizers
+  - "*"
+  - "*/finalizers"
   verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - route.openshift.io
   resources:
   - routes/custom-host
   verbs: [ get, list, create, update, delete, deletecollection, watch ]
+- apiGroups:
+  - camel.apache.org
+  resources:
+  - "*"
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - alertmanagers
+  - prometheuses
+  - servicemonitors
+  - prometheusrules
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - integreatly.org
+  resources:
+  - grafanadashboards
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
 ---
 
 EOT
