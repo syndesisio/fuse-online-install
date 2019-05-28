@@ -353,7 +353,10 @@ objects:
           "favicon16": "/favicon-16x16.png",
           "touchIcon": "/apple-touch-icon.png",
           "productBuild": true
-       }
+       },
+       "datavirt": {
+          "dvUrl": "/vdb-builder/v1/"
+        }
       }
 - apiVersion: image.openshift.io/v1
   kind: ImageStream
