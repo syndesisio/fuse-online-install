@@ -5,7 +5,7 @@ items:
   metadata:
     name: fuse-ignite-server
     annotations:
-      openshift.io/image.insecureRepository: "false"
+      openshift.io/image.insecureRepository: "true"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -14,7 +14,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-server:1.3-16
+        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-server:1.3-19
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -23,7 +23,7 @@ items:
   metadata:
     name: fuse-ignite-ui
     annotations:
-      openshift.io/image.insecureRepository: "false"
+      openshift.io/image.insecureRepository: "true"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -32,7 +32,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-ui:1.3-10
+        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-ui:1.3-12
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -41,7 +41,7 @@ items:
   metadata:
     name: fuse-ignite-meta
     annotations:
-      openshift.io/image.insecureRepository: "false"
+      openshift.io/image.insecureRepository: "true"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -50,7 +50,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-meta:1.3-16
+        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-meta:1.3-19
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -91,7 +91,7 @@ items:
   metadata:
     name: fuse-ignite-s2i
     annotations:
-      openshift.io/image.insecureRepository: "false"
+      openshift.io/image.insecureRepository: "true"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -100,7 +100,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-s2i:1.3-16
+        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-s2i:1.3-19
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -109,7 +109,7 @@ items:
   metadata:
     name: postgres_exporter
     annotations:
-      openshift.io/image.insecureRepository: "false"
+      openshift.io/image.insecureRepository: "true"
     labels:
       app: syndesis
       syndesis.io/app: syndesis
@@ -119,7 +119,7 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: registry.redhat.io/fuse7-tech-preview/fuse-postgres-exporter:1.3-4
+          name: registry.redhat.io/fuse7-tech-preview/fuse-postgres-exporter:1.3-5
         importPolicy:
           scheduled: true
         name: "v0.4.7"
