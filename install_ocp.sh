@@ -7,7 +7,7 @@
 
 # ================
 # Tag updated by release script
-TAG=1.6.5
+TAG=1.6.17
 
 # Minimal version for OC
 OC_MIN_VERSION=3.9.0
@@ -181,14 +181,32 @@ rules:
 - apiGroups:
   - syndesis.io
   resources:
-  - syndesises
-  - syndesises/finalizers
+  - "*"
+  - "*/finalizers"
   verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - route.openshift.io
   resources:
   - routes/custom-host
   verbs: [ get, list, create, update, delete, deletecollection, watch ]
+- apiGroups:
+  - camel.apache.org
+  resources:
+  - "*"
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - alertmanagers
+  - prometheuses
+  - servicemonitors
+  - prometheusrules
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - integreatly.org
+  resources:
+  - grafanadashboards
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
 ---
 
 EOT
@@ -553,7 +571,7 @@ deploy_camel_k_operator() {
 
   if [ -z "$version" ]; then
     # Patching Camel K image
-    oc patch deployment camel-k-operator --type='json' -p="[{\"op\": \"replace\", \"path\": \"/spec/template/spec/containers/0/image\", \"value\":\"$REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG\"}]"
+    oc patch deployment camel-k-operator --type='json' -p="[{\"op\": \"replace\", \"path\": \"/spec/template/spec/containers/0/image\", \"value\":\"registry.redhat.io/fuse7-tech-preview/fuse-camel-k:$CAMEL_K_TAG\"}]"
   fi
 
   local result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
@@ -645,7 +663,7 @@ get_product_camel_k_bin() {
   mkdir -p $tmp_dir
   chmod a+rw $tmp_dir
 
-  local image=$REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG
+  local image=registry.redhat.io/fuse7-tech-preview/fuse-camel-k:$CAMEL_K_TAG
 
   set +e
   docker pull $image >$ERROR_FILE 2>&1
@@ -675,7 +693,7 @@ get_product_camel_k_bin() {
   set +e
   docker run -v $tmp_dir/:/client \
                  --entrypoint bash \
-                 $REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG\
+                 registry.redhat.io/fuse7-tech-preview/fuse-camel-k:$CAMEL_K_TAG\
                  -c "tar xf /opt/clients/camel-k-client-$os.tar.gz; cp kamel /client/" >$ERROR_FILE 2>&1
   local err=$?
   set -e

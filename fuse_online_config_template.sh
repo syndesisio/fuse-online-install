@@ -13,13 +13,15 @@ tag_upgrade="version.tag.upgrade"
 tag_operator="version.tag.operator"
 tag_postgres_exporter="version.tag.postgres"
 
+tag_camel_k="version.tag.camel.k"
+tag_java_base_image="version.tag.java.base.image"
 
 # Docker repository for productised images
 repository="repo.name"
 
 # Test:
 registry="registry.name"
-maven_repository="maven.repository"
+maven_repository="maven.repository.name"
 
 # Official:
 # registry="registry.access.redhat.com"
