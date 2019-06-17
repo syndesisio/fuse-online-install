@@ -104,7 +104,7 @@ git_commit() {
 git_push() {
     local topdir=${1:-}
     local release_version=${2:-}
-    local moving_tag=${3:-}
+#    local moving_tag=${3:-}
 
     cd $topdir
 
@@ -124,10 +124,12 @@ git_push() {
             echo "* Pushing $release_version"
             git push -u $remote $release_version
         fi
-        if [ -n "$moving_tag" ]; then
-            echo "* Pushing symbolic tag $moving_tag"
-            git push -f -u $remote $moving_tag
-        fi
+
+#  commented out so that moving tag can be done on demand        
+#        if [ -n "$moving_tag" ]; then
+#            echo "* Pushing symbolic tag $moving_tag"
+#            git push -f -u $remote $moving_tag
+#        fi
     fi
 }
 
@@ -257,14 +259,15 @@ release() {
     echo "=== Tagging $git_fuse_online_install"
     git tag -f "${git_fuse_online_install}"
 
-    local moving_tag=$(extract_minor_version $git_fuse_online_install)
-    check_error $moving_tag
+#    local moving_tag=$(extract_minor_version $git_fuse_online_install)
+#    check_error $moving_tag
 
-    echo "=== Moving tag $moving_tag"
-    git tag -f "${moving_tag}"
+#    echo "=== Moving tag $moving_tag"
+#    git tag -f "${moving_tag}"
 
     # Push release tag only
-    git_push "$topdir" "$git_fuse_online_install" "$moving_tag"
+    git_push "$topdir" "$git_fuse_online_install"
+#    git_push "$topdir" "$git_fuse_online_install" "$moving_tag"
 }
 
 
