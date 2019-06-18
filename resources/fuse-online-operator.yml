@@ -192,7 +192,7 @@ spec:
   tags:
   - from:
       kind: DockerImage
-      name: lgarciaac/syndesis-operator:latest
+      name: registry.redhat.io/fuse7/fuse-online-operator:1.2-13
     importPolicy:
       scheduled: true
     name: "latest"
