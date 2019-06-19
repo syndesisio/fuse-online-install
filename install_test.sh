@@ -28,18 +28,15 @@ function wait_for() {
 
 function create_project() {
 	local project=$1
+        [[ $MINISHIFT -eq 0 ]] && oc login -u developer  >/dev/null 2>&1
 
 	echo "Creating namespace $project ..."
-        oc new-project $project >/dev/null 2>&1
-
-	echo "Waiting for namespace $project to be ready"
-	wait_for "oc get project $project | grep NotFound >/dev/null 2>&1" 
-
-	echo "Namespace $project is ready"
+        oc new-project $project 
 }
 
 function delete_project() {
 	local project=$1
+        [[ $MINISHIFT -eq 0 ]] && oc login -u system:admin  >/dev/null 2>&1
 
 	echo "Deleting namespace $project"
         oc delete project $project >/dev/null 2>&1
@@ -48,6 +45,7 @@ function delete_project() {
 	wait_for "oc get project $project >/dev/null 2>&1" 
 
 	echo "Namespace $project is deleted"
+        [[ $MINISHIFT -eq 0 ]] && oc login -u developer  >/dev/null 2>&1
 }
 
 function recreate_project() {
@@ -66,26 +64,17 @@ function recreate_project() {
 minishift status | grep 'Minishift:.*Running'
 MINISHIFT=$?
 
-[[ $MINISHIFT -eq 0 ]] && oc login -u developer  >/dev/null 2>&1
 recreate_project $PROJECT
-oc project $PROJECT
 
-[[ $MINISHIFT -eq 0 ]] && oc login -u developer  >/dev/null 2>&1
-oc login -u system:admin  >/dev/null 2>&1
-
+[[ $MINISHIFT -eq 0 ]] && oc login -u system:admin  >/dev/null 2>&1
 ./install_ocp.sh --setup;
 ./install_ocp.sh --grant developer;
 
+[[ $MINISHIFT -eq 0 ]] && oc login -u developer  >/dev/null 2>&1
 oc create secret docker-registry syndesis-pull-secret \
 	--docker-server=registry.redhat.io \
 	--docker-username=$DEVELOPERS_REDHAT_COM_USER \
-	--docker-password=$DEVELOPERS_REDHAT_COM_PASS
-
-if [[ "$MINISHIFT" == "1" ]]
-then
-	echo "Logging as developer"
-	oc login -u developer  >/dev/null 2>&1
-fi
+	--docker-password=$DEVELOPERS_REDHAT_COM_PASS >/dev/null 2>&1
 
 ./install_ocp.sh
 
