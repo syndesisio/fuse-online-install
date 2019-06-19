@@ -60,15 +60,32 @@ function recreate_project() {
 [[ -z $DEVELOPERS_REDHAT_COM_USER ]] && echo "DEVELOPERS_REDHAT_COM_USER not set" && exit 1
 [[ -z $DEVELOPERS_REDHAT_COM_PASS ]] && echo "DEVELOPERS_REDHAT_COM_PASS not set" && exit 1
 
+# Are we using minishift? then most likely OKD 3.11, we have
+# to validate developer user. If not then crd and we dont validate 
+# nonprivileged user
+minishift status | grep 'Minishift:.*Running'
+MINISHIFT=$?
+
+[[ $MINISHIFT -eq 0 ]] && oc login -u developer  >/dev/null 2>&1
 recreate_project $PROJECT
 oc project $PROJECT
 
+[[ $MINISHIFT -eq 0 ]] && oc login -u developer  >/dev/null 2>&1
+oc login -u system:admin  >/dev/null 2>&1
+
 ./install_ocp.sh --setup;
+./install_ocp.sh --grant developer;
 
 oc create secret docker-registry syndesis-pull-secret \
 	--docker-server=registry.redhat.io \
 	--docker-username=$DEVELOPERS_REDHAT_COM_USER \
 	--docker-password=$DEVELOPERS_REDHAT_COM_PASS
+
+if [[ "$MINISHIFT" == "1" ]]
+then
+	echo "Logging as developer"
+	oc login -u developer  >/dev/null 2>&1
+fi
 
 ./install_ocp.sh
 

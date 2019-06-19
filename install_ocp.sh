@@ -184,12 +184,111 @@ rules:
   resources:
   - "*"
   - "*/finalizers"
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - configmaps
+  - secrets
+  - serviceaccounts
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - ""
+  resources:
+  - pods/log
+  verbs: [ get ]
+- apiGroups:
+  - ""
+  resources:
+  - replicationcontrollers
+  - replicationcontrollers/scale
+  - replicationcontrollers/status
   verbs: [ get, list, create, update, delete, deletecollection, watch ]
+- apiGroups:
+  - ""
+  - build.openshift.io
+  resources:
+  - builds
+  - buildconfigs
+  - builds/details
+  - buildconfigs/webhooks
+  - buildconfigs/instantiatebinary
+  - builds/log
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
+- apiGroups:
+  - ""
+  - apps.openshift.io
+  resources:
+  - deploymentconfigs
+  - deploymentconfigs/scale
+  verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+- apiGroups:
+  - ""
+  - apps.openshift.io
+  resources:
+  - deploymentconfigrollbacks
+  - deploymentconfigs/instantiate
+  - deploymentconfigs/rollback
+  verbs: [ create ]
+- apiGroups:
+  - ""
+  - apps.openshift.io
+  resources:
+  - deploymentconfigs/log
+  - deploymentconfigs/status
+  verbs: [ get, list, watch ]
+- apiGroups:
+  - ""
+  - image.openshift.io
+  resources:
+  - imagestreams
+  - imagestreamimages
+  - imagestreammappings
+  - imagestreams/secrets
+  - imagestreamtags
+  verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+- apiGroups:
+  - ""
+  - image.openshift.io
+  resources:
+  - imagestreams/status
+  - imagestreamimports
+  verbs: [ get, list, watch ]
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs: [ get, list ]
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  - rolebindings
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - ""
+  - template.openshift.io
+  resources:
+  - processedtemplates
+  - templateconfigs
+  - templateinstances
+  - templates
+  verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+- apiGroups:
+  - authorization.openshift.io
+  resources:
+  - rolebindings
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
 - apiGroups:
   - route.openshift.io
   resources:
+  - routes
   - routes/custom-host
-  verbs: [ get, list, create, update, delete, deletecollection, watch ]
+  verbs: [ get, list, create, update, delete, deletecollection, watch]
 - apiGroups:
   - camel.apache.org
   resources:
@@ -208,6 +307,16 @@ rules:
   resources:
   - grafanadashboards
   verbs: [ get, list, create, update, delete, deletecollection, watch]
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - services
+  verbs: [ get, list, watch]
+- apiGroups:
+  - eventing.knative.dev
+  resources:
+  - channels
+  verbs: [ get, list, watch]
 ---
 
 EOT
