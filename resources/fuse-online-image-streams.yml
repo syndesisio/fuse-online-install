@@ -14,7 +14,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-server:1.3-16
+        name: registry.redhat.io/fuse7/fuse-ignite-server:1.3-21
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -32,7 +32,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-ui:1.3-10
+        name: registry.redhat.io/fuse7/fuse-ignite-ui:1.3-14
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -50,7 +50,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-meta:1.3-16
+        name: registry.redhat.io/fuse7/fuse-ignite-meta:1.3-21
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -100,7 +100,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: registry.redhat.io/fuse7/fuse-ignite-s2i:1.3-16
+        name: registry.redhat.io/fuse7/fuse-ignite-s2i:1.3-21
       importPolicy:
         scheduled: true
       name: "1.6"
@@ -119,7 +119,7 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: registry.redhat.io/fuse7-tech-preview/fuse-postgres-exporter:1.3-4
+          name: registry.redhat.io/fuse7-tech-preview/fuse-postgres-exporter:1.3-6
         importPolicy:
           scheduled: true
         name: "v0.4.7"
