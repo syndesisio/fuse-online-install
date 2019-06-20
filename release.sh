@@ -21,6 +21,9 @@ with options:
 
 --help                       This help message
 --git-push                   Push to git directly
+--move-tag                   Create the moving tag
+--template-only              Create template only, do not do git push
+--dry-run -n                 Dry run
 --verbose                    Verbose log output
 
 Please check also "fuse_online_config.sh" for the configuration values.
@@ -124,9 +127,12 @@ git_push() {
             echo "* Pushing $release_version"
             git push -u $remote $release_version
         fi
-        if [ -n "$moving_tag" ]; then
-            echo "* Pushing symbolic tag $moving_tag"
-            git push -f -u $remote $moving_tag
+
+        if [ $(hasflag --move-tag) ]; then
+            if [ -n "$moving_tag" ]; then
+                echo "* Pushing symbolic tag $moving_tag"
+                git push -f -u $remote $moving_tag
+            fi
         fi
     fi
 }
@@ -260,8 +266,10 @@ release() {
     local moving_tag=$(extract_minor_version $git_fuse_online_install)
     check_error $moving_tag
 
-    echo "=== Moving tag $moving_tag"
-    git tag -f "${moving_tag}"
+    if [ $(hasflag --move-tag) ]; then
+        echo "=== Moving tag $moving_tag"
+        git tag -f "${moving_tag}"
+    fi
 
     # Push release tag only
     git_push "$topdir" "$git_fuse_online_install" "$moving_tag"
