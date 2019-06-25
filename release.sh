@@ -209,6 +209,7 @@ create_resources() {
         -e "s/{{[ ]*Tags.Online.Meta[ ]*}}/$tag_meta/g" \
         -e "s/{{[ ]*Tags.Online.S2I[ ]*}}/$tag_s2i/g" \
         -e "s/{{[ ]*Tags.Online.PostgresExporter[ ]*}}/$tag_postgres_exporter/g" \
+        -e "s/{{[ ]*Tags.Online.Komodo[ ]*}}/$tag_komodo/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
         -e "s/{{[ ]*Docker.Registry.Insecure[ ]*}}/$insecure/g" \

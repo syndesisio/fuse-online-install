@@ -76,6 +76,10 @@ my $EXTRA_IMAGES =
     {
       source => "$config->{registry}/fuse7/fuse-postgres-exporter:$config->{tag_postgres_exporter}",
       target => "postgres_exporter:v0.4.7"
+    },
+    {
+      source => "$config->{registry}/fuse-7-tech-preview/data-virtualization-server:$config->{tag_komodo}",
+      target => "data-virtualization-server:v0.0.5"
     }
   ];
 

@@ -123,3 +123,21 @@ items:
         importPolicy:
           scheduled: true
         name: "v0.4.7"
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: fuse-ignite-komodo
+    annotations:
+      openshift.io/image.insecureRepository: "{{ Docker.Registry.Insecure }}"
+    labels:
+      syndesis.io/app: syndesis
+      syndesis.io/type: infrastructure
+      syndesis.io/component: komodo-server
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: {{ Docker.Registry }}/fuse-7-tech-preview/data-virtualization-server:{{ Tags.Online.Komodo }}
+      importPolicy:
+        scheduled: true
+      name: "{{ Tags.Online }}"
