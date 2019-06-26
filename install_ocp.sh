@@ -184,7 +184,7 @@ rules:
   resources:
   - "*"
   - "*/finalizers"
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - ""
   resources:
@@ -195,7 +195,7 @@ rules:
   - configmaps
   - secrets
   - serviceaccounts
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - ""
   resources:
@@ -268,7 +268,7 @@ rules:
   resources:
   - roles
   - rolebindings
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - ""
   - template.openshift.io
@@ -282,18 +282,18 @@ rules:
   - authorization.openshift.io
   resources:
   - rolebindings
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - route.openshift.io
   resources:
   - routes
   - routes/custom-host
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
 - apiGroups:
   - camel.apache.org
   resources:
   - "*"
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - monitoring.coreos.com
   resources:
@@ -301,22 +301,22 @@ rules:
   - prometheuses
   - servicemonitors
   - prometheusrules
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - integreatly.org
   resources:
   - grafanadashboards
-  verbs: [ get, list, create, update, delete, deletecollection, watch]
+  verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
   - serving.knative.dev
   resources:
   - services
-  verbs: [ get, list, watch]
+  verbs: [ get, list, watch ]
 - apiGroups:
   - eventing.knative.dev
   resources:
   - channels
-  verbs: [ get, list, watch]
+  verbs: [ get, list, watch ]
 ---
 
 EOT
