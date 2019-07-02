@@ -70,11 +70,11 @@ my $EXTRA_IMAGES =
       target =>  "oauth-proxy:v1.1.0"
     },
     {
-      source => "registry.access.redhat.com/openshift3/prometheus:v3.9.25",
+      source => "registry.redhat.io/openshift3/prometheus:v3.9.25",
       target => "prometheus:v2.1.0"
     },
     {
-      source => "$config->{registry}/fuse7/fuse-postgres-exporter:$config->{tag_postgres_exporter}",
+      source => "$config->{registry}/fuse7-tech-preview/fuse-postgres-exporter:$config->{tag_postgres_exporter}",
       target => "postgres_exporter:v0.4.7"
     },
     {
