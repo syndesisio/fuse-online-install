@@ -66,15 +66,15 @@ my $RELEASE_MAP =
 my $EXTRA_IMAGES =
   [
     {
-      source => "registry.access.redhat.com/openshift3/oauth-proxy:v3.10.45",
+      source => "$config->{registry}/openshift4/ose-oauth-proxy:4.1",
       target =>  "oauth-proxy:v1.1.0"
     },
     {
-      source => "registry.access.redhat.com/openshift3/prometheus:v3.9.25",
+      source => "$config->{registry}/openshift3/prometheus:v3.9.25",
       target => "prometheus:v2.1.0"
     },
     {
-      source => "$config->{registry}/fuse7/fuse-postgres-exporter:$config->{tag_postgres_exporter}",
+      source => "$config->{registry}/fuse7-tech-preview/fuse-postgres-exporter:$config->{tag_postgres_exporter}",
       target => "postgres_exporter:v0.4.7"
     },
     {
