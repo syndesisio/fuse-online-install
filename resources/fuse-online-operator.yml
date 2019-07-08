@@ -158,28 +158,11 @@ rules:
   - channels
   verbs: [ get, list, watch ]
 ---
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: syndesis-operator:install
-  labels:
-    app: syndesis
-    syndesis.io/app: syndesis
-    syndesis.io/type: operator
-    syndesis.io/component: syndesis-operator
-subjects:
-- kind: ServiceAccount
-  name: syndesis-operator
-roleRef:
-  kind: Role
-  name: syndesis-operator
-  apiGroup: rbac.authorization.k8s.io
----
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   annotations:
-    openshift.io/image.insecureRepository: "false"
+    openshift.io/image.insecureRepository: "true"
   labels:
     app: syndesis
     syndesis.io/app: syndesis
@@ -192,11 +175,11 @@ spec:
   tags:
   - from:
       kind: DockerImage
-      #name: registry.redhat.io/fuse7/fuse-online-operator:1.2-13
-      name: syndesis/syndesis-operator:latest
+      # Keep tag 'latest' here, its used as an anchor in the release script
+      name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-online-operator:1.4-1
     importPolicy:
       scheduled: true
-    name: "latest"
+    name: "1.7"
 ---
 apiVersion: v1
 kind: DeploymentConfig
@@ -248,6 +231,6 @@ spec:
       - syndesis-operator
       from:
         kind: ImageStreamTag
-        name: fuse-online-operator:latest
+        name: fuse-online-operator:1.7
     type: ImageChange
   - type: ConfigChange
