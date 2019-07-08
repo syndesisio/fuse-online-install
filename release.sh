@@ -20,8 +20,8 @@ Usage: bash release.sh [options]
 with options:
 
 --help                       This help message
---git-push                   Push to git directly
---move-tag                   Create the moving tag
+--git-push                   Push to git directly for tag git_fuse_online_install
+--move-tag                   Create the moving tag based on git_fuse_online_install
 --template-only              Create template only, do not do git push
 --dry-run -n                 Dry run
 --verbose                    Verbose log output
@@ -223,10 +223,11 @@ create_resources() {
         > $topdir/resources/fuse-online-upgrade.yml
 
     echo "==== Extract Template from Operator image"
+    echo $registry/$repository/fuse-online-operator:$tag_operator
     docker run -v $(pwd)/resources:/resources \
                --entrypoint bash \
                $registry/$repository/fuse-online-operator:$tag_operator \
-               -c "cp /conf/syndesis-template.yml /resources/fuse-online-template.yml"
+               -c "cp /conf/syndesis-template.yaml /resources/fuse-online-template.yml"
                
     echo "==== Patch template removing camel-k related resources"
     sed -i.bak '/# START:CAMEL-K/,/# END:CAMEL-K/d' $topdir/resources/fuse-online-template.yml
