@@ -217,6 +217,23 @@ rules:
   - channels
   verbs: [ get, list, watch]
 ---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: syndesis-operator:install
+  labels:
+    app: syndesis
+    syndesis.io/app: syndesis
+    syndesis.io/type: operator
+    syndesis.io/component: syndesis-operator
+subjects:
+- kind: ServiceAccount
+  name: syndesis-operator
+roleRef:
+  kind: Role
+  name: syndesis-operator
+  apiGroup: rbac.authorization.k8s.io
+---
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
@@ -235,7 +252,7 @@ spec:
   - from:
       kind: DockerImage
       # Keep tag 'latest' here, its used as an anchor in the release script
-      name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-online-operator:1.4-1
+      name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-online-operator:1.4-4
     importPolicy:
       scheduled: true
     name: "1.7"
