@@ -219,7 +219,7 @@ tag_upgrade="1.1-18"
 
 # Test & Staging:
 registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
-repository="jboss-fuse-7-tech-preview"
+repository="jboss-fuse7-tech-preview"
 
 # Official:
 # local registry="registry.access.redhat.com"
