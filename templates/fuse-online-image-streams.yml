@@ -119,14 +119,14 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: {{ Docker.Registry }}/fuse-7-tech-preview/fuse-postgres-exporter:{{ Tags.Online.PostgresExporter }}
+          name: {{ Docker.Registry }}/fuse7-tech-preview/fuse-postgres-exporter:{{ Tags.Online.PostgresExporter }}
         importPolicy:
           scheduled: true
         name: "v0.4.7"
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: fuse-ignite-komodo
+    name: fuse-komodo-server
     annotations:
       openshift.io/image.insecureRepository: "{{ Docker.Registry.Insecure }}"
     labels:
@@ -137,7 +137,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/fuse-7-tech-preview/data-virtualization-server:{{ Tags.Online.Komodo }}
+        name: {{ Docker.Registry }}/fuse7-tech-preview/data-virtualization-server:{{ Tags.Online.Komodo }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Online }}"

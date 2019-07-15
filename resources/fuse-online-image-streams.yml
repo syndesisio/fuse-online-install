@@ -119,14 +119,14 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse-7-tech-preview/fuse-postgres-exporter:1.4-1
+          name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/fuse-postgres-exporter:1.4-1
         importPolicy:
           scheduled: true
         name: "v0.4.7"
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: fuse-ignite-komodo
+    name: fuse-komodo-server
     annotations:
       openshift.io/image.insecureRepository: "true"
     labels:
@@ -137,7 +137,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse-7-tech-preview/data-virtualization-server:1.4-1
+        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/data-virtualization-server:1.4-1
       importPolicy:
         scheduled: true
       name: "1.7"
