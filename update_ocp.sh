@@ -5,7 +5,7 @@
 
 # ================
 # Target version to update to
-TAG=1.7.8
+TAG=1.7.9
 # ================
 
 # Minimal version for OC
