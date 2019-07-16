@@ -2855,8 +2855,6 @@ objects:
         persistentVolumeClaim:
           claimName: syndesis-upgrade
       restartPolicy: Never
-kind: List
-items:
 - apiVersion: v1
   kind: ImageStream
   metadata:
