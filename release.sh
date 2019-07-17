@@ -212,6 +212,7 @@ create_resources() {
         -e "s/{{[ ]*Tags.Online.Komodo[ ]*}}/$tag_komodo/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
+	-e "s/{{[ ]*Docker.Image.Repository.TechPreview[ ]*}}/$repository_tech_preview/g" \
         -e "s/{{[ ]*Docker.Registry.Insecure[ ]*}}/$insecure/g" \
         $topdir/templates/fuse-online-image-streams.yml \
         > $topdir/resources/fuse-online-image-streams.yml
@@ -238,6 +239,7 @@ create_resources() {
       > $topdir/resources/fuse-online-template-oh.yml
     sed -e '1,2d' $topdir/resources/fuse-online-image-streams.yml \
       >> $topdir/resources/fuse-online-template-oh.yml
+    sed -i -e "s/value: 'fuse-ignite'/value: ''/g" $topdir/resources/fuse-online-template-oh.yml
 }
 
 release() {

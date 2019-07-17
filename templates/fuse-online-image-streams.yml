@@ -119,7 +119,7 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: {{ Docker.Registry }}/fuse7-tech-preview/fuse-postgres-exporter:{{ Tags.Online.PostgresExporter }}
+          name: {{ Docker.Registry }}/{{ Docker.Image.Repository.TechPreview }}/fuse-postgres-exporter:{{ Tags.Online.PostgresExporter }}
         importPolicy:
           scheduled: true
         name: "v0.4.7"
@@ -137,7 +137,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/fuse7-tech-preview/data-virtualization-server:{{ Tags.Online.Komodo }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository.TechPreview }}/data-virtualization-server:{{ Tags.Online.Komodo }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Online }}"

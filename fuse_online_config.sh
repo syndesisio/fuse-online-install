@@ -21,6 +21,7 @@ tag_komodo="1.4-4"
 
 # Docker repository for productised images
 repository="fuse7"
+repository_tech_preview="fuse7-tech-preview"
 
 # Test:
 registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
