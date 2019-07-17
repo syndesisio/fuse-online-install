@@ -5,7 +5,7 @@ items:
   metadata:
     name: fuse-ignite-server
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -14,17 +14,17 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-server:1.4-2
+        name: quay.io/rh_integration/fuse-ignite-server:1.4-2
       importPolicy:
         scheduled: true
-        insecure: true
+        insecure: false
       name: "1.7"
 - apiVersion: v1
   kind: ImageStream
   metadata:
     name: fuse-ignite-ui
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -33,17 +33,17 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-ui:1.4-1
+        name: quay.io/rh_integration/fuse-ignite-ui:1.4-1
       importPolicy:
         scheduled: true
-        insecure: true
+        insecure: false
       name: "1.7"
 - apiVersion: v1
   kind: ImageStream
   metadata:
     name: fuse-ignite-meta
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -52,10 +52,10 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-meta:1.4-1
+        name: quay.io/rh_integration/fuse-ignite-meta:1.4-1
       importPolicy:
         scheduled: true
-        insecure: true
+        insecure: false
       name: "1.7"
 - apiVersion: v1
   kind: ImageStream
@@ -72,7 +72,7 @@ items:
         name: registry.redhat.io/openshift4/ose-oauth-proxy:4.1
       importPolicy:
         scheduled: true
-        insecure: true
+        insecure: false
       name: "v1.1.0"
 - apiVersion: v1
   kind: ImageStream
@@ -89,14 +89,14 @@ items:
         name: registry.access.redhat.com/openshift3/prometheus:v3.9.25
       importPolicy:
         scheduled: true
-        insecure: true
+        insecure: false
       name: "v2.1.0"
 - apiVersion: v1
   kind: ImageStream
   metadata:
     name: fuse-ignite-s2i
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -105,17 +105,17 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7/fuse-ignite-s2i:1.4-1
+        name: quay.io/rh_integration/fuse-ignite-s2i:1.4-1
       importPolicy:
         scheduled: true
-        insecure: true
+        insecure: false
       name: "1.7"
 - apiVersion: image.openshift.io/v1
   kind: ImageStream
   metadata:
     name: postgres_exporter
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       app: syndesis
       syndesis.io/app: syndesis
@@ -125,17 +125,17 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/fuse-postgres-exporter:1.4-1
+          name: quay.io/fuse7-tech-preview/fuse-postgres-exporter:1.4-1
         importPolicy:
           scheduled: true
-          insecure: true
+          insecure: false
         name: "v0.4.7"
 - apiVersion: v1
   kind: ImageStream
   metadata:
     name: fuse-komodo-server
     annotations:
-      openshift.io/image.insecureRepository: "true"
+      openshift.io/image.insecureRepository: "false"
     labels:
       syndesis.io/app: syndesis
       syndesis.io/type: infrastructure
@@ -144,8 +144,8 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/data-virtualization-server:1.4-4
+        name: quay.io/fuse7-tech-preview/data-virtualization-server:1.4-4
       importPolicy:
         scheduled: true
-        insecure: true
+        insecure: false
       name: "1.7"
