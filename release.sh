@@ -224,14 +224,23 @@ create_resources() {
 
     echo "==== Extract Template from Operator image"
     echo $registry/$repository/fuse-online-operator:$tag_operator
-    docker run -v $(pwd)/resources:/resources \
-               --entrypoint bash \
-               $registry/$repository/fuse-online-operator:$tag_operator \
-               -c "cp /conf/syndesis-template.yaml /resources/fuse-online-template.yml"
-               
+#    docker run -v $(pwd)/resources:/resources \
+#               --entrypoint bash \
+#               $registry/$repository/fuse-online-operator:$tag_operator \
+#               -c "cp /conf/syndesis-template.yaml /resources/fuse-online-template.yml"
+    dockerid=$(docker run --entrypoint bash -d $registry/$repository/fuse-online-operator:$tag_operator -c "sleep 10")
+    docker cp ${dockerid}:/conf/syndesis-template.yaml $topdir/resources/fuse-online-template.yml
+    docker kill $dockerid
+
     echo "==== Patch template removing camel-k related resources"
     sed -i.bak '/# START:CAMEL-K/,/# END:CAMEL-K/d' $topdir/resources/fuse-online-template.yml
     rm -f $topdir/resources/fuse-online-template.yml.bak               
+
+    echo "==== Create full template for operatorhub integration"
+    cat $topdir/resources/fuse-online-template.yml \
+      > $topdir/resources/fuse-online-template-oh.yml
+    sed -e '1,2d' $topdir/resources/fuse-online-image-streams.yml \
+      >> $topdir/resources/fuse-online-template-oh.yml
 }
 
 release() {
