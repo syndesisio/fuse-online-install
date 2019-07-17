@@ -20,11 +20,16 @@ tag_java_base_image="1.4-6"
 tag_komodo="1.4-4"
 
 # Docker repository for productised images
-repository="fuse7"
+#repository="fuse7"
 
 # Test:
-registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+registry="quay.io"
+repository="rh_integration"
 maven_repository="https://origin-repository.jboss.org/nexus/content/groups/ea@id=redhat.ea"
+
+# Test:
+#registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+#maven_repository="https://origin-repository.jboss.org/nexus/content/groups/ea@id=redhat.ea"
 
 # Official:
 #registry="registry.redhat.io"
