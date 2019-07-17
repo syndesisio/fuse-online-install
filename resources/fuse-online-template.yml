@@ -2980,7 +2980,7 @@ objects:
     tags:
       - from:
           kind: DockerImage
-          name: quay.io/fuse7-tech-preview/fuse-postgres-exporter:1.4-1
+          name: quay.io/rh_integration/fuse-postgres-exporter:1.4-1
         importPolicy:
           scheduled: true
           insecure: false
@@ -2999,7 +2999,7 @@ objects:
     tags:
     - from:
         kind: DockerImage
-        name: quay.io/fuse7-tech-preview/data-virtualization-server:1.4-4
+        name: quay.io/rh_integration/data-virtualization-server:1.4-4
       importPolicy:
         scheduled: true
         insecure: false
