@@ -212,6 +212,7 @@ create_resources() {
         -e "s/{{[ ]*Tags.Online.Komodo[ ]*}}/$tag_komodo/g" \
         -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
         -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
+	-e "s/{{[ ]*Docker.Image.Repository.TechPreview[ ]*}}/$repository_tech_preview/g" \
         -e "s/{{[ ]*Docker.Registry.Insecure[ ]*}}/$insecure/g" \
         $topdir/templates/fuse-online-image-streams.yml \
         > $topdir/resources/fuse-online-image-streams.yml
@@ -228,10 +229,17 @@ create_resources() {
                --entrypoint bash \
                $registry/$repository/fuse-online-operator:$tag_operator \
                -c "cp /conf/syndesis-template.yaml /resources/fuse-online-template.yml"
-               
+
     echo "==== Patch template removing camel-k related resources"
     sed -i.bak '/# START:CAMEL-K/,/# END:CAMEL-K/d' $topdir/resources/fuse-online-template.yml
     rm -f $topdir/resources/fuse-online-template.yml.bak               
+
+    echo "==== Create full template for operatorhub integration"
+    cat $topdir/resources/fuse-online-template.yml \
+      > $topdir/resources/fuse-online-template-oh.yml
+    sed -e '1,2d' $topdir/resources/fuse-online-image-streams.yml \
+      >> $topdir/resources/fuse-online-template-oh.yml
+    sed -i -e "s/value: 'fuse-ignite'/value: ''/g" $topdir/resources/fuse-online-template-oh.yml
 }
 
 release() {
