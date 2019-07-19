@@ -692,7 +692,7 @@ deploy_camel_k_operator() {
     return
   fi
 
-  $kamel install --skip-cluster-setup --repository $MAVEN_REPOSITORY --base-image $REGISTRY/$REPOSITORY/fuse-java-openshift:$JAVA_BASE_IMAGE_TAG --context jvm $extra_opts
+  $kamel install --skip-cluster-setup --maven-repository $MAVEN_REPOSITORY --base-image $REGISTRY/$REPOSITORY/fuse-java-openshift:$JAVA_BASE_IMAGE_TAG --context jvm $extra_opts
 
   if [ -z "$version" ]; then
     # Patching Camel K image
