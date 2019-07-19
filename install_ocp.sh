@@ -670,7 +670,7 @@ get_route() {
 # Getting options from config file
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo MAVEN_REPOSITORY=$maven_repository)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo CAMEL_K_TAG=$tag_camel_k)
-eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REPOSITORY=$repository)
+eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REPOSITORY=$repository_tech_preview)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REGISTRY=$registry)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo JAVA_BASE_IMAGE_TAG=$tag_java_base_image)
 
