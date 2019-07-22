@@ -66,11 +66,11 @@ my $RELEASE_MAP =
 my $EXTRA_IMAGES =
   [
     {
-      source => "$config->{registry}/openshift4/ose-oauth-proxy:4.1",
+      source => "registry.redhat.io/openshift4/ose-oauth-proxy:4.1",
       target =>  "oauth-proxy:v1.1.0"
     },
     {
-      source => "$config->{registry}/openshift3/prometheus:v3.9.25",
+      source => "registry.redhat.io/openshift3/prometheus:v3.9.25",
       target => "prometheus:v2.1.0"
     },
     {
