@@ -198,6 +198,11 @@ rules:
   - serviceaccounts
   verbs: [ get, list, create, update, delete, deletecollection, watch ]
 - apiGroups:
+  - extensions
+  resources:
+  - deployments/rollback
+  verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+- apiGroups:
   - ""
   resources:
   - pods/log
