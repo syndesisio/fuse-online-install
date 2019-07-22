@@ -140,4 +140,4 @@ items:
         name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/data-virtualization-server:1.4-7
       importPolicy:
         scheduled: true
-      name: "latest"
+      name: "1.7"
