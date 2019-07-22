@@ -1,5 +1,5 @@
 # Tag for release. Update this before running release.sh
-git_fuse_online_install="1.7.16"
+git_fuse_online_install="1.7.17"
 
 # Image Streams to be updated
 imagestreams="server ui meta s2i postgres_exporter komodo"
