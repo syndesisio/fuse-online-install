@@ -51,6 +51,7 @@ with options:
                               (version is optional)
    --camel-k-options "opts"   Options used when installing the camel-k operator.
                               Use quotes and start with a space before appending the options.
+   --datavirt                 Install Data Virtualizations.
    --help                     This help message
 -v --verbose                  Verbose logging
 
@@ -575,6 +576,17 @@ EOT
         extra=$(cat <<EOT
 
   imageStreamNamespace: "$image_stream_namespace"
+EOT
+)
+        syndesis="${syndesis}${extra}"
+    fi
+
+    local datavirt=$(hasflag --datavirt)
+    if [ -n "${datavirt}" ]; then
+        extra=$(cat <<EOT
+
+  addons:
+    komodo:
 EOT
 )
         syndesis="${syndesis}${extra}"
