@@ -137,7 +137,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: {{ Docker.Registry }}/{{ Docker.Image.Repository.TechPreview }}/data-virtualization-server:{{ Tags.Online.Komodo }}
+        name: {{ Docker.Registry }}/{{ Docker.Image.Repository.TechPreview }}/data-virtualization-server-rhel7:{{ Tags.Online.Komodo }}
       importPolicy:
         scheduled: true
       name: "{{ Tags.Online }}"
