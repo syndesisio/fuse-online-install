@@ -140,4 +140,4 @@ items:
         name: {{ Docker.Registry }}/{{ Docker.Image.Repository.TechPreview }}/data-virtualization-server-rhel7:{{ Tags.Online.Komodo }}
       importPolicy:
         scheduled: true
-      name: "{{ Tags.Online }}"
+      name: "latest"
