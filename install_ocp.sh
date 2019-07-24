@@ -7,7 +7,7 @@
 
 # ================
 # Tag updated by release script
-TAG=1.7.19
+TAG=1.7.20
 # ================
 
 # Minimal version for OC
