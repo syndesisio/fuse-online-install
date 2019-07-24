@@ -79,7 +79,7 @@ my $EXTRA_IMAGES =
     },
     {
       source => "$config->{registry}/fuse7-tech-preview/data-virtualization-server-rhel7:$config->{tag_komodo}",
-      target => "data-virtualization-server-rhel7:v0.0.5"
+      target => "fuse-komodo-server:latest"
     }
   ];
 
