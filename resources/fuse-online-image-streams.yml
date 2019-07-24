@@ -137,7 +137,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/data-virtualization-server-rhel7:1.4-7
+        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/data-virtualization-server-rhel7:1.4-11
       importPolicy:
         scheduled: true
       name: "1.7"
