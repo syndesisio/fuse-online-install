@@ -14,7 +14,7 @@ tag_upgrade="1.4-5"
 tag_operator="1.4-8"
 tag_postgres_exporter="1.4-3"
 
-tag_camel_k="1.4-8"
+tag_camel_k="1.4-13"
 tag_java_base_image="1.4-6"
 
 tag_komodo="1.4-11"
