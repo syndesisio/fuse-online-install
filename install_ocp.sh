@@ -821,7 +821,7 @@ get_product_camel_k_bin() {
   fi
 
   set +e
-  docker run -v $tmp_dir/:/client \
+  docker run -v $tmp_dir/:/client:z \
                  --entrypoint bash \
                  $REGISTRY/$REPOSITORY/fuse-camel-k:$CAMEL_K_TAG\
                  -c "tar xf /opt/clients/camel-k-client-$os.tar.gz; cp kamel /client/" >$ERROR_FILE 2>&1
