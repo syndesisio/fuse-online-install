@@ -426,7 +426,7 @@ if [ $(hasflag --version) ]; then
     echo "Update to Fuse Online $TAG"
     echo
     echo "${IMAGE_NAME_PREFIX_NEW}-operator: $tag_operator"
-    echo "${IMAGE_NAME_PREFIX NEW}-komodo:   $tag_komodo"
+    echo "${IMAGE_NAME_PREFIX_NEW}-komodo:   $tag_komodo"
     echo "${IMAGE_NAME_PREFIX}-server:   $tag_server"
     echo "${IMAGE_NAME_PREFIX}-ui:       $tag_ui"
     echo "${IMAGE_NAME_PREFIX}-meta:     $tag_meta"
