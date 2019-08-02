@@ -330,6 +330,13 @@ update_imagestreams() {
   for image in $images; do
       local is=${IMAGE_NAME_PREFIX}-$image
       eval tag_image=\$tag_${image}
+      if [ "$image" == "postgres_exporter" ]; then
+	is="fuse-postgres-exporter"
+      fi
+
+      if [ "$image" == "komodo" ]; then
+	is="data-virtualization-server-rhel7"
+      fi
 
       import_image "$is:$tag_image" "$is:${minor_version}"
       import_image "$is:$tag_image" "$is:${tag}"
@@ -340,12 +347,17 @@ import_image() {
     local source=${1}
     local target=${2}
 
-    echo "Importing ${registry}/${repository}/$source to $target"
+    local uri="${registry}/${repository}/$source"
+    if [[ "$source" =~ "fuse-postgres-exporter" ]] || [[ "$source" =~ "data-virtualization-server-rhel7" ]]; then
+      uri="${registry}/${repository_tech_preview}/$source"
+    fi
+
+    echo "Importing $uri to $target"
     local import_out="$(mktemp /tmp/oc-import-output-XXXXX)"
     trap "rm $import_out" EXIT
-    oc tag --source docker "${registry}/${repository}/${source}" "${target}" >$import_out 2>&1
+    oc tag --source docker "${uri}" "${target}" >$import_out 2>&1
     sleep 5
-    oc import-image "$target" --confirm="true" --from "${registry}/${repository}/${source}" >>$import_out 2>&1
+    oc import-image "$target" --confirm="true" --from "${uri}" >>$import_out 2>&1
     set +e
     if grep -q Error $import_out; then
         echo "Can't import"
