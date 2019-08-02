@@ -670,7 +670,8 @@ get_route() {
 # Getting options from config file
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo MAVEN_REPOSITORY=$maven_repository)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo CAMEL_K_TAG=$tag_camel_k)
-eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REPOSITORY=$repository)
+eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REPOSITORY=$repository_tech_preview)
+eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo FUSE_JAVA_REPOSITORY=$repository)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo REGISTRY=$registry)
 eval $(source $(dirname ARGS[0])/fuse_online_config.sh; echo JAVA_BASE_IMAGE_TAG=$tag_java_base_image)
 
@@ -692,7 +693,7 @@ deploy_camel_k_operator() {
     return
   fi
 
-  $kamel install --skip-cluster-setup --maven-repository $MAVEN_REPOSITORY --base-image $REGISTRY/$REPOSITORY/fuse-java-openshift:$JAVA_BASE_IMAGE_TAG --context jvm $extra_opts
+  $kamel install --skip-cluster-setup --maven-repository $MAVEN_REPOSITORY --base-image $REGISTRY/$FUSE_JAVA_REPOSITORY/fuse-java-openshift:$JAVA_BASE_IMAGE_TAG --context jvm $extra_opts
 
   if [ -z "$version" ]; then
     # Patching Camel K image
