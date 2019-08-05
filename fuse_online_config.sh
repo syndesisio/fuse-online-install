@@ -2,7 +2,7 @@
 git_fuse_online_install="1.7.20"
 
 # Image Streams to be updated
-imagestreams="server ui meta s2i postgres_exporter komodo"
+imagestreams="server ui meta s2i"
 
 # Tags used for the productised images
 tag_server="1.4-11"
