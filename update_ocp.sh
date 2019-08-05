@@ -330,27 +330,29 @@ update_imagestreams() {
   for image in $images; do
       local is=${IMAGE_NAME_PREFIX}-$image
       eval tag_image=\$tag_${image}
+      local uri="${registry}/${repository}/${is}:${tag_image}"
+
       if [ "$image" == "postgres_exporter" ]; then
-	is="fuse-postgres-exporter"
+	is="postgres_exporter"
+	uri="${registry}/${repository_tech_preview}/fuse-postgres-exporter:${tag_image}"
       fi
 
       if [ "$image" == "komodo" ]; then
-	is="data-virtualization-server-rhel7"
+	is="fuse-komodo-server"
+	uri="${registry}/${repository_tech_preview}/data-virtualization-server-rhel7:${tag_image}"
       fi
 
-      import_image "$is:$tag_image" "$is:${minor_version}"
-      import_image "$is:$tag_image" "$is:${tag}"
+
+      import_image "$is:$tag_image" "$is:${minor_version}" $uri
+      import_image "$is:$tag_image" "$is:${tag}" $uri
   done
+  exit 0
 }
 
 import_image() {
     local source=${1}
     local target=${2}
-
-    local uri="${registry}/${repository}/$source"
-    if [[ "$source" =~ "fuse-postgres-exporter" ]] || [[ "$source" =~ "data-virtualization-server-rhel7" ]]; then
-      uri="${registry}/${repository_tech_preview}/$source"
-    fi
+    local uri=${3}
 
     echo "Importing $uri to $target"
     local import_out="$(mktemp /tmp/oc-import-output-XXXXX)"
