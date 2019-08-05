@@ -119,7 +119,7 @@ items:
     tags:
       - from:
           kind: DockerImage
-          name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/fuse-postgres-exporter:1.4-3
+          name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/fuse-postgres-exporter:1.4-4
         importPolicy:
           scheduled: true
         name: "v0.4.7"
@@ -137,7 +137,7 @@ items:
     tags:
     - from:
         kind: DockerImage
-        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/data-virtualization-server-rhel7:1.4-14
+        name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/data-virtualization-server-rhel7:1.4-15
       importPolicy:
         scheduled: true
       name: "latest"
