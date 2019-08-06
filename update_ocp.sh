@@ -385,23 +385,6 @@ check_resource() {
   fi
 }
 
-# Check whether syndesis-pull-secret secret is present and create
-# it otherwise
-#
-create_secret_if_not_present() {
-  if $(check_resource secret syndesis-pull-secret) ; then
-    echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
-  else
-    echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
-    echo "enter username for registry.redhat.io and press [ENTER]: "
-    read username
-    echo "enter password for registry.redhat.io and press [ENTER]: "
-    read -s password
-    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password)
-    check_error $result
-  fi
-}
-
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -426,7 +409,6 @@ if [ $(hasflag --version) ]; then
     echo "Update to Fuse Online $TAG"
     echo
     echo "${IMAGE_NAME_PREFIX_NEW}-operator: $tag_operator"
-    echo "${IMAGE_NAME_PREFIX_NEW}-komodo:   $tag_komodo"
     echo "${IMAGE_NAME_PREFIX}-server:   $tag_server"
     echo "${IMAGE_NAME_PREFIX}-ui:       $tag_ui"
     echo "${IMAGE_NAME_PREFIX}-meta:     $tag_meta"
@@ -448,26 +430,7 @@ check_error "$(check_syndesis)"
 
 minor_tag=$(extract_minor_tag $TAG)
 
-imagestreams=${imagestreams:-server ui meta s2i komodo}
-
-# make sure pull secret is present, only required from
-# 7.2 to 7.3. Link operator SAs to the secret.
-if [[ $git_fuse_online_install =~ ^1\.6\.[0-9]+$ ]]; then
-  # replace operator resources to include missing envs and roles
-  delete_openshift_resource "resources/fuse-online-operator.yml"
-  create_openshift_resource "resources/fuse-online-operator.yml"
-
-  recreate_openshift_resource "resources/fuse-online-image-streams.yml"
-
-  create_secret_if_not_present
-  for sa in syndesis-operator camel-k-operator
-  do
-    if $(check_resource sa $sa) ; then
-      result=$(oc secrets link $sa syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
-      check_error $result
-    fi
-  done
-fi
+imagestreams=${imagestreams:-server ui meta s2i}
 
 # Add new ImageStream tags from the version in fuse_online_config.sh
 echo "Update imagestreams in $project"
