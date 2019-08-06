@@ -429,6 +429,7 @@ setup_oc
 check_error "$(check_syndesis)"
 
 minor_tag=$(extract_minor_tag $TAG)
+recreate_openshift_resource "resources/fuse-online-image-streams.yml"
 
 imagestreams=${imagestreams:-server ui meta s2i}
 
