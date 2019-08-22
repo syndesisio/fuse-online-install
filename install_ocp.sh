@@ -157,18 +157,15 @@ add_user_permissions_for_operator() {
         echo "ERROR: No user provided to fix permissions for"
         return
     fi
-    local extra_role_installed="$(oc get role -o name | grep syndesis-extra-permissions | wc -l | xargs)"
     local kind="Role"
     local oc_command="policy add-role-to-user --role-namespace=$(oc project -q)"
     if $cluster_wide; then
-        extra_role_installed="$(oc get clusterrole -o name | grep syndesis-extra-permissions | wc -l | xargs)"
         kind="ClusterRole"
         oc_command="adm policy add-cluster-role-to-user"
     fi
 
     set +e
-    if [ $extra_role_installed -eq 0 ]; then
-        oc create -f - >/dev/null 2>&1 <<EOT
+    oc replace --force -f - >/dev/null 2>&1 <<EOT
 ---
 kind: $kind
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -326,16 +323,15 @@ rules:
 ---
 
 EOT
-        if [ $? -ne 0 ]; then
-            echo "ERROR: Can not install role 'syndesis-extra-permissions'. Are you running as cluster-admin ?"
-            exit 1
-        fi
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Can not install role 'syndesis-extra-permissions'. Are you running as cluster-admin ?"
+        return
     fi
 
     oc $oc_command syndesis-extra-permissions $user
     if [ $? -ne 0 ]; then
-        echo "ERROR: Can not add role 'syndesis-extra-permssionns' to user $user. Does the user exist ?"
-        exit 1
+        echo "ERROR: Can not add role 'syndesis-extra-permssions' to user $user. Does the user exist ?"
+        return
     fi
     set -e
 }
