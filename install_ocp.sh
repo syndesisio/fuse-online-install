@@ -195,7 +195,7 @@ EOT
         fi
     fi
 
-    oc $oc_command syndesis-extra-permissions $user
+    oc $oc_command syndesis-extra-permissions "$user"
     if [ $? -ne 0 ]; then
         echo "ERROR: Can not add role 'syndesis-extra-permssionns' to user $user. Does the user exist ?"
         exit 1
