@@ -10,25 +10,7 @@ set -o pipefail
 # Fail on error and undefined vars (please don't use global vars, but evaluation of functions for return values)
 set -eu
 
-
-display_usage() {
-  cat <<EOT
-Release tool for fuse-online templats
-
-Usage: bash release.sh [options]
-
-with options:
-
---help                       This help message
---git-push                   Push to git directly
---move-tag                   Create the moving tag
---template-only              Create template only, do not do git push
---dry-run -n                 Dry run
---verbose                    Verbose log output
-
-Please check also "fuse_online_config.sh" for the configuration values.
-EOT
-}
+# Helper functions
 
 # Dir where this script is located
 basedir() {
@@ -89,6 +71,39 @@ readopt() {
     done
 }
 
+# Getting base dir
+BASEDIR=$(basedir)
+
+# Get configuration and other scripts
+pushd . && cd $BASEDIR
+source common_functions.sh
+source common_config.sh
+source common_download_functions.sh
+source common_openshift_functions.sh
+popd
+
+
+display_usage() {
+  cat <<EOT
+Release tool for fuse-online
+
+Usage: bash release.sh [options]
+
+with options:
+
+--help                       This help message
+--git-push                   Push to git directly
+--move-tag                   Create the moving tag
+--dry-run -n                 Dry run
+--git-remote                 Push to a different git remote
+--verbose                    Verbose log output
+
+Please check also "common_config.sh" for the configuration values.
+EOT
+}
+
+
+
 git_commit() {
     local pattern="$1"
     local message="$2"
@@ -145,135 +160,30 @@ check_error() {
     fi
 }
 
-extract_minor_version() {
-    local version=$1
-    local minor_version=$(echo $version | sed -E -n 's/([0-9]+\.[0-9]+).*/\1/p')
-    if [ "$minor_version" = "$version" ]; then
-        echo "ERROR: Cannot extract minor version from $version"
-        return
-    fi
-    echo $minor_version
-}
-
-read_image_version() {
-    local image=$1
-    local brew_tag=$2
-    local result=$(readopt --version-$1)
-    if [ -z "$result" ]; then
-        result=$brew_tag
-    fi
-    if [ -n "$result" ]; then
-        echo $result
-    else
-        echo "ERROR: No version given for $image and no --version-brew specified"
-    fi
-}
-
-create_resources() {
-    local topdir=$1
-    local fuse_online_tag=$2
-
-    # Read in config variables
-    source $topdir/fuse_online_config.sh
-
-    local is_tag
-    if [ "$fuse_online_tag" = "master" ]; then
-        is_tag="latest"
-    else
-        is_tag=$(extract_minor_version $fuse_online_tag)
-    fi
-
-    local insecure="false"
-    if [ "${registry//brew/}" != "${registry}" ]; then
-        insecure="true"
-    fi
-
-    echo "==== Patch install script with tag"
-    for file in install_ocp.sh update_ocp.sh; do
-        sed -e "s/^TAG=.*\$/TAG=$fuse_online_tag/" -i.bak  $topdir/$file
-        rm $topdir/${file}.bak
-    done
-
-    echo "==== Patch imagestream script with current versions"
-    sed -e "s/{{[ ]*Tags.Online[ ]*}}/$is_tag/g" \
-        -e "s/{{[ ]*Tags.Online.Operator[ ]*}}/$tag_operator/g" \
-        -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
-        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
-        -e "s/{{[ ]*Docker.Registry.Insecure[ ]*}}/$insecure/g" \
-        $topdir/templates/fuse-online-operator.yml \
-        > $topdir/resources/fuse-online-operator.yml
-
-    sed -e "s/{{[ ]*Tags.Online[ ]*}}/$is_tag/g" \
-        -e "s/{{[ ]*Tags.Online.Server[ ]*}}/$tag_server/g" \
-        -e "s/{{[ ]*Tags.Online.Ui[ ]*}}/$tag_ui/g" \
-        -e "s/{{[ ]*Tags.Online.Meta[ ]*}}/$tag_meta/g" \
-        -e "s/{{[ ]*Tags.Online.S2I[ ]*}}/$tag_s2i/g" \
-        -e "s/{{[ ]*Tags.Online.PostgresExporter[ ]*}}/$tag_postgres_exporter/g" \
-        -e "s/{{[ ]*Tags.Online.Komodo[ ]*}}/$tag_komodo/g" \
-        -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
-        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
-        -e "s/{{[ ]*Docker.Registry.Insecure[ ]*}}/$insecure/g" \
-        $topdir/templates/fuse-online-image-streams.yml \
-        > $topdir/resources/fuse-online-image-streams.yml
-
-    sed -e "s/{{[ ]*Tags.Online.Upgrade[ ]*}}/$tag_upgrade/g" \
-        -e "s/{{[ ]*Docker.Registry[ ]*}}/$registry/g" \
-        -e "s/{{[ ]*Docker.Image.Repository[ ]*}}/$repository/g" \
-        $topdir/templates/fuse-online-upgrade.yml \
-        > $topdir/resources/fuse-online-upgrade.yml
-
-    echo "==== Extract Template from Operator image"
-    docker run -v $(pwd)/resources:/resources \
-               --entrypoint bash \
-               $registry/$repository/fuse-online-operator:$tag_operator \
-               -c "cp /conf/syndesis-template.yml /resources/fuse-online-template.yml"
-               
-    echo "==== Patch template removing camel-k related resources"
-    sed -i.bak '/# START:CAMEL-K/,/# END:CAMEL-K/d' $topdir/resources/fuse-online-template.yml
-    rm -f $topdir/resources/fuse-online-template.yml.bak               
-}
-
 release() {
     local topdir=$1
 
-    source $topdir/fuse_online_config.sh
-
-    if [ -z "$git_fuse_online_install" ]; then
-        echo "ERROR: No config property git_fuse_online_install configured in 'fuse_online_config.sh'"
-        exit 1
-    fi
-
-    create_resources $topdir $git_fuse_online_install
-
-    if [ $(hasflag --template-only) ]; then
-        return
-    fi
-
     echo "==== Committing"
     cd $topdir
-    git_commit "resources/" "Update Operator resources" "$git_fuse_online_install"
-    git_commit "fuse_online_config.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
-    # Matches install_ocp.sh and update_ocp.sh
-    git_commit "_ocp.sh" "Update release config for $git_fuse_online_install" "$git_fuse_online_install"
+    git_commit "common_config.sh" "Update release config for $TAG_FUSE_ONLINE_INSTALL" "$TAG_FUSE_ONLINE_INSTALL"
 
     # No tagging when just running on master
-    if [ $git_fuse_online_install = "master" ]; then
+    if [ $TAG_FUSE_ONLINE_INSTALL = "master" ]; then
         return
     fi
 
-    echo "=== Tagging $git_fuse_online_install"
-    git tag -f "${git_fuse_online_install}"
+    echo "=== Tagging $TAG_FUSE_ONLINE_INSTALL"
+    git tag -f "$TAG_FUSE_ONLINE_INSTALL"
 
-    local moving_tag=$(extract_minor_version $git_fuse_online_install)
-    check_error $moving_tag
+    local moving_tag=$TAG
 
     if [ $(hasflag --move-tag) ]; then
-        echo "=== Moving tag $moving_tag"
-        git tag -f "${moving_tag}"
+        echo "=== Moving tag $TAG"
+        git tag -f "$TAG"
     fi
 
     # Push release tag only
-    git_push "$topdir" "$git_fuse_online_install" "$moving_tag"
+    git_push "$topdir" "$TAG_FUSE_ONLINE_INSTALL" "$TAG"
 }
 
 
