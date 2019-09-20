@@ -84,10 +84,10 @@ BASEDIR=$(basedir)
 
 # Get configuration and other scripts
 pushd . && cd $BASEDIR
-source common_functions.sh
-source common_config.sh
-source common_download_functions.sh
-source common_openshift_functions.sh
+source $BASEDIR/base_functions.sh
+source $BASEDIR/common_config.sh
+source $BASEDIR/libs/download_functions.sh
+source $BASEDIR/libs/openshift_functions.sh
 popd
 
 SYNDESIS_CLI=$(get_syndesis_bin)

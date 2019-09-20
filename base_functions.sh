@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Common functions for install scripts
+# Base functions for install scripts
 
 check_error() {
     local msg="$*"

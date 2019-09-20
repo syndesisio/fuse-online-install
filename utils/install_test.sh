@@ -5,6 +5,30 @@
 
 PROJECT=${1:-syndesis}
 
+# Dir where this script is located
+basedir() {
+    # Default is current directory
+    local script=${BASH_SOURCE[0]}
+
+    # Resolve symbolic links
+    if [ -L $script ]; then
+        if readlink -f $script >/dev/null 2>&1; then
+            script=$(readlink -f $script)
+        elif readlink $script >/dev/null 2>&1; then
+            script=$(readlink $script)
+        elif realpath $script >/dev/null 2>&1; then
+            script=$(realpath $script)
+        else
+            echo "ERROR: Cannot resolve symbolic link $script"
+            exit 1
+        fi
+    fi
+
+    local dir=$(dirname "$script")
+    local full_dir=$(cd "${dir}" && pwd)
+    echo ${full_dir}
+}
+
 function wait_for() {
 	local cmd=$1
 	local progress=''
@@ -76,6 +100,7 @@ oc create secret docker-registry syndesis-pull-secret \
 	--docker-username=$DEVELOPERS_REDHAT_COM_USER \
 	--docker-password=$DEVELOPERS_REDHAT_COM_PASS >/dev/null 2>&1
 
-./install_ocp.sh
 
- exit 0
+$(basedir)/../install_ocp.sh
+
+exit 0

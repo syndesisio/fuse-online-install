@@ -2,7 +2,7 @@
 #
 # Functions related to downloading CLI artifacts
 
-source common_config.sh
+source $BASEDIR/common_config.sh
 
 get_syndesis_bin() {
   get_cli_bin $SYNDESIS_DOWNLOAD_URL $SYNDESIS_BINARY $SYNDESIS_VERSION
