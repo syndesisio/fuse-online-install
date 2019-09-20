@@ -13,56 +13,31 @@ set -eu
 # Save global script args
 ARGS=("$@")
 
-# Get configuration and other scripts
-source common_functions.sh
-source common_config.sh
-source common_download_functions.sh
-source common_openshift_functions.sh
+# Helper functions:
 
-# Download binary files
-KAMEL_CLI=$(get_kamel_bin)
-check_error $KAMEL_CLI
+# Dir where this script is located
+basedir() {
+    # Default is current directory
+    local script=${BASH_SOURCE[0]}
 
-SYNDESIS_CLI=$(get_syndesis_bin)
-check_error $SYNDESIS_CLI
+    # Resolve symbolic links
+    if [ -L $script ]; then
+        if readlink -f $script >/dev/null 2>&1; then
+            script=$(readlink -f $script)
+        elif readlink $script >/dev/null 2>&1; then
+            script=$(readlink $script)
+        elif realpath $script >/dev/null 2>&1; then
+            script=$(realpath $script)
+        else
+            echo "ERROR: Cannot resolve symbolic link $script"
+            exit 1
+        fi
+    fi
 
-display_usage() {
-  cat <<EOT
-Fuse Online Installation Tool for OCP
-
-Usage: install_ocp.sh [options]
-
-with options:
-
--s  --setup                   Install CRDs clusterwide. Use --grant if you want a specific user to be
-                              able to install Fuse Online. You have to run this option once as cluster admin.
--u  --grant <user>            Add permissions for the given user so that user can install the operator
-                              in her projects. You have to run this as cluster-admin
-    --cluster                 Add the permission for all projects in the cluster
-                              (only when used together with --grant)
-    --route                   Route to use. If not given, the route is trying to be detected from the currently
-                              connected cluster.
-   --console <console-url>    The URL to the openshift console
-   --force                    Override an existing installation if present
-
--p --project <project>        Install into this project. The project will be deleted
-                              if it already exists. By default, install into the current project (without deleting)
--w --watch                    Wait until the installation has completed
--o --open                     Open Fuse Online after installation (implies --watch)
-   --camel-k                  Install also the camel-k operator
-                              (version is optional)
-   --camel-k-options "opts"   Options used when installing the camel-k operator.
-                              Use quotes and start with a space before appending the options.
-   --datavirt                 Install Data Virtualizations.
-   --help                     This help message
--v --verbose                  Verbose logging
-
-You have to run `--setup --grant <user>` as a cluster-admin before you can install Fuse Online as a user.
-EOT
+    local dir=$(dirname "$script")
+    local full_dir=$(cd "${dir}" && pwd)
+    echo ${full_dir}
 }
-
-# ============================================================
-# Helper functions taken over from "syndesis" CLI:
 
 # Checks if a flag is present in the arguments.
 hasflag() {
@@ -103,6 +78,61 @@ readopt() {
         done
     fi
 }
+
+# Getting base dir
+BASEDIR=$(basedir)
+
+# Get configuration and other scripts
+pushd . && cd $BASEDIR
+source common_functions.sh
+source common_config.sh
+source common_download_functions.sh
+source common_openshift_functions.sh
+popd
+
+SYNDESIS_CLI=$(get_syndesis_bin)
+check_error $SYNDESIS_CLI
+
+# Download binary files
+KAMEL_CLI=$(get_kamel_bin)
+check_error $KAMEL_CLI
+
+display_usage() {
+  cat <<EOT
+Fuse Online Installation Tool for OCP
+
+Usage: install_ocp.sh [options]
+
+with options:
+
+-s  --setup                   Install CRDs clusterwide. Use --grant if you want a specific user to be
+                              able to install Fuse Online. You have to run this option once as cluster admin.
+-u  --grant <user>            Add permissions for the given user so that user can install the operator
+                              in her projects. You have to run this as cluster-admin
+    --cluster                 Add the permission for all projects in the cluster
+                              (only when used together with --grant)
+    --route                   Route to use. If not given, the route is trying to be detected from the currently
+                              connected cluster.
+   --console <console-url>    The URL to the openshift console
+   --force                    Override an existing installation if present
+
+-p --project <project>        Install into this project. The project will be deleted
+                              if it already exists. By default, install into the current project (without deleting)
+-w --watch                    Wait until the installation has completed
+-o --open                     Open Fuse Online after installation (implies --watch)
+   --camel-k                  Install also the camel-k operator
+                              (version is optional)
+   --camel-k-options "opts"   Options used when installing the camel-k operator.
+                              Use quotes and start with a space before appending the options.
+   --datavirt                 Install Data Virtualizations.
+   --help                     This help message
+-v --verbose                  Verbose logging
+
+You have to run `--setup --grant <user>` as a cluster-admin before you can install Fuse Online as a user.
+EOT
+}
+
+# ============================================================
 
 # Create syndesis resource
 create_syndesis() {
@@ -227,25 +257,6 @@ get_route() {
   oc get route $name -o jsonpath="{.spec.host}" 2>/dev/null
 }
 
-# ==================================================================
-
-# Check whether syndesis-pull-secret secret is present and create
-# it otherwise
-#
-create_secret_if_not_present() {
-  if $(check_resource secret syndesis-pull-secret) ; then
-    echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
-  else
-    echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
-    echo "enter username for registry.redhat.io and press [ENTER]: "
-    read username
-    echo "enter password for registry.redhat.io and press [ENTER]: "
-    read -s password
-    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password)
-    check_error $result
-  fi
-}
-
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -328,7 +339,7 @@ if [ $(hasflag --camel-k) ]; then
     echo "Deploying Camel-K operator"
     $KAMEL_CLI install --skip-cluster-setup $(readopt --camel-k-options)
 
-    local result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+    result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
     check_error $result
 fi
 
