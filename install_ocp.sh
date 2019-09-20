@@ -290,7 +290,7 @@ if [ -n  "$user_to_prepare" ]; then
     if [ $(hasflag --cluster) ]; then
       clusterwide="--cluster"
     fi
-    $SYNDESIS_CLI grant --user $user_to_prepare $clusterwide
+    $SYNDESIS_CLI grant --user "$user_to_prepare" $clusterwide
     prep_only="true"
 fi
 
