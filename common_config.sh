@@ -4,8 +4,11 @@
 
 source common_functions.sh
 
-# Tag updated by release script
-TAG=master
+# Tag for release. Update this before running release.sh
+TAG_FUSE_ONLINE_INSTALL=1.8.0
+
+# Fuse minor version (update it manually)
+TAG=1.8
 
 # Common settings
 CURRENT_OS=$(get_current_os)
