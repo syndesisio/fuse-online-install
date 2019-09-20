@@ -8,13 +8,10 @@ Installation is performed with `install_ocp.sh`.
 This script can be downloaded or executed directly from a cloned git repository:
 
 ```
-# Execute directly for version 1.4.8
-$ wget https://raw.githubusercontent.com/syndesisio/fuse-online-install/1.4.8/install_ocp.sh
-
-# or git clone the repository and switch to tag 1.4.8
+# or git clone the repository and switch to tag 1.8.0
 $ git clone https://github.com/syndesisio/fuse-online-install
 $ cd fuse-online-install
-$ git checkout 1.4.8
+$ git checkout 1.8.0
 ```
 
 Installation of Fuse Online consists of three steps:
@@ -87,9 +84,9 @@ Call `bash install_ocp.sh --help` for all options possible:
 ```
 $ bash install_ocp.sh --help
 
-Syndesis Installation Tool for OCP
+Fuse Online Installation Tool for OCP
 
-Usage: syndesis-install [options]
+Usage: install_ocp.sh [options]
 
 with options:
 
@@ -108,8 +105,15 @@ with options:
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
+   --camel-k                  Install also the camel-k operator
+                              (version is optional)
+   --camel-k-options "opts"   Options used when installing the camel-k operator.
+                              Use quotes and start with a space before appending the options.
+   --datavirt                 Install Data Virtualizations.
    --help                     This help message
 -v --verbose                  Verbose logging
+
+You have to run `--setup --grant <user>` as a cluster-admin before you can install Fuse Online as a user.
 ```
 
 
@@ -141,28 +145,6 @@ $ bash install_ocp.sh \
        --console https://console.fuse-ignite.openshift.com/console
 ```
 
-### Options
-
-The `install_ocp.sh` knows the following options (in addition to the main options described above):
-
-```
-Syndesis Installation Tool for OCP
-
-Usage: syndesis-install [--route <hostname>] [--console <console-url>] [options]
-
-with options:
-
--r --route <host>            The route to install (mandatory)
-   --console <console-url>   The URL to the openshift console
--p --project <project>       Install into this project. The project will be deleted
-                             if it already exists. By default, install into the current
-                             project (without deleting)
--w --watch                   Wait until the installation has completed
--o --open                    Open Syndesis after installation (implies --watch)
-   --help                    This help message
--v --verbose                 Verbose logging
-```
-
 ## Update
 
 For updating an existing installation you should use the script `update_ocp.sh`.
@@ -176,6 +158,9 @@ Usage: update_ocp.sh [options]
 with options:
 
    --version                  Print target version to update to and exit.
+
+   --camel-k                  Update also the camel-k operator
+
 -v --verbose                  Verbose logging
 ```
 
@@ -186,60 +171,56 @@ Use `--version` to see what are you going to update to:
 
 ```
 $ bash update_ocp.sh --version
-Update to Fuse Online version 1.4.9
+Update to Fuse Online 1.8
 
-fuse-ignite-server: 1.1-13
-fuse-ignite-ui:     1.1-8
-fuse-ignite-meta:   1.1-12
-fuse-ignite-s2i:    1.1-13
+syndesis-operator:  1.8.1-20190920
+camel-k-operator:  0.3.4
 ```
 
 ## Release
 
 This section describes the release process.
-Each tag of this repository corresponds to the same tag in syndesisio/syndesis.
-A release consists of a set of files created in the `resources/` directory and updating the `install_ocp.sh` script to point to the proper release version.
 
 A release is performed with the included `release.sh` script.
 
-All configuration is set in `fuse_ignite_config.sh`:
+All configuration is set in `common_config.sh`:
 
 ```
-# Git Tags:
+# Tag for release. Update this before running release.sh
+TAG_FUSE_ONLINE_INSTALL=1.8.0
 
-# Upstream Syndesis release
-git_syndesis="1.4.8"
+# Fuse minor version (update it manually)
+TAG=1.8
 
-# Tags used for the productised images
-tag_server="1.1-17"
-tag_ui="1.1-22"
-tag_meta="1.1-15"
-tag_s2i="1.1-15"
-tag_upgrade="1.1-18"
+# Common settings
+CURRENT_OS=$(get_current_os)
+BINARY_FILE_EXTENSION=$(get_executable_file_extension)
+OC_MIN_VERSION=3.9.0
 
-# Test & Staging:
-registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
-repository="jboss-fuse7-tech-preview"
+# Camel K settings
+CAMEL_K_VERSION=0.3.4
+CAMEL_K_BINARY=kamel
+CAMEL_K_GIT_ORG=jboss-fuse
+CAMEL_K_GIT_REPO=camel-k
+CAMEL_K_DOWNLOAD_URL=https://github.com/${CAMEL_K_GIT_ORG}/${CAMEL_K_GIT_REPO}/releases/download/${CAMEL_K_VERSION}/camel-k-client-${CAMEL_K_VERSION}-${CURRENT_OS}-64bit.tar.gz
 
-# Official:
-# local registry="registry.access.redhat.com"
-# local repository="fuse7"
+# Syndesis settings
+SYNDESIS_VERSION=1.8.1-20190920
+SYNDESIS_BINARY=syndesis
+SYNDESIS_GIT_ORG=syndesisio
+SYNDESIS_GIT_REPO=syndesis
+SYNDESIS_DOWNLOAD_URL=https://github.com/${SYNDESIS_GIT_ORG}/${SYNDESIS_GIT_REPO}/releases/download/${SYNDESIS_VERSION}/syndesis-${SYNDESIS_VERSION}-${CURRENT_OS}-64bit.tgz
+
 ```
 
-When the config file is setup a, release is performed by simply calling `bash release.sh`. Some options are available, see below for which one.
+When the config file is setup, a release is performed by simply calling `bash release.sh`. Some options are available, see below for which one.
 
-The release process will perform the following steps (the variables are taken from `fuse_ignite_config.sh`):
+The release process will perform the following steps (the variables are taken from `common_config.sh`):
 
-* Create resources by using the templates in `templates/` and substituting the version numbers from `fuse_online_config.sh`
-* Extract the Fuse Online template from the operator image with the proper version. **Note**: The template must be used for legacy setups, but not for an operator based installation.
-* Update `install_ocp.sh` with the tag from `$git_fuse_ignite_install`
 * Commit everything
-* Git tag with `$git_fuse_ignite`
-* Create a moving tag up to the minor number (e.g. 1.4) pointing to the tag just created
+* Git tag with `$TAG_FUSE_ONLINE_INSTALL`
+* Create a moving tag corresponding to the `$TAG` variable
 * Git push if `--git-push` is given
-
-The imagestream which are installed for the OCP variant are included in `resources/fuse-online-image-streams.yml` and need to be updated manually for the moment for new releases.
-The streams file needs to be updated before the release is started.
 
 The script understands some additional options:
 
@@ -254,7 +235,7 @@ with options:
 --git-push                   Push to git directly
 --verbose                    Verbose log output
 
-Please check also "fuse_ignite_config.sh" for the configuration values.
+Please check also "common_config.sh" for the configuration values.
 ```
 
 ### Importing images
@@ -264,27 +245,29 @@ You can easily import images from one registry to an OpenShift internal registry
 You call e.g. with
 
 ```
+cd utils
 perl ./import_images.pl --registry docker.io --repo fuseignitetest
 ```
 
 where `--registry` is the target registry an `--repo` is the repository part of the target image name (default: `fuse-ignite`)
 
-This script will pick up the version numbers defined in `fuse_ignite_config.sh` and should be called right after a release from a release tag, e.g.
+This script will pick up the version numbers defined in `fuse_online_config.sh` and should be called right after a release from a release tag, e.g.
 
 ```
 # Be sure to be oc-connected with the target OpenShift cluster
 $ oc login ...
 
 # Clone repo
-$ git clone https://github.com/syndesisio/fuse-ignite-install.git
-$ cd fuse-ignite-install
+$ git clone https://github.com/syndesisio/fuse-online-install.git
+$ cd fuse-online-install
 
 # Checkout tag
-$ git checkout 1.3.11
+$ git checkout 1.8.0
 
 # Login into the target registry for your docker daemon
 $ docker login -u $(oc whoami) -p $(oc whoami -t) mytarget.registry.openshift.com
 
 # Import images
+$ cd utils
 $ perl import_images.pl --registry mytarget.registry.openshift.com
 ```
