@@ -75,12 +75,13 @@ readopt() {
 BASEDIR=$(basedir)
 
 # Get configuration and other scripts
-pushd . && cd $BASEDIR
+pushd > /dev/null . && cd $BASEDIR
 source $BASEDIR/base_functions.sh
 source $BASEDIR/common_config.sh
 source $BASEDIR/libs/download_functions.sh
 source $BASEDIR/libs/openshift_functions.sh
-popd
+source $BASEDIR/libs/docker_functions.sh
+popd > /dev/null
 
 
 display_usage() {
@@ -96,6 +97,7 @@ with options:
 --move-tag                   Create the moving tag
 --dry-run -n                 Dry run
 --git-remote                 Push to a different git remote
+--skip-binary-release        Ignore release of binary artifacts
 --verbose                    Verbose log output
 
 Please check also "common_config.sh" for the configuration values.
@@ -152,6 +154,138 @@ git_push() {
     fi
 }
 
+get_github_username() {
+    if [ -z "${GITHUB_USERNAME:-}" ]; then
+        echo "ERROR: environment variable GITHUB_USERNAME has not been set."
+        echo "Please populate it with your github id"
+        return
+    fi
+    echo $GITHUB_USERNAME
+}
+
+get_github_access_token() {
+    if [ -z "${GITHUB_ACCESS_TOKEN:-}" ]; then
+        echo "ERROR: environment variable GITHUB_ACCESS_TOKEN has not been set."
+        echo "Please populate it with a valid personal access token from github (with 'repo', 'admin:org_hook' and 'admin:repo_hook' scopes)."
+        return
+    fi
+    echo $GITHUB_ACCESS_TOKEN
+}
+
+publish_artifacts() {
+    local release_dir=$1
+
+    set +e
+    local upload_url=$(curl -q --fail -X POST -u $GITHUB_USERNAME:${GITHUB_ACCESS_TOKEN} -H "Accept: application/vnd.github.v3+json" -H "Content-Type: application/json" -d "{\"tag_name\": \"$BIN_TAG_PREFIX$TAG_FUSE_ONLINE_INSTALL\"}" https://api.github.com/repos/${COMMON_RELEASE_GIT_ORG}/${COMMON_RELEASE_GIT_REPO}/releases | jq -r .upload_url | cut -d{ -f1)
+    if [[ ! $upload_url == http* ]]; then
+        echo "ERROR: Cannot create release on remote github repository. Check if a release with the same tag already exists."
+        return
+    fi
+    set -e
+
+    set +e
+    for file in $release_dir/*; do
+        curl -q --fail -X POST -u $GITHUB_USERNAME:$GITHUB_ACCESS_TOKEN \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Content-Type: application/tar+gzip" \
+          --data-binary "@$file" \
+          $upload_url?name=${file##*/} >$ERROR_FILE 2>&1
+        local err=$?
+        set -e
+        if [ $err -ne 0 ]; then
+          echo "ERROR: Cannot upload release artifact $file on remote github repository"
+          return
+        fi
+    done
+}
+
+release_binaries() {
+    if [ $(hasflag --skip-binary-release) ]; then
+        echo "Skipping release of binary artifacts"
+        return
+    fi
+
+    local release_dir=$(extract_binaries)
+    check_error $release_dir
+
+    if [ ! $(hasflag --dry-run -n) ]; then
+        local github_username=$(get_github_username)
+        check_error $github_username
+
+        local github_token=$(get_github_access_token)
+        check_error $github_token
+
+        result=$(publish_artifacts $release_dir)
+        check_error $result
+    fi
+}
+
+extract_binaries() {
+    local tmp_dir=/tmp/fuse-online-clients
+    rm -rf $tmp_dir
+    mkdir -p $tmp_dir
+    chmod a+rw $tmp_dir
+
+    local release_dir=$tmp_dir/release
+    mkdir -p $release_dir
+
+    local syndesis_dir=$tmp_dir/syndesis
+    mkdir -p $syndesis_dir
+    result=$(extract_from_docker $SYNDESIS_IMAGE /opt/clients/* $syndesis_dir)
+    check_error $result
+
+    local camel_k_dir=$tmp_dir/camel_k
+    mkdir -p $camel_k_dir
+    result=$(extract_from_docker $CAMEL_K_IMAGE /opt/clients/* $camel_k_dir)
+    check_error $result
+
+    set +e
+    pushd > /dev/null . && cd $syndesis_dir/darwin-amd64 && gunzip syndesis-operator.gz && \
+      tar czvf $release_dir/syndesis-${SYNDESIS_VERSION}-mac-64bit.tar.gz syndesis-operator > /dev/null 2>&1 && \
+      popd > /dev/null
+    local err=$?
+    set -e
+    if [ $err -ne 0 ]; then
+      echo "ERROR: Cannot extract syndesis client binaries for mac"
+      return
+    fi
+
+    set +e
+    pushd > /dev/null . && cd $syndesis_dir/windows-amd64 && gunzip syndesis-operator.gz && \
+      mv syndesis-operator syndesis-operator.exe && \
+      tar czvf $release_dir/syndesis-${SYNDESIS_VERSION}-windows-64bit.tar.gz syndesis-operator.exe > /dev/null 2>&1 && \
+      popd > /dev/null
+    local err=$?
+    set -e
+    if [ $err -ne 0 ]; then
+      echo "ERROR: Cannot extract syndesis client binaries for windows"
+      return
+    fi
+
+    set +e
+    pushd > /dev/null . && cd $syndesis_dir/linux-amd64 && \
+      tar czvf $release_dir/syndesis-${SYNDESIS_VERSION}-linux-64bit.tar.gz syndesis-operator > /dev/null 2>&1 \
+      && popd > /dev/null
+    local err=$?
+    set -e
+    if [ $err -ne 0 ]; then
+      echo "ERROR: Cannot extract syndesis client binaries for linux"
+      return
+    fi
+
+    set +e
+    mv $camel_k_dir/camel-k-client-linux.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-linux-64bit.tar.gz && \
+      mv $camel_k_dir/camel-k-client-mac.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-mac-64bit.tar.gz && \
+      mv $camel_k_dir/camel-k-client-windows.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-windows-64bit.tar.gz
+    set -e
+    if [ $err -ne 0 ]; then
+      echo "ERROR: Cannot extract camel-k client binaries"
+      return
+    fi
+
+    echo $release_dir
+}
+
 check_error() {
     local msg="$*"
     if [ "${msg//ERROR/}" != "${msg}" ]; then
@@ -162,6 +296,9 @@ check_error() {
 
 release() {
     local topdir=$1
+
+    echo "==== Releasing binary files"
+    release_binaries
 
     echo "==== Committing"
     cd $topdir
