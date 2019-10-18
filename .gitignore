@@ -2,3 +2,5 @@
 *.iml
 .project
 .metadata
+
+.envrc
