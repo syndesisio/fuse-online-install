@@ -83,12 +83,12 @@ readopt() {
 BASEDIR=$(basedir)
 
 # Get configuration and other scripts
-pushd . && cd $BASEDIR
+pushd > /dev/null . && cd $BASEDIR
 source $BASEDIR/base_functions.sh
 source $BASEDIR/common_config.sh
 source $BASEDIR/libs/download_functions.sh
 source $BASEDIR/libs/openshift_functions.sh
-popd
+popd > /dev/null
 
 SYNDESIS_CLI=$(get_syndesis_bin)
 check_error $SYNDESIS_CLI
@@ -180,5 +180,6 @@ fi
 
 cat <<EOT
 ========================================================
-Congratulation, Fuse Online has been updated to $TAG !
+Fuse Online operator has been updated to $TAG !
+Please wait for the upgrade process to be finished by the operator.
 EOT
