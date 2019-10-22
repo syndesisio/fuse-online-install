@@ -1,0 +1,1732 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+message: Syndesis is deployed to ${ROUTE_HOSTNAME}.
+metadata:
+  labels:
+    app: syndesis
+    syndesis.io/app: syndesis
+    syndesis.io/type: infrastructure
+  name: fuse-ignite-1.8
+objects:
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    annotations:
+      console.alpha.openshift.io/overview-app-route: "true"
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/type: infrastructure
+    name: syndesis
+  spec:
+    host: ${ROUTE_HOSTNAME}
+    port:
+      targetPort: 8443
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: reencrypt
+    to:
+      kind: Service
+      name: syndesis-oauthproxy
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: s2i-java
+      syndesis.io/type: infrastructure
+    name: syndesis-s2i
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: ""
+      name: latest
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/type: infrastructure
+    name: syndesis-server-secret
+  stringData:
+    clientStateAuthenticationKey: ${CLIENT_STATE_AUTHENTICATION_KEY}
+    clientStateEncryptionKey: ${CLIENT_STATE_ENCRYPTION_KEY}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/type: infrastructure
+    name: syndesis-global-config
+  stringData:
+    CLIENT_STATE_AUTHENTICATION_KEY: ${CLIENT_STATE_AUTHENTICATION_KEY}
+    CLIENT_STATE_ENCRYPTION_KEY: ${CLIENT_STATE_ENCRYPTION_KEY}
+    OAUTH_COOKIE_SECRET: ${OAUTH_COOKIE_SECRET}
+    OPENSHIFT_OAUTH_CLIENT_SECRET: ${OPENSHIFT_OAUTH_CLIENT_SECRET}
+    POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD}
+    POSTGRESQL_SAMPLEDB_PASSWORD: ${POSTGRESQL_SAMPLEDB_PASSWORD}
+    SYNDESIS_ENCRYPT_KEY: ${SYNDESIS_ENCRYPT_KEY}
+    params: |-
+      OPENSHIFT_OAUTH_CLIENT_SECRET=${OPENSHIFT_OAUTH_CLIENT_SECRET}
+      POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+      POSTGRESQL_SAMPLEDB_PASSWORD=${POSTGRESQL_SAMPLEDB_PASSWORD}
+      OAUTH_COOKIE_SECRET=${OAUTH_COOKIE_SECRET}
+      SYNDESIS_ENCRYPT_KEY=${SYNDESIS_ENCRYPT_KEY}
+      CLIENT_STATE_AUTHENTICATION_KEY=${CLIENT_STATE_AUTHENTICATION_KEY}
+      CLIENT_STATE_ENCRYPTION_KEY=${CLIENT_STATE_ENCRYPTION_KEY}
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-infrastructure
+      syndesis.io/type: infrastructure
+    name: syndesis-default
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-server
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-integration
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+      syndesis.io/type: infrastructure
+    name: syndesis-prometheus
+- apiVersion: v1
+  data:
+    application.yml: |
+      cache:
+        cluster:
+          name: SyndesisCluster
+        max:
+          entries: 100
+      controllers:
+        integrationStateCheckInterval: ${INTEGRATION_STATE_CHECK_INTERVAL}
+        maxDeploymentsPerUser: ${MAX_INTEGRATIONS_PER_USER}
+        maxIntegrationsPerUser: ${MAX_INTEGRATIONS_PER_USER}
+      cors:
+        allowedOrigins: https://${ROUTE_HOSTNAME}
+      dao:
+        kind: jsondb
+      deployment:
+        load-demo-data: ${DEMO_DATA_ENABLED}
+      encrypt:
+        key: ${SYNDESIS_ENCRYPT_KEY}
+      endpoints:
+        health:
+          sensitive: false
+        jsondb:
+          enabled: true
+      features:
+        knative:
+          enabled: false
+        monitoring:
+          enabled: true
+        public-api:
+          enabled: true
+      management:
+        port: 8181
+        security:
+          enabled: true
+      monitoring:
+        kind: default
+      openshift:
+        apiBaseUrl: ${OPENSHIFT_MASTER}/oapi/v1
+        builderImageStreamTag: syndesis-s2i:latest
+        deploymentMemoryLimitMi: 512
+        deploymentMemoryRequestMi: 200
+        imageStreamNamespace: ${IMAGE_STREAM_NAMESPACE}
+        integrationLivenessProbeInitialDelaySeconds: 120
+        mavenOptions: -XX:+UseG1GC -XX:+UseStringDeduplication -Xmx310m
+        namespace: ${OPENSHIFT_PROJECT}
+      security:
+        basic:
+          enabled: false
+      spring:
+        datasource:
+          driver-class-name: org.postgresql.Driver
+          password: ${POSTGRESQL_PASSWORD}
+          url: jdbc:${POSTGRESQL_URL}
+          username: ${POSTGRESQL_USER}
+        zipkin:
+          enabled: false
+  kind: ConfigMap
+  metadata:
+    annotations:
+      io.syndesis/upgrade-mode: keep
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-server-config
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-ui
+      syndesis.io/type: infrastructure
+    name: syndesis-ui
+  spec:
+    ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-ui
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-ui
+      syndesis.io/type: infrastructure
+    name: syndesis-ui
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-ui
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/component: syndesis-ui
+          syndesis.io/type: infrastructure
+      spec:
+        containers:
+        - env:
+          - name: DEV_SUPPORT
+            value: "false"
+          image: ""
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+          name: syndesis-ui
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 1
+          resources:
+            limits:
+              memory: 255Mi
+            requests:
+              memory: 50Mi
+          volumeMounts:
+          - mountPath: /opt/app-root/src/config
+            name: config-volume
+        serviceAccountName: syndesis-default
+        volumes:
+        - configMap:
+            name: syndesis-ui-config
+          name: config-volume
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  data:
+    config.json: '{"apiBase":"https://${ROUTE_HOSTNAME}","apiEndpoint":"/api/v1","branding":{"appName":"Fuse
+      Online","favicon16":"/favicon-16x16.png","favicon32":"/favicon-32x32.png","productBuild":true,"touchIcon":"/apple-touch-icon.png"},"consoleUrl":"${OPENSHIFT_CONSOLE_URL}","datamapper":{"baseJSONInspectionServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/json/","baseJavaInspectionServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/java/","baseMappingServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/","baseXMLInspectionServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/xml/","disableMappingPreviewMode":false},"datavirt":{"dvUrl":"/vdb-builder/v1/","enabled":"${DATAVIRT_ENABLED}"},"features":{"logging":false},"project":"${OPENSHIFT_PROJECT}","title":"Syndesis"}'
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-ui
+      syndesis.io/type: infrastructure
+    name: syndesis-ui-config
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: amq
+    name: jboss-amq-63
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: registry.access.redhat.com/jboss-amq-6/amq63-openshift:1.3
+      importPolicy:
+        scheduled: true
+      name: "1.3"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The broker's OpenWire port.
+    labels:
+      application: broker
+    name: broker-amq-tcp
+  spec:
+    ports:
+    - name: openwire
+      port: 61616
+      targetPort: 61616
+    - name: stomp
+      port: 61613
+      targetPort: 61613
+    selector:
+      syndesis.io/example: broker-amq
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/example: broker-amq
+    name: broker-amq
+  spec:
+    replicas: 0
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/example: broker-amq
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/example: broker-amq
+        name: broker-amq
+      spec:
+        containers:
+        - env:
+          - name: AMQ_USER
+            value: amq
+          - name: AMQ_PASSWORD
+            value: topSecret
+          - name: AMQ_TRANSPORTS
+            value: openwire,stomp
+          image: jboss-amq-63
+          imagePullPolicy: Always
+          name: broker-amq
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 61616
+            name: tcp
+            protocol: TCP
+          - containerPort: 61613
+            name: stomp
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/amq/bin/readinessProbe.sh
+        terminationGracePeriodSeconds: 60
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - broker-amq
+        from:
+          kind: ImageStreamTag
+          name: jboss-amq-63:1.3
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-meta
+      syndesis.io/type: infrastructure
+    name: syndesis-meta
+  spec:
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-meta
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-meta
+      syndesis.io/type: infrastructure
+    name: syndesis-meta
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${META_VOLUME_CAPACITY}
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-meta
+      syndesis.io/type: infrastructure
+    name: syndesis-meta
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-meta
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/component: syndesis-meta
+          syndesis.io/type: infrastructure
+      spec:
+        containers:
+        - env:
+          - name: JAVA_APP_DIR
+            value: /deployments
+          - name: LOADER_HOME
+            value: /deployments/ext
+          - name: JAVA_OPTIONS
+            value: -Djava.net.preferIPv4Stack=true -Duser.home=/tmp
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          image: ""
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health
+              port: 8181
+              scheme: HTTP
+            initialDelaySeconds: 300
+            periodSeconds: 20
+          name: syndesis-meta
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8181
+            name: metrics
+          - containerPort: 9779
+            name: prometheus
+            protocol: TCP
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+              scheme: HTTP
+            initialDelaySeconds: 10
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              memory: 280Mi
+          volumeMounts:
+          - mountPath: /deployments/config
+            name: config-volume
+          - mountPath: /deployments/ext
+            name: ext-volume
+          workingDir: /deployments
+        serviceAccountName: syndesis-server
+        volumes:
+        - name: ext-volume
+          persistentVolumeClaim:
+            claimName: syndesis-meta
+        - configMap:
+            name: syndesis-meta-config
+          name: config-volume
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  data:
+    application.yml: |
+      endpoints:
+        health:
+          sensitive: false
+      management:
+        port: 8181
+        security:
+          enabled: true
+      server:
+        port: 8080
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-meta
+      syndesis.io/type: infrastructure
+    name: syndesis-meta-config
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      service.alpha.openshift.io/serving-cert-secret-name: syndesis-oauthproxy-tls
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-oauthproxy
+      syndesis.io/type: infrastructure
+    name: syndesis-oauthproxy
+  spec:
+    ports:
+    - port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-oauthproxy
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-oauthproxy
+      syndesis.io/type: infrastructure
+    name: syndesis-oauthproxy
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-oauthproxy
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/component: syndesis-oauthproxy
+          syndesis.io/type: infrastructure
+      spec:
+        containers:
+        - args:
+          - --provider=openshift
+          - --client-id=system:serviceaccount:${OPENSHIFT_PROJECT}:syndesis-oauth-client
+          - --client-secret=$(OPENSHIFT_OAUTH_CLIENT_SECRET)
+          - --upstream=http://syndesis-server/api/
+          - --upstream=http://syndesis-server/mapper/
+          - --upstream=http://syndesis-ui/
+          - --upstream=http://syndesis-dv/vdb-builder/
+          - --tls-cert=/etc/tls/private/tls.crt
+          - --tls-key=/etc/tls/private/tls.key
+          - --cookie-secret=$(OAUTH_COOKIE_SECRET)
+          - --pass-access-token
+          - --skip-provider-button
+          - --skip-auth-regex=/logout
+          - --skip-auth-regex=/[^/]+\.(png|jpg|eot|svg|ttf|woff|woff2)
+          - --skip-auth-regex=/api/v1/swagger.*
+          - --skip-auth-regex=/api/v1/index.html
+          - --skip-auth-regex=/api/v1/credentials/callback
+          - --skip-auth-regex=/api/v1/version
+          - --skip-auth-regex=/config.json
+          - --skip-auth-preflight
+          - --openshift-ca=/etc/pki/tls/certs/ca-bundle.crt
+          - --openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          - --openshift-sar={"namespace":"${SAR_PROJECT}","resource":"pods","verb":"get"}
+          env:
+          - name: OAUTH_COOKIE_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: OAUTH_COOKIE_SECRET
+                name: syndesis-global-config
+          - name: OPENSHIFT_OAUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: OPENSHIFT_OAUTH_CLIENT_SECRET
+                name: syndesis-global-config
+          image: ""
+          livenessProbe:
+            httpGet:
+              path: /oauth/healthz
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 15
+            timeoutSeconds: 10
+          name: oauthproxy
+          ports:
+          - containerPort: 8443
+            name: public
+            protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /oauth/healthz
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 15
+            timeoutSeconds: 10
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              memory: 20Mi
+          volumeMounts:
+          - mountPath: /etc/tls/private
+            name: syndesis-oauthproxy-tls
+        serviceAccountName: syndesis-oauth-client
+        volumes:
+        - name: syndesis-oauthproxy-tls
+          secret:
+            secretName: syndesis-oauthproxy-tls
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-server
+  spec:
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-server
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/component: syndesis-server
+          syndesis.io/type: infrastructure
+      spec:
+        containers:
+        - env:
+          - name: JAVA_APP_DIR
+            value: /deployments
+          - name: JAVA_OPTIONS
+            value: -Djava.net.preferIPv4Stack=true -Duser.home=/tmp
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: ENDPOINTS_TEST_SUPPORT_ENABLED
+            value: ${TEST_SUPPORT_ENABLED}
+          - name: CONTROLLERS_INTEGRATION_ENABLED
+            value: ${CONTROLLERS_INTEGRATION_ENABLED}
+          - name: POSTGRESQL_SAMPLEDB_PASSWORD
+            value: ${POSTGRESQL_SAMPLEDB_PASSWORD}
+          - name: CLIENT_STATE_AUTHENTICATION_ALGORITHM
+            value: HmacSHA1
+          - name: CLIENT_STATE_AUTHENTICATION_KEY
+            valueFrom:
+              secretKeyRef:
+                key: clientStateAuthenticationKey
+                name: syndesis-server-secret
+          - name: CLIENT_STATE_ENCRYPTION_ALGORITHM
+            value: AES/CBC/PKCS5Padding
+          - name: CLIENT_STATE_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                key: clientStateEncryptionKey
+                name: syndesis-server-secret
+          - name: CLIENT_STATE_TID
+            value: "1"
+          - name: INTEGRATION_STATE_CHECK_INTERVAL
+            value: ${INTEGRATION_STATE_CHECK_INTERVAL}
+          - name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
+            value: ${OPENSHIFT_MANAGEMENT_URL_FOR3SCALE}
+          image: ""
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              httpHeaders:
+              - name: Accept
+                value: text/plain
+              path: /api/v1/version
+              port: 8080
+            initialDelaySeconds: 300
+            periodSeconds: 20
+          name: syndesis-server
+          ports:
+          - containerPort: 8080
+            name: http
+          - containerPort: 8181
+            name: metrics
+          - containerPort: 9779
+            name: prometheus
+          - containerPort: 8778
+            name: jolokia
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            initialDelaySeconds: 10
+          resources:
+            limits:
+              cpu: 750m
+              memory: 800Mi
+            requests:
+              cpu: 450m
+              memory: 256Mi
+          volumeMounts:
+          - mountPath: /deployments/config
+            name: config-volume
+          workingDir: /deployments
+        serviceAccountName: syndesis-server
+        volumes:
+        - configMap:
+            name: syndesis-server-config
+          name: config-volume
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  data:
+    prometheus-config.yml: |
+      {}
+  kind: ConfigMap
+  metadata:
+    annotations:
+      io.syndesis/upgrade-mode: keep
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-prometheus-agent-config
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-editor
+  rules:
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    - services
+    - endpoints
+    - persistentvolumeclaims
+    - configmaps
+    - secrets
+    - serviceaccounts
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - replicationcontrollers
+    - replicationcontrollers/scale
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - apps
+    resources:
+    - daemonsets
+    - deployments
+    - deployments/scale
+    - replicasets
+    - replicasets/scale
+    - statefulsets
+    - statefulsets/scale
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - extensions
+    resources:
+    - daemonsets
+    - deployments
+    - deployments/scale
+    - ingresses
+    - networkpolicies
+    - replicasets
+    - replicasets/scale
+    - replicationcontrollers/scale
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - ""
+    resources:
+    - bindings
+    - events
+    - limitranges
+    - namespaces/status
+    - pods/log
+    - pods/status
+    - replicationcontrollers/status
+    - resourcequotas
+    - resourcequotas/status
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - buildconfigs
+    - buildconfigs/webhooks
+    - builds
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - buildconfigs/instantiate
+    - buildconfigs/instantiatebinary
+    - builds/clone
+    verbs:
+    - create
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - builds/details
+    verbs:
+    - update
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - builds/log
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - apps.openshift.io
+    resources:
+    - deploymentconfigs
+    - deploymentconfigs/scale
+    - deploymentconfigs/finalizers
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - ""
+    - apps.openshift.io
+    resources:
+    - deploymentconfigrollbacks
+    - deploymentconfigs/instantiate
+    - deploymentconfigs/rollback
+    verbs:
+    - create
+  - apiGroups:
+    - ""
+    - apps.openshift.io
+    resources:
+    - deploymentconfigs/log
+    - deploymentconfigs/status
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - image.openshift.io
+    resources:
+    - imagestreams
+    - imagestreamimages
+    - imagestreammappings
+    - imagestreams/secrets
+    - imagestreamtags
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - ""
+    - image.openshift.io
+    resources:
+    - imagestreamimports
+    verbs:
+    - create
+  - apiGroups:
+    - ""
+    - image.openshift.io
+    resources:
+    - imagestreams/status
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - route.openshift.io
+    resources:
+    - routes
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - ""
+    - template.openshift.io
+    resources:
+    - processedtemplates
+    - templateconfigs
+    - templateinstances
+    - templates
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - buildlogs
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
+    - patch
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-server
+      syndesis.io/type: infrastructure
+    name: syndesis-server-editor
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: syndesis-editor
+  subjects:
+  - kind: ServiceAccount
+    name: syndesis-server
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/type: infrastructure
+    name: syndesis-viewer
+  rules:
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - endpoints
+    - persistentvolumeclaims
+    - pods
+    - replicationcontrollers
+    - replicationcontrollers/scale
+    - serviceaccounts
+    - services
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - bindings
+    - events
+    - limitranges
+    - namespaces/status
+    - pods/log
+    - pods/status
+    - replicationcontrollers/status
+    - resourcequotas
+    - resourcequotas/status
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - apps
+    resources:
+    - daemonsets
+    - deployments
+    - deployments/scale
+    - replicasets
+    - replicasets/scale
+    - statefulsets
+    - statefulsets/scale
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - extensions
+    resources:
+    - daemonsets
+    - deployments
+    - deployments/scale
+    - ingresses
+    - networkpolicies
+    - replicasets
+    - replicasets/scale
+    - replicationcontrollers/scale
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - buildconfigs
+    - buildconfigs/webhooks
+    - builds
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - builds/log
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - apps.openshift.io
+    resources:
+    - deploymentconfigs
+    - deploymentconfigs/scale
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - apps.openshift.io
+    resources:
+    - deploymentconfigs/log
+    - deploymentconfigs/status
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - image.openshift.io
+    resources:
+    - imagestreamimages
+    - imagestreammappings
+    - imagestreams
+    - imagestreamtags
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - image.openshift.io
+    resources:
+    - imagestreams/status
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - route.openshift.io
+    resources:
+    - routes
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - template.openshift.io
+    resources:
+    - processedtemplates
+    - templateconfigs
+    - templateinstances
+    - templates
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    - build.openshift.io
+    resources:
+    - buildlogs
+    verbs:
+    - get
+    - list
+    - watch
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+      syndesis.io/type: infrastructure
+    name: syndesis-prometheus-viewer
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: syndesis-viewer
+  subjects:
+  - kind: ServiceAccount
+    name: syndesis-prometheus
+- apiVersion: v1
+  data:
+    prometheus.yml: |
+      global:
+        evaluation_interval: 5s
+        scrape_interval: 5s
+      scrape_configs:
+      - job_name: prometheus
+        metric_relabel_configs:
+        - action: drop
+          regex: go_(.+)
+          source_labels:
+          - __name__
+        - action: drop
+          regex: http_(.+)
+          source_labels:
+          - __name__
+        - action: drop
+          regex: net_(.+)
+          source_labels:
+          - __name__
+        - action: drop
+          regex: process_(.+)
+          source_labels:
+          - __name__
+        - action: drop
+          regex: prometheus_(.+)
+          source_labels:
+          - __name__
+        - action: drop
+          regex: tsdb_(.+)
+          source_labels:
+          - __name__
+        static_configs:
+        - targets:
+          - localhost:9090
+      - job_name: integration-pods
+        kubernetes_sd_configs:
+        - namespaces:
+            names:
+            - ${OPENSHIFT_PROJECT}
+          role: pod
+        metric_relabel_configs:
+        - action: drop
+          regex: jmx_(.+)
+          source_labels:
+          - __name__
+        - action: drop
+          regex: jvm_(.+)
+          source_labels:
+          - __name__
+        - action: drop
+          regex: process_(.+)
+          source_labels:
+          - __name__
+        - action: keep
+          regex: context:(org_apache_camel_ExchangesTotal|org_apache_camel_ExchangesFailed|io_syndesis_camel_StartTimestamp|io_syndesis_camel_LastExchangeCompletedTimestamp|io_syndesis_camel_LastExchangeFailureTimestamp)
+          separator: ':'
+          source_labels:
+          - type
+          - __name__
+        relabel_configs:
+        - action: keep
+          regex: true
+          source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+        - action: keep
+          regex: integration
+          source_labels:
+          - __meta_kubernetes_pod_label_syndesis_io_type
+        - action: replace
+          regex: (.+)
+          source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_path
+          target_label: __metrics_path__
+        - action: replace
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          source_labels:
+          - __address__
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - action: labelmap
+          regex: __meta_kubernetes_pod_annotation_(syndesis.+)
+        - action: replace
+          source_labels:
+          - __meta_kubernetes_namespace
+          target_label: kubernetes_namespace
+        - action: replace
+          source_labels:
+          - __meta_kubernetes_pod_name
+          target_label: kubernetes_pod_name
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+      syndesis.io/type: infrastructure
+    name: syndesis-prometheus-config
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+      syndesis.io/type: infrastructure
+    name: syndesis-prometheus
+  spec:
+    ports:
+    - name: prometheus
+      port: 80
+      protocol: TCP
+      targetPort: 9090
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+      syndesis.io/type: infrastructure
+    name: syndesis-prometheus
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${PROMETHEUS_VOLUME_CAPACITY}
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+      syndesis.io/type: infrastructure
+    name: syndesis-prometheus
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/component: syndesis-prometheus
+          syndesis.io/type: infrastructure
+      spec:
+        containers:
+        - args:
+          - --config.file=/etc/prometheus/prometheus.yml
+          - --storage.tsdb.retention=30d
+          image: ""
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              port: 9090
+            initialDelaySeconds: 60
+          name: prometheus
+          ports:
+          - containerPort: 9090
+          readinessProbe:
+            httpGet:
+              port: 9090
+            initialDelaySeconds: 30
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              memory: 512Mi
+          volumeMounts:
+          - mountPath: /prometheus
+            name: syndesis-prometheus-data
+          - mountPath: /etc/prometheus
+            name: syndesis-prometheus-config
+        serviceAccountName: syndesis-prometheus
+        volumes:
+        - name: syndesis-prometheus-data
+          persistentVolumeClaim:
+            claimName: syndesis-prometheus
+        - configMap:
+            name: syndesis-prometheus-config
+          name: syndesis-prometheus-config
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: todo
+      syndesis.io/component: todo
+    name: todo
+  spec:
+    ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: syndesis
+      syndesis.io/app: todo
+      syndesis.io/component: todo
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: todo
+      syndesis.io/component: todo
+    name: todo
+  spec:
+    host: todo-${ROUTE_HOSTNAME}
+    path: /
+    port:
+      targetPort: 8080
+    tls:
+      insecureEdgeTerminationPolicy: Allow
+      termination: edge
+    to:
+      kind: Service
+      name: todo
+      weight: 100
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: todo
+    name: todo
+  spec:
+    lookupPolicy:
+      local: false
+  status:
+    tags:
+    - items: null
+      tag: latest
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: todo
+    name: todo
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: todo:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        uri: https://github.com/syndesisio/todo-example.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: php:7.0
+          namespace: openshift
+      type: Source
+    triggers:
+    - type: ConfigChange
+    - imageChange: null
+      type: ImageChange
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: todo
+    name: todo
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: todo
+      syndesis.io/component: todo
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      type: Recreate
+    template:
+      metadata:
+        annotations:
+          openshift.io/container.todo.image.entrypoint: '["container-entrypoint","/bin/sh","-c","$STI_SCRIPTS_PATH/usage"]'
+        creationTimestamp: null
+        labels:
+          app: syndesis
+          syndesis.io/app: todo
+          syndesis.io/component: todo
+      spec:
+        containers:
+        - env:
+          - name: TODO_DB_SERVER
+            value: syndesis-db
+          - name: TODO_DB_NAME
+            value: sampledb
+          - name: TODO_DB_USER
+            value: sampledb
+          - name: TODO_DB_PASS
+            value: ${POSTGRESQL_SAMPLEDB_PASSWORD}
+          - name: TODO_DB_SCHEMA
+            value: sampledb
+          image: ' '
+          imagePullPolicy: Always
+          name: todo
+          ports:
+          - containerPort: 8080
+            name: http
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              memory: 256Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - todo
+        from:
+          kind: ImageStreamTag
+          name: todo:latest
+      type: ImageChange
+parameters:
+- description: Key used to perform authentication of client side stored state
+  displayName: Client State Authentication Key
+  from: '[a-zA-Z0-9]{32}'
+  generate: expression
+  name: CLIENT_STATE_AUTHENTICATION_KEY
+  required: true
+- description: Key used to perform encryption of client side stored state
+  displayName: Client State Encryption Key
+  from: '[a-zA-Z0-9]{32}'
+  generate: expression
+  name: CLIENT_STATE_ENCRYPTION_KEY
+  required: true
+- description: Should deployment of integrations be enabled?
+  displayName: Controllers Integration Enabled
+  name: CONTROLLERS_INTEGRATION_ENABLED
+  value: "true"
+- description: Set to 0 to disable data virtualization, set to 1 to enable data virtualization
+  displayName: Datavirt Enabled
+  name: DATAVIRT_ENABLED
+  required: true
+  value: "0"
+- description: Enables starting up with demo data
+  displayName: Demo Data Enabled
+  name: DEMO_DATA_ENABLED
+  required: true
+  value: "false"
+- description: Namespace containing image streams
+  displayName: Image Stream Namespace
+  name: IMAGE_STREAM_NAMESPACE
+  value: ""
+- description: Interval for checking the state of the integrations
+  displayName: Integration State Check Interval
+  name: INTEGRATION_STATE_CHECK_INTERVAL
+  required: true
+  value: "60"
+- description: Maximum number of integrations single user can create
+  displayName: Max Integrations Per User
+  name: MAX_INTEGRATIONS_PER_USER
+  required: true
+  value: "1"
+- description: Volume space available for Meta data, e.g. 512Mi, 2Gi
+  displayName: Meta Volume Capacity
+  name: META_VOLUME_CAPACITY
+  required: true
+  value: 1Gi
+- description: Secret to use to encrypt oauth cookies
+  displayName: Oauth Cookie Secret
+  from: '[a-zA-Z0-9]{32}'
+  generate: expression
+  name: OAUTH_COOKIE_SECRET
+- description: The URL to the OpenShift console
+  displayName: Openshift Console Url
+  name: OPENSHIFT_CONSOLE_URL
+  value: https://localhost:8443
+- description: Url to 3scale for exposing services
+  displayName: Openshift Management Url For3scale
+  name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
+- description: Public OpenShift master address
+  displayName: Openshift Master
+  name: OPENSHIFT_MASTER
+  required: true
+  value: https://localhost:8443
+- description: OpenShift OAuth client secret
+  displayName: Openshift Oauth Client Secret
+  from: '[a-zA-Z0-9]{64}'
+  generate: expression
+  name: OPENSHIFT_OAUTH_CLIENT_SECRET
+  required: true
+- description: The name of the OpenShift project Syndesis is being deployed into
+  displayName: Openshift Project
+  name: OPENSHIFT_PROJECT
+  required: true
+- description: Name of the PostgreSQL database accessed
+  displayName: Postgresql Database
+  name: POSTGRESQL_DATABASE
+  required: true
+  value: syndesis
+- description: The OpenShift Namespace where the PostgreSQL ImageStream resides
+  displayName: Postgresql Image Stream Namespace
+  name: POSTGRESQL_IMAGE_STREAM_NAMESPACE
+  value: openshift
+- description: Password for the PostgreSQL connection user
+  displayName: Postgresql Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: POSTGRESQL_PASSWORD
+  required: true
+- description: Password for the PostgreSQL sampledb user
+  displayName: Postgresql Sampledb Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: POSTGRESQL_SAMPLEDB_PASSWORD
+  required: true
+- description: Host and port of the PostgreSQL database to access
+  displayName: Postgresql Url
+  name: POSTGRESQL_URL
+  required: true
+  value: postgresql://syndesis-db:5432/syndesis?sslmode=disable
+- description: Username for PostgreSQL user that will be used for accessing the database
+  displayName: Postgresql User
+  name: POSTGRESQL_USER
+  value: syndesis
+- description: Volume space available for PostgreSQL data, e.g. 512Mi, 2Gi
+  displayName: Postgresql Volume Capacity
+  name: POSTGRESQL_VOLUME_CAPACITY
+  required: true
+  value: 1Gi
+- description: Volume space available for Prometheus data, e.g. 512Mi, 2Gi
+  displayName: Prometheus Volume Capacity
+  name: PROMETHEUS_VOLUME_CAPACITY
+  required: true
+  value: 1Gi
+- description: The external hostname to access Syndesis
+  displayName: Route Hostname
+  name: ROUTE_HOSTNAME
+- description: The user needs to have permissions to at least get a list of pods in
+    the given project in order to be granted access to the Syndesis installation
+  displayName: Sar Project
+  name: SAR_PROJECT
+  required: true
+- description: The encryption key used to encrypt/decrypt stored secrets
+  displayName: Syndesis Encrypt Key
+  from: '[a-zA-Z0-9]{64}'
+  generate: expression
+  name: SYNDESIS_ENCRYPT_KEY
+  required: true
+- description: Registry from where to fetch Syndesis images
+  displayName: Syndesis Registry
+  name: SYNDESIS_REGISTRY
+  value: docker.io
+- description: Enables test-support endpoint on backend API
+  displayName: Test Support Enabled
+  name: TEST_SUPPORT_ENABLED
+  required: true
+  value: "false"
+- description: Volume space available for the upgrade process (backup data), e.g.
+    512Mi, 2Gi
+  displayName: Upgrade Volume Capacity
+  name: UPGRADE_VOLUME_CAPACITY
+  required: true
+  value: 1Gi
