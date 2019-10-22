@@ -98,6 +98,7 @@ with options:
 --dry-run -n                 Dry run
 --git-remote                 Push to a different git remote
 --skip-binary-release        Ignore release of binary artifacts
+--skip-template-release      Ignore release of template artifact (deprecated)
 --verbose                    Verbose log output
 
 Please check also "common_config.sh" for the configuration values.
@@ -112,7 +113,7 @@ git_commit() {
     local release_version="$3"
 
     if [ ! $(hasflag --dry-run -n) ]; then
-        local mod_files=$(git ls-files --modified | grep $pattern)
+        local mod_files=$(git diff --cached --name-only | grep $pattern)
         if [ -n "$mod_files" ]; then
             echo "$mod_files" | xargs git commit -m "[$release_version]: $message"
         else
@@ -277,6 +278,7 @@ extract_binaries() {
     mv $camel_k_dir/camel-k-client-linux.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-linux-64bit.tar.gz && \
       mv $camel_k_dir/camel-k-client-mac.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-mac-64bit.tar.gz && \
       mv $camel_k_dir/camel-k-client-windows.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-windows-64bit.tar.gz
+    local err=$?
     set -e
     if [ $err -ne 0 ]; then
       echo "ERROR: Cannot extract camel-k client binaries"
@@ -284,6 +286,76 @@ extract_binaries() {
     fi
 
     echo $release_dir
+}
+
+release_template() {
+    if [ $(hasflag --skip-template-release) ]; then
+        echo "Skipping release of template artifact"
+        return
+    fi
+
+    local release_dir="$topdir/templates"
+
+    #
+    # docker uses the 'darwin' directory rather than mac
+    #
+    osdir=${CURRENT_OS}
+    if [ "$osdir" == "mac" ]; then
+      osdir="darwin"
+    fi
+
+    local tmp_dir="$(mktemp -d /tmp/fuse-template-XXXXX)"
+    chmod a+rw $tmp_dir
+
+    local syndesis_dir=$tmp_dir/syndesis
+    mkdir -p $syndesis_dir
+    # Fetch the syndesis operator appropriate to this platform & its config file
+    result=$(extract_from_docker $SYNDESIS_IMAGE "/opt/clients/$osdir*/*operator*;/conf/config.yaml" $syndesis_dir)
+    check_error $result
+
+    set +e
+    SYNDESIS_BINARY="syndesis-operator"
+    pushd $syndesis_dir > /dev/null
+    if [ -f "${SYNDESIS_BINARY}.gz" ]; then
+        if [ $osdir == "windows" ]; then
+          gunzip "${SYNDESIS_BINARY}.gz" && mv ${SYNDESIS_BINARY} ${SYNDESIS_BINARY}.exe
+          SYNDESIS_BINARY="${SYNDESIS_BINARY}.exe"
+        else
+          gunzip "${SYNDESIS_BINARY}.gz"
+        fi
+    fi
+    set -e
+
+    if [ ! -x $SYNDESIS_BINARY ]; then
+        echo "ERROR: Cannot find syndesis-operator binary to generate template"
+        return
+    fi
+
+    #
+    # Execute the syndesis-operator to generate the template
+    #
+    local FUSE_TEMPLATE="fuse-online-template.yml"
+
+    set +e
+    "./$SYNDESIS_BINARY" install forge --operator-config config.yaml --addons todo > $FUSE_TEMPLATE
+     local err=$?
+    set -e
+    if [ $err -ne 0 ]; then
+      echo "ERROR: Cannot generate template from syndesis-operator"
+      return
+    fi
+    mkdir -p $release_dir
+    mv $FUSE_TEMPLATE $release_dir/
+    popd > /dev/null
+
+    if [ ! -f "$release_dir/$FUSE_TEMPLATE" ]; then
+        echo "ERROR: Template failed to be generated"
+        return
+    fi
+
+    git add $release_dir/$FUSE_TEMPLATE
+    git_commit "$FUSE_TEMPLATE" "Update release template for $TAG_FUSE_ONLINE_INSTALL" "$TAG_FUSE_ONLINE_INSTALL"
+    rm -f $tmp_dir
 }
 
 check_error() {
@@ -299,6 +371,9 @@ release() {
 
     echo "==== Releasing binary files"
     release_binaries
+
+    echo "==== Releasing template file"
+    release_template
 
     echo "==== Committing"
     cd $topdir
