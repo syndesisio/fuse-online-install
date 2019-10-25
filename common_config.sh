@@ -5,7 +5,7 @@
 source $BASEDIR/base_functions.sh
 
 # Tag for release. Update this before running release.sh
-TAG_FUSE_ONLINE_INSTALL=1.8.2
+TAG_FUSE_ONLINE_INSTALL=1.8.4
 
 # Fuse minor version (update it manually)
 TAG=1.8

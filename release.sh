@@ -377,6 +377,7 @@ release() {
 
     echo "==== Committing"
     cd $topdir
+    git add common_config.sh
     git_commit "common_config.sh" "Update release config for $TAG_FUSE_ONLINE_INSTALL" "$TAG_FUSE_ONLINE_INSTALL"
 
     # No tagging when just running on master
