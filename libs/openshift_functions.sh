@@ -109,10 +109,11 @@ get_replicas() {
 check_oc_version()
 {
     local minimum=${OC_MIN_VERSION}
-    local test=$(oc version | grep ^oc | tr -d oc\ v | cut -f1 -d "+")
-    if [ "$test" = "" ]; then
-        local test=$(oc version | grep 'Client Version' | sed "s/^.*GitVersion:\"v\(.*\)\", GitCommit.*$/\1/")
-    fi
+    #
+    # Removes any lines containing kubernetes or server
+    # Extracts any version number of the format dd.dd.dd, eg. 3.10.0 or 4.1.0
+    #
+    local test=$(oc version | grep -Eiv 'kubernetes|server' | grep -o '[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}\?')
 
     echo $(compare_oc_version $test $minimum)
 }
