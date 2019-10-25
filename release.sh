@@ -355,7 +355,7 @@ release_template() {
 
     git add $release_dir/$FUSE_TEMPLATE
     git_commit "$FUSE_TEMPLATE" "Update release template for $TAG_FUSE_ONLINE_INSTALL" "$TAG_FUSE_ONLINE_INSTALL"
-    rm -f $tmp_dir
+    rm -rf $tmp_dir
 }
 
 check_error() {
