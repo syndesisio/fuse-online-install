@@ -34,15 +34,117 @@ objects:
     labels:
       app: syndesis
       syndesis.io/app: syndesis
-      syndesis.io/component: s2i-java
+      syndesis.io/component: syndesis-server
       syndesis.io/type: infrastructure
-    name: syndesis-s2i
+    name: fuse-ignite-server
   spec:
     tags:
     - from:
         kind: DockerImage
-        name: ""
-      name: latest
+        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-server:1.5
+      name: "1.5"
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-ui
+      syndesis.io/type: infrastructure
+    name: fuse-ignite-ui
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-ui:1.5
+      name: "1.5"
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-meta
+      syndesis.io/type: infrastructure
+    name: fuse-ignite-meta
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-meta:1.5
+      name: "1.5"
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-oauthproxy
+      syndesis.io/type: infrastructure
+    name: oauth-proxy
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: registry.redhat.io/openshift4/ose-oauth-proxy:4.2
+      importPolicy:
+        scheduled: true
+      name: "4.2"
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-prometheus
+      syndesis.io/type: infrastructure
+    name: prometheus
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: registry.redhat.io/openshift3/prometheus:v3.9
+      name: v3.9
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db-metrics
+      syndesis.io/type: infrastructure
+    name: fuse-postgres-exporter
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: ${SYNDESIS_REGISTRY}/fuse7-tech-preview/fuse-postgres-exporter:1.5
+      name: "1.5"
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: s2i-java
+      syndesis.io/type: infrastructure
+    name: fuse-ignite-s2i
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-s2i:1.5
+      name: "1.5"
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/type: infrastructure
+    name: syndesis-oauth-proxy-cookie-secret
+  stringData:
+    oauthCookieSecret: ${OAUTH_COOKIE_SECRET}
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -63,21 +165,19 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-global-config
   stringData:
-    CLIENT_STATE_AUTHENTICATION_KEY: ${CLIENT_STATE_AUTHENTICATION_KEY}
-    CLIENT_STATE_ENCRYPTION_KEY: ${CLIENT_STATE_ENCRYPTION_KEY}
-    OAUTH_COOKIE_SECRET: ${OAUTH_COOKIE_SECRET}
-    OPENSHIFT_OAUTH_CLIENT_SECRET: ${OPENSHIFT_OAUTH_CLIENT_SECRET}
-    POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD}
-    POSTGRESQL_SAMPLEDB_PASSWORD: ${POSTGRESQL_SAMPLEDB_PASSWORD}
-    SYNDESIS_ENCRYPT_KEY: ${SYNDESIS_ENCRYPT_KEY}
+    oauthproxy: "4.2"
     params: |-
       OPENSHIFT_OAUTH_CLIENT_SECRET=${OPENSHIFT_OAUTH_CLIENT_SECRET}
+      POSTGRESQL_USER=${POSTGRESQL_USER}
       POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
       POSTGRESQL_SAMPLEDB_PASSWORD=${POSTGRESQL_SAMPLEDB_PASSWORD}
       OAUTH_COOKIE_SECRET=${OAUTH_COOKIE_SECRET}
       SYNDESIS_ENCRYPT_KEY=${SYNDESIS_ENCRYPT_KEY}
       CLIENT_STATE_AUTHENTICATION_KEY=${CLIENT_STATE_AUTHENTICATION_KEY}
       CLIENT_STATE_ENCRYPTION_KEY=${CLIENT_STATE_ENCRYPTION_KEY}
+    postgresql: "9.5"
+    prometheus: v3.9
+    syndesis: "1.5"
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
@@ -150,11 +250,16 @@ objects:
         port: 8181
         security:
           enabled: true
+      maven:
+        repositories:
+          central: https://repo.maven.apache.org/maven2/
+          repo-02-redhat-ga: https://maven.repository.redhat.com/ga/
+          repo-03-jboss-ga: https://repository.jboss.org/
       monitoring:
         kind: default
       openshift:
         apiBaseUrl: ${OPENSHIFT_MASTER}/oapi/v1
-        builderImageStreamTag: syndesis-s2i:latest
+        builderImageStreamTag: fuse-ignite-s2i:1.5
         deploymentMemoryLimitMi: 512
         deploymentMemoryRequestMi: 200
         imageStreamNamespace: ${IMAGE_STREAM_NAMESPACE}
@@ -168,7 +273,7 @@ objects:
         datasource:
           driver-class-name: org.postgresql.Driver
           password: ${POSTGRESQL_PASSWORD}
-          url: jdbc:${POSTGRESQL_URL}
+          url: jdbc:postgresql://syndesis-db:5432/syndesis?sslmode=disable
           username: ${POSTGRESQL_USER}
         zipkin:
           enabled: false
@@ -237,17 +342,14 @@ objects:
           syndesis.io/type: infrastructure
       spec:
         containers:
-        - env:
-          - name: DEV_SUPPORT
-            value: "false"
-          image: ""
+        - image: ' '
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
               path: /
               port: 8080
             initialDelaySeconds: 30
-          name: syndesis-ui
+          name: fuse-ignite-ui
           ports:
           - containerPort: 8080
           readinessProbe:
@@ -269,6 +371,15 @@ objects:
             name: syndesis-ui-config
           name: config-volume
     triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - fuse-ignite-ui
+        from:
+          kind: ImageStreamTag
+          name: fuse-ignite-ui:1.5
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   data:
@@ -379,6 +490,324 @@ objects:
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
+  data:
+    queries.yaml: |
+      pg_database:
+        query: " SELECT pg_database.datname, pg_database_size(pg_database.datname) as size FROM pg_database"
+        metrics:
+          - datname:
+              usage: "LABEL"
+              description: "Name of the database"
+          - size:
+              usage: "GAUGE"
+              description: "Disk space used by the database"
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db-metrics
+      syndesis.io/type: infrastructure
+    name: syndesis-db-metrics-config
+- apiVersion: v1
+  data:
+    add-sample-db.sh: |
+      #!/bin/bash
+      until bash -c "psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'"; do
+        echo "Waiting for Postgres server..."
+        sleep 1
+      done
+      echo "***** creating sampledb"
+      psql <<EOF
+        CREATE DATABASE sampledb;
+        CREATE USER sampledb WITH PASSWORD '$POSTGRESQL_SAMPLEDB_PASSWORD';
+        GRANT ALL PRIVILEGES ON DATABASE sampledb to sampledb;
+      EOF
+      psql -d sampledb -U sampledb <<'EOF'
+        CREATE SCHEMA AUTHORIZATION sampledb;
+        CREATE TABLE IF NOT EXISTS contact (first_name VARCHAR, last_name VARCHAR, company VARCHAR, lead_source VARCHAR, create_date DATE);
+        INSERT INTO contact VALUES ('Joe','Jackson','Red Hat','db',current_timestamp);
+        CREATE TABLE IF NOT EXISTS todo (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);
+        CREATE TABLE IF NOT EXISTS winelist (id SERIAL PRIMARY KEY, wine VARCHAR, price INTEGER, year INTEGER, gws INTEGER, ci VARCHAR, nbj INTEGER, productcode VARCHAR, pricebookentryid VARCHAR);
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (42,'Abreu Vineyard, Las Posadas, Howell Mountain',275,2013,9802,'B',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (91,'Araujo Estate, Eisele Vineyard Cabernet Sauvignon, Napa Valley',499,2015,9728,'C+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (99,'Aubert Wines, Ritchie Vineyard Chardonnay, White, Sonoma Coast',225,2015,9717,'A+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (88,'Bond Estates, Pluribus Red, Napa Valley', 410,2015,9729,'A+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (33,'Cayuse Vineyards, Bionic Frog Syrah, Walla Walla Valley',280,2010,9817,'A+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (69,'Chappellet, Pritchard Hill Cabernet Sauvignon, Napa Valley',239,2014,9748,'A+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (20,'Colgin Cellars, Tychson Hill Vineyard Cabernet Sauvignon, Napa Valley',355,2002,9848,'A+',4) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (72,'Dalla Valle Vineyards, Maya, Napa Valley',489,2013,974,'A',4) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (5, 'Dana Estates, Lotus Vineyard Cabernet Sauvignon, Napa Valley',299,2010,9887,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (17,'Dominus Estate, Christian Moueix, Napa Valley',108,2013,9854,'A',6) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (11,'Dunn Vineyards, Trailer Vineyard Cabernet Sauvignon, Howell Mountain',375,2013,986,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (35,'Futo Estate, 5500 Sld - Cabernet Sauvignon, Stags Leap District',325,2015,9813,'A+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES ( 9,'Harlan Estate, Napa Valley',365,2001,9873,'A+',6) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (48,'Joseph Phelps Vineyards, Insignia, Napa Valley',264,1991,9794,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (27,'Kapcsandy Family Winery, State Lane Vineyard Grand-Vin Cabernet Sauvignon, Napa Valley',129,2015,9841,'A+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (10,'Kongsgaard, The Judge Chardonnay, White, Napa Valley',246,2005,9865,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (65,'Larkmead Vineyards, The Lark Cabernet Sauvignon, Napa Valley',118,2013,9755,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (59,'Lokoya Winery, Mount Veeder Cabernet Sauvignon, Napa Valley',313,2015,977,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (77,'Paul Hobbs, Beckstoffer To Kalon Vineyard Cabernet Sauvignon, Oakville',359,2013,9738,'A',4) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (86,'Peter Michael Winery, Point Rouge Chardonnay, White, Sonoma County',185,2008,9732,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (73,'Promontory, Napa Valley',595,2013,974,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (81,'Quilceda Creek, Cabernet Sauvignon, Columbia Valley',169,2009,9736,'A+',5) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (36,'Ridge Vineyards, Monte Bello, Santa Cruz Mountains',150,2015,9809,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (46,'Scarecrow, Cabernet Sauvignon, Rutherford',440,2014,9796,'A+',4) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (47,'Schrader Cellars, Beckstoffer Las Piedras Vineyard Colesworthy Cabernet Sauvignon, Napa Valley', 69,2013,9794,'A',4) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (04,'Screaming Eagle, Cabernet Sauvignon, Napa Valley', 2660,2010,9905,'A',6) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (71,'Sloan, Proprietary Red, Rutherford',230,2013,9741,'A+',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (93,'Spottswoode, Family Estate Grown Cabernet Sauvignon, St Helena',149,2013,9726,'A',9) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (66,'Verite, Le Desir, Sonoma County',269,2007,9753,'A',3) ON CONFLICT (id) DO NOTHING;
+        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (100,'Continuum, Proprietary Red, Oakville',185,2007,9716,'A+',3) ON CONFLICT (id) DO NOTHING;
+        CREATE OR REPLACE FUNCTION add_lead(
+          first_and_last_name varchar,
+          company varchar,
+          phone varchar,
+          email varchar,
+          lead_source varchar,
+          lead_status varchar,
+          rating varchar)
+
+          RETURNS void
+          LANGUAGE 'plpgsql'
+
+        AS $BODY$
+        DECLARE
+          task varchar;
+        BEGIN
+          task := concat(lead_status || ' ', 'Lead: Please contact ', first_and_last_name, ' from ' || company, ' via phone: ' || phone, ' via email: ' || email, '. ', 'Lead is from ' || lead_source, '. Rating: ' || rating, '.');
+          insert into todo(task,completed) VALUES (task,0);
+        END;
+        $BODY$;
+
+        CREATE OR REPLACE FUNCTION create_lead(
+          OUT first_name text,
+          OUT last_name text,
+          OUT company text,
+          OUT lead_source text)
+          RETURNS SETOF record
+          AS
+          $$
+            SELECT first_name, last_name, company, lead_source
+            FROM contact;
+          $$
+           LANGUAGE 'sql' VOLATILE;
+      EOF
+
+      echo "***** sampledb created"
+    postStart.sh: |
+      #!/bin/bash
+      /var/lib/pgsql/sampledb/add-sample-db.sh &>  /proc/1/fd/1
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db
+      syndesis.io/type: infrastructure
+    name: syndesis-sampledb-config
+- apiVersion: v1
+  data:
+    syndesis-postgresql.conf: |
+      log_autovacuum_min_duration = 0
+      log_line_prefix = '%t %a %i %e %c '
+      logging_collector = off
+      autovacuum_max_workers = 6
+      autovacuum_naptime = 15s
+      autovacuum_vacuum_threshold = 25
+      autovacuum_vacuum_scale_factor = 0.1
+      autovacuum_analyze_threshold = 10
+      autovacuum_analyze_scale_factor = 0.05
+      autovacuum_vacuum_cost_delay = 10ms
+      autovacuum_vacuum_cost_limit = 2000
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db
+      syndesis.io/type: infrastructure
+    name: syndesis-db-conf
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db
+      syndesis.io/type: infrastructure
+    name: syndesis-db
+  spec:
+    ports:
+    - name: postgresql
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db
+      syndesis.io/type: infrastructure
+    name: syndesis-db
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${POSTGRESQL_VOLUME_CAPACITY}
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db
+      syndesis.io/type: infrastructure
+    name: syndesis-db
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-db
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/component: syndesis-db
+      spec:
+        containers:
+        - env:
+          - name: POSTGRESQL_USER
+            value: ${POSTGRESQL_USER}
+          - name: POSTGRESQL_PASSWORD
+            value: ${POSTGRESQL_PASSWORD}
+          - name: POSTGRESQL_DATABASE
+            value: ${POSTGRESQL_DATABASE}
+          - name: POSTGRESQL_SAMPLEDB_PASSWORD
+            value: ${POSTGRESQL_SAMPLEDB_PASSWORD}
+          image: ' '
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /var/lib/pgsql/sampledb/postStart.sh
+          livenessProbe:
+            initialDelaySeconds: 60
+            tcpSocket:
+              port: 5432
+          name: postgresql
+          ports:
+          - containerPort: 5432
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c
+                'SELECT 1'
+            initialDelaySeconds: 5
+          resources:
+            limits:
+              memory: 255Mi
+            requests:
+              memory: 255Mi
+          volumeMounts:
+          - mountPath: /var/lib/pgsql/data
+            name: syndesis-db-data
+          - mountPath: /var/lib/pgsql/sampledb
+            name: syndesis-sampledb-config
+          - mountPath: /opt/app-root/src/postgresql-cfg/
+            name: syndesis-db-conf
+        - env:
+          - name: DATA_SOURCE_NAME
+            value: postgresql://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@localhost:5432/syndesis?sslmode=disable
+          - name: PG_EXPORTER_EXTEND_QUERY_PATH
+            value: /etc/postgres/exporter/queries.yaml
+          image: ' '
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            tcpSocket:
+              port: 9187
+          name: syndesis-db-metrics
+          ports:
+          - containerPort: 9187
+            name: metrics
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 9187
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              memory: 20Mi
+          volumeMounts:
+          - mountPath: /etc/postgres/exporter
+            name: syndesis-db-metrics-config
+        serviceAccountName: syndesis-default
+        volumes:
+        - configMap:
+            name: syndesis-db-metrics-config
+          name: syndesis-db-metrics-config
+        - name: syndesis-db-data
+          persistentVolumeClaim:
+            claimName: syndesis-db
+        - configMap:
+            defaultMode: 511
+            name: syndesis-sampledb-config
+          name: syndesis-sampledb-config
+        - configMap:
+            name: syndesis-db-conf
+          name: syndesis-db-conf
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - postgresql
+        from:
+          kind: ImageStreamTag
+          name: postgresql:9.5
+          namespace: ${POSTGRESQL_IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - syndesis-db-metrics
+        from:
+          kind: ImageStreamTag
+          name: fuse-postgres-exporter:1.5
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
+- apiVersion: v1
   kind: Service
   metadata:
     labels:
@@ -454,7 +883,9 @@ objects:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          image: ""
+          - name: JAVA_DEBUG
+            value: "false"
+          image: ' '
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 5
@@ -464,7 +895,7 @@ objects:
               scheme: HTTP
             initialDelaySeconds: 300
             periodSeconds: 20
-          name: syndesis-meta
+          name: fuse-ignite-meta
           ports:
           - containerPort: 8080
             name: http
@@ -503,6 +934,15 @@ objects:
             name: syndesis-meta-config
           name: config-volume
     triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - fuse-ignite-meta
+        from:
+          kind: ImageStreamTag
+          name: fuse-ignite-meta:1.5
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   data:
@@ -578,7 +1018,7 @@ objects:
         - args:
           - --provider=openshift
           - --client-id=system:serviceaccount:${OPENSHIFT_PROJECT}:syndesis-oauth-client
-          - --client-secret=$(OPENSHIFT_OAUTH_CLIENT_SECRET)
+          - --client-secret=${OPENSHIFT_OAUTH_CLIENT_SECRET}
           - --upstream=http://syndesis-server/api/
           - --upstream=http://syndesis-server/mapper/
           - --upstream=http://syndesis-ui/
@@ -603,14 +1043,9 @@ objects:
           - name: OAUTH_COOKIE_SECRET
             valueFrom:
               secretKeyRef:
-                key: OAUTH_COOKIE_SECRET
-                name: syndesis-global-config
-          - name: OPENSHIFT_OAUTH_CLIENT_SECRET
-            valueFrom:
-              secretKeyRef:
-                key: OPENSHIFT_OAUTH_CLIENT_SECRET
-                name: syndesis-global-config
-          image: ""
+                key: oauthCookieSecret
+                name: syndesis-oauth-proxy-cookie-secret
+          image: ' '
           livenessProbe:
             httpGet:
               path: /oauth/healthz
@@ -618,7 +1053,7 @@ objects:
               scheme: HTTPS
             initialDelaySeconds: 15
             timeoutSeconds: 10
-          name: oauthproxy
+          name: fuse-ignite-oauthproxy
           ports:
           - containerPort: 8443
             name: public
@@ -644,6 +1079,15 @@ objects:
           secret:
             secretName: syndesis-oauthproxy-tls
     triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - fuse-ignite-oauthproxy
+        from:
+          kind: ImageStreamTag
+          name: oauth-proxy:4.2
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   kind: Service
@@ -730,7 +1174,9 @@ objects:
             value: ${INTEGRATION_STATE_CHECK_INTERVAL}
           - name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
             value: ${OPENSHIFT_MANAGEMENT_URL_FOR3SCALE}
-          image: ""
+          - name: JAVA_DEBUG
+            value: "false"
+          image: ' '
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 5
@@ -742,7 +1188,7 @@ objects:
               port: 8080
             initialDelaySeconds: 300
             periodSeconds: 20
-          name: syndesis-server
+          name: fuse-ignite-server
           ports:
           - containerPort: 8080
             name: http
@@ -774,6 +1220,15 @@ objects:
             name: syndesis-server-config
           name: config-volume
     triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - fuse-ignite-server
+        from:
+          kind: ImageStreamTag
+          name: fuse-ignite-server:1.5
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   data:
@@ -1403,7 +1858,7 @@ objects:
         - args:
           - --config.file=/etc/prometheus/prometheus.yml
           - --storage.tsdb.retention=30d
-          image: ""
+          image: ' '
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -1435,6 +1890,15 @@ objects:
             name: syndesis-prometheus-config
           name: syndesis-prometheus-config
     triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - prometheus
+        from:
+          kind: ImageStreamTag
+          name: prometheus:v3.9
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   kind: Service
@@ -1682,11 +2146,6 @@ parameters:
   generate: expression
   name: POSTGRESQL_SAMPLEDB_PASSWORD
   required: true
-- description: Host and port of the PostgreSQL database to access
-  displayName: Postgresql Url
-  name: POSTGRESQL_URL
-  required: true
-  value: postgresql://syndesis-db:5432/syndesis?sslmode=disable
 - description: Username for PostgreSQL user that will be used for accessing the database
   displayName: Postgresql User
   name: POSTGRESQL_USER
