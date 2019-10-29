@@ -66,20 +66,20 @@ my $RELEASE_MAP =
 my $EXTRA_IMAGES =
   [
     {
-      source => "$config->{registry}/openshift4/ose-oauth-proxy:4.1",
-      target =>  "oauth-proxy:v1.1.0"
+      source => "registry.redhat.io/openshift4/ose-oauth-proxy:4.2",
+      target =>  "oauth-proxy:4.2"
     },
     {
-      source => "$config->{registry}/openshift3/prometheus:v3.9.25",
-      target => "prometheus:v2.1.0"
+      source => "registry.redhat.io/openshift3/prometheus:v3.9.25",
+      target => "prometheus:v3.9"
     },
     {
-      source => "$config->{registry}/fuse7-tech-preview/fuse-postgres-exporter:$config->{tag_postgres_exporter}",
-      target => "postgres_exporter:v0.4.7"
+      source => "$config->{registry}/fuse7-tech-preview-fuse-postgres-exporter:$config->{tag_postgres_exporter}",
+      target => "fuse-postgres-exporter:1.5"
     },
     {
-      source => "$config->{registry}/fuse7-tech-preview/data-virtualization-server:$config->{tag_komodo}",
-      target => "data-virtualization-server:v0.0.5"
+      source => "$config->{registry}/fuse7-tech-preview-fuse-dv:$config->{tag_komodo}",
+      target => "fuse-dv:1.5"
     }
   ];
 
@@ -95,7 +95,7 @@ EOT
 for my $image (sort keys %{$source->{images}}) {
     print YELLOW,"* ",GREEN,"Transfering ${image}:",$source->{images}->{$image},"\n",RESET;
 
-    my $pulled_image = &docker_pull(&format_image($image,$source));
+    my $pulled_image = &docker_pull(&format_osbs_image($image,$source));
     my $tagged_image = &docker_tag($pulled_image, &format_image($image,$target));
     &docker_push($tagged_image);
 
@@ -126,6 +126,12 @@ sub format_image {
     my $image = shift;
     my $map = shift;
     return sprintf("%s/%s/%s:%s",$map->{registry},$map->{repository},$image,$map->{images}->{$image});
+}
+
+sub format_osbs_image {
+    my $image = shift;
+    my $map = shift;
+    return sprintf("%s/%s-%s:%s",$map->{registry},$map->{repository},$image,$map->{images}->{$image});
 }
 
 sub docker_pull {
@@ -174,8 +180,8 @@ sub parse_configuration() {
   for my $img ("ui","server","meta","s2i", "upgrade") {
     die "No tag for $img provided in $config_file" unless $config->{"tag_" . $img}
   }
-  die "No git_fuse_online_install given in $config_file" unless $config->{git_fuse_online_install};
-  my $target_version = $1 if $config->{git_fuse_online_install} =~ /^(\d+\.\d+)(\.\d+)?$/;
+  die "No base_image_version given in $config_file" unless $config->{base_image_version};
+  my $target_version = $config->{base_image_version};
   die "Could not extract target version (format: <major>.<minor>) from given git_fuse_online_install \"", $config->{git_fuse_online_install},"\" in $config_file" unless $target_version;
   $config->{target_version} = $target_version;
   return $config;
