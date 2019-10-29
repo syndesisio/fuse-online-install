@@ -30,5 +30,5 @@ oc create -f templates/serviceaccount-as-oauthclient-restricted.yml
 # Install Fuse Online
 
 ```
-oc new-app --template=fuse-ignite/fuse-ignite-1.8 -p OPENSHIFT_OAUTH_CLIENT_SECRET=$(oc sa get-token syndesis-oauth-client -n syndesis) -p IMAGE_STREAM_NAMESPACE-fuse-ignite -p OPENSHIFT_PROJECT=syndesis -p SAR_PROJECT=syndesis -p ROUTE_HOSTNAME=$(minishift ip) -n syndesis
+oc new-app --template=fuse-ignite/fuse-ignite-1.8 -p OPENSHIFT_OAUTH_CLIENT_SECRET=$(oc sa get-token syndesis-oauth-client -n syndesis) -p IMAGE_STREAM_NAMESPACE=fuse-ignite -p OPENSHIFT_PROJECT=syndesis -p SAR_PROJECT=syndesis -p ROUTE_HOSTNAME=$(minishift ip) -n syndesis
 ```
