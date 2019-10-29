@@ -111,11 +111,7 @@ with options:
                               in her projects. You have to run this as cluster-admin
     --cluster                 Add the permission for all projects in the cluster
                               (only when used together with --grant)
-    --route                   Route to use. If not given, the route is trying to be detected from the currently
-                              connected cluster.
-   --console <console-url>    The URL to the openshift console
    --force                    Override an existing installation if present
-
 -p --project <project>        Install into this project. The project will be deleted
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
@@ -124,7 +120,6 @@ with options:
                               (version is optional)
    --camel-k-options "opts"   Options used when installing the camel-k operator.
                               Use quotes and start with a space before appending the options.
-   --datavirt                 Install Data Virtualizations.
    --help                     This help message
 -v --verbose                  Verbose logging
 
@@ -133,93 +128,6 @@ EOT
 }
 
 # ============================================================
-
-# Create syndesis resource
-create_syndesis() {
-    local route="${1:-}"
-    local console="${2:-}"
-    local image_stream_namespace="${3:-}"
-
-    local syndesis_installed=$(oc get syndesis -o name | wc -l)
-    local force=$(hasflag --force)
-    if [ $syndesis_installed -gt 0 ]; then
-        if [ -n "${force}" ]; then
-            oc delete $(oc get syndesis -o name)
-        fi
-    fi
-
-    local syndesis=$(cat <<EOT
-apiVersion: "syndesis.io/v1alpha1"
-kind: "Syndesis"
-metadata:
-  name: "app"
-spec:
-  integration:
-    # No limitations by default on OCP
-    limit: 0
-EOT
-)
-    local extra=""
-    if [ -n "$console" ]; then
-        extra=$(cat <<EOT
-
-  openshiftConsoleUrl: "$console"
-EOT
-)
-        syndesis="${syndesis}${extra}"
-    fi
-
-    if [ -n "$route" ]; then
-        extra=$(cat <<EOT
-
-  routeHostname: "$route"
-EOT
-)
-        syndesis="${syndesis}${extra}"
-    fi
-
-    if [ -n "$image_stream_namespace" ]; then
-        extra=$(cat <<EOT
-
-  imageStreamNamespace: "$image_stream_namespace"
-EOT
-)
-        syndesis="${syndesis}${extra}"
-    fi
-
-    local datavirt=$(hasflag --datavirt)
-    if [ -n "${datavirt}" ]; then
-        extra=$(cat <<EOT
-
-  addons:
-    komodo:
-      enabled: "true"
-EOT
-)
-        syndesis="${syndesis}${extra}"
-    fi
-
-    local camelk=$(hasflag --camel-k)
-    if [ -n "${camelk}" ]; then
-        extra=$(cat <<EOT
-
-  addons:
-    camelk:
-      enabled: "true"
-EOT
-)
-        syndesis="${syndesis}${extra}"
-    fi
-
-    echo "$syndesis" | cat | oc create -f -
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Error while creating resource"
-        echo "$syndesis"
-        return
-    fi
-}
-
-
 
 open_url() {
     local url=$1
@@ -348,10 +256,7 @@ wait_for_deployments 1 syndesis-operator
 
 # Create syndesis resource
 echo "Creating Syndesis resource"
-route=$(readopt --route)
-console=$(readopt --console)
-result=$(create_syndesis "$route" "$console" "$project")
-check_error "$result"
+$SYNDESIS_CLI install app
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
     wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta
