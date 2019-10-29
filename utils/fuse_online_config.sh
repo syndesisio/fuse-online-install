@@ -11,7 +11,7 @@ tag_meta="1.5-16"
 tag_s2i="1.5-14"
 
 tag_upgrade="1.5-7"
-tag_operator="1.5-8"
+tag_operator="1.5-9"
 tag_postgres_exporter="1.5-7"
 
 tag_camel_k="1.5-14"
