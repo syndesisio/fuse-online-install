@@ -337,7 +337,7 @@ release_template() {
     local FUSE_TEMPLATE="fuse-online-template.yml"
 
     set +e
-    "./$SYNDESIS_BINARY" install forge --operator-config config.yaml --addons todo > $FUSE_TEMPLATE
+    "./$SYNDESIS_BINARY" install forge --operator-config config.yaml --addons todo,komodo > $FUSE_TEMPLATE
      local err=$?
     set -e
     if [ $err -ne 0 ]; then
