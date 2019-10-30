@@ -123,7 +123,7 @@ with options:
    --help                     This help message
 -v --verbose                  Verbose logging
 
-You have to run `--setup --grant <user>` as a cluster-admin before you can install Fuse Online as a user.
+You have to run "--setup --grant <user>" as a cluster-admin before you can install Fuse Online as a user.
 EOT
 }
 
