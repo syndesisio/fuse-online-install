@@ -1388,7 +1388,6 @@ objects:
     resources:
     - deploymentconfigs
     - deploymentconfigs/scale
-    - deploymentconfigs/finalizers
     verbs:
     - get
     - list
