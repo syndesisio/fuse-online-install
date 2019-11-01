@@ -344,6 +344,14 @@ release_template() {
       echo "ERROR: Cannot generate template from syndesis-operator"
       return
     fi
+
+    #
+    # Need to remove the deploymentconfigs/finalizers permission from template since the user installing the template
+    # on some systems does not normally have this permission.
+    # This will cause issues, as documented in ENTESB-11639, but that's a short-term balance to be struck.
+    #
+    sed -i '/deploymentconfigs\/finalizers/d' $FUSE_TEMPLATE
+
     mkdir -p $release_dir
     mv $FUSE_TEMPLATE $release_dir/
     popd > /dev/null
