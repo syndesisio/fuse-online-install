@@ -1388,7 +1388,6 @@ objects:
     resources:
     - deploymentconfigs
     - deploymentconfigs/scale
-    - deploymentconfigs/finalizers
     verbs:
     - get
     - list
@@ -2052,6 +2051,154 @@ objects:
           kind: ImageStreamTag
           name: todo:latest
       type: ImageChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-dv
+      syndesis.io/type: infrastructure
+    name: syndesis-dv
+  spec:
+    ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-dv
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-dv
+      syndesis.io/type: infrastructure
+    name: syndesis-dv
+  spec:
+    replicas: 1
+    selector:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-dv
+    strategy:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          memory: 20Mi
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: syndesis
+          syndesis.io/app: syndesis
+          syndesis.io/component: syndesis-dv
+          syndesis.io/type: infrastructure
+      spec:
+        containers:
+        - env:
+          - name: JAVA_APP_DIR
+            value: /deployments
+          - name: JAVA_OPTIONS
+            value: -Djava.net.preferIPv4Stack=true -Duser.home=/tmp -Djava.net.preferIPv4Addresses=true
+              -Dlog4j.logger.org.apache.http=DEBUG -Dkomodo.user=${POSTGRESQL_USER}
+              -Dkomodo.password=${POSTGRESQL_PASSWORD} -Dkomodo.connectionUrl=jdbc:postgresql://syndesis-db:5432/${POSTGRESQL_DATABASE}
+              -Dkomodo.binaryStoreUrl=jdbc:postgresql://syndesis-db:5432/${POSTGRESQL_DATABASE}
+              -Dkomodo.connectionDriver=org.postgresql.Driver
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: GC_MAX_METASPACE_SIZE
+            value: "512"
+          - name: BUILD_IMAGE_STREAM
+            value: fuse-ignite-s2i:1.5
+          - name: POSTGRESQL_PASSWORD
+            value: ${POSTGRESQL_PASSWORD}
+          - name: POSTGRESQL_USER
+            value: ${POSTGRESQL_USER}
+          - name: POSTGRESQL_DATABASE
+            value: ${POSTGRESQL_DATABASE}
+          - name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
+            value: ${OPENSHIFT_MANAGEMENT_URL_FOR3SCALE}
+          image: ' '
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              httpHeaders:
+              - name: Accept
+                value: application/json
+              path: /vdb-builder/v1/swagger.json
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+          name: syndesis-dv
+          ports:
+          - containerPort: 8080
+            name: http
+          - containerPort: 9779
+            name: prometheus
+          - containerPort: 8778
+            name: jolokia
+          readinessProbe:
+            httpGet:
+              httpHeaders:
+              - name: Accept
+                value: application/json
+              path: /vdb-builder/v1/swagger.json
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 750m
+              memory: 1Gi
+            requests:
+              cpu: 350m
+              memory: 256Mi
+          volumeMounts:
+          - mountPath: /deployments/config
+            name: config-volume
+          workingDir: /deployments
+        serviceAccountName: syndesis-server
+        volumes:
+        - configMap:
+            name: syndesis-server-config
+          name: config-volume
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - syndesis-dv
+        from:
+          kind: ImageStreamTag
+          name: fuse-dv:1.5
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: syndesis-dv
+      syndesis.io/type: infrastructure
+    name: fuse-dv
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: ${SYNDESIS_REGISTRY}/fuse7-tech-preview/fuse-dv:1.5
+      importPolicy:
+        scheduled: true
+      name: "1.5"
 parameters:
 - description: Key used to perform authentication of client side stored state
   displayName: Client State Authentication Key

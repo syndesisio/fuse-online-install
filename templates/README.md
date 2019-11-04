@@ -17,7 +17,7 @@ oc new-project syndesis
 
 ```
 oc project fuse-ignite
-oc create -f fuse-online-template.yml
+oc create -f templates/fuse-online-template.yml
 ```
 
 ## Setup OAuth Service Account
