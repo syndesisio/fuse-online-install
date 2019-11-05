@@ -301,12 +301,6 @@ fi
 # Check for OC
 setup_oc
 
-# ==================================================================
-# make sure pull secret is present (required since 7.3)
-create_secret_if_not_present
-
-# ==================================================================
-
 # If a project is given, create it new or recreate it
 project=$(readopt --project -p)
 if [ -n "${project}" ]; then
@@ -314,6 +308,15 @@ if [ -n "${project}" ]; then
 else
     project=$(oc project -q)
 fi
+
+# ==================================================================
+# make sure pull secret is present (required since 7.3)
+#
+# must go after -p so it does not get wiped out by deleting the project
+#
+create_secret_if_not_present
+
+# ==================================================================
 
 # Check for the proper setup
 set +e
