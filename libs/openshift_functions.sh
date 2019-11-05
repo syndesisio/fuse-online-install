@@ -221,12 +221,44 @@ create_secret_if_not_present() {
   if $(check_resource secret syndesis-pull-secret) ; then
     echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
   else
-    echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
-    echo "enter username for registry.redhat.io and press [ENTER]: "
-    read username
-    echo "enter password for registry.redhat.io and press [ENTER]: "
-    read -s password
-    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password)
+    #
+    # Test the credentials entered and give a couple of subsequent tries
+    # then exit if still not right
+    #
+    iterations=0
+    max=2
+    while [  $iterations -le $max ];
+    do
+      echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
+      echo "enter username for registry.redhat.io and press [ENTER]: "
+      read username
+      echo "enter password for registry.redhat.io and press [ENTER]: "
+      read -s password
+
+      # Testing access that credentials are correct
+      local reply=$(curl -IsL -u ${username}:${password} "https://sso.redhat.com/auth/realms/rhcc/protocol/redhat-docker-v2/auth?service=docker-registry&client_id=curl&scope=repository:rhel:pull")
+
+      # Does reply contain "200 OK".
+      if [ -z "${reply##*200 OK*}" ]; then
+        # All good so break out of loop & carry on ...
+        break
+      else
+        # Credentials wrong ... give a couple more tries or exit
+        echo "ERROR: Credentials cannot be verified with redhat registry."
+        if [ $iterations -lt $max ]; then
+          echo "Please try again ... ($((iterations+1))/$((max+1)))"
+        else
+          echo "Exiting ... ($((iterations+1))/$((max+1)))"
+          exit 1
+        fi
+      fi
+
+      let iterations=iterations+1
+    done
+
+    echo "enter email address for registry.redhat.io and press [ENTER]: "
+    read email
+    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password --docker-email=$email)
     check_error $result
   fi
 }
