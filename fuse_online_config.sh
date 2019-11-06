@@ -1,18 +1,18 @@
 # Tag for release. Update this before running release.sh
-git_fuse_online_install="1.7.20"
+git_fuse_online_install="1.7.26"
 
 # Image Streams to be updated
 imagestreams="server ui meta s2i"
 
 # Tags used for the productised images
-tag_server="1.4-11"
-tag_ui="1.4-4"
-tag_meta="1.4-10"
-tag_s2i="1.4-10"
+tag_server="1.4-17"
+tag_ui="1.4-9"
+tag_meta="1.4-16"
+tag_s2i="1.4-16"
 
-tag_upgrade="1.4-5"
-tag_operator="1.4-8"
-tag_postgres_exporter="1.4-3"
+tag_upgrade="1.4-14"
+tag_operator="1.4-16"
+tag_postgres_exporter="1.4-4"
 
 tag_camel_k="1.4-13"
 tag_java_base_image="1.4-6"
