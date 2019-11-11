@@ -165,6 +165,29 @@ get_route() {
   oc get route $name -o jsonpath="{.spec.host}" 2>/dev/null
 }
 
+grant_role() {
+  local user_to_prepare="$1"
+  if [ -z "$user_to_prepare" ]; then
+    check_error "ERROR: Cannot perform grant as no user specified"
+  fi
+
+  echo "Grant syndesis-installer role to user $user_to_prepare"
+
+  #
+  # Check that the user calling --grant is a cluster-admin
+  #
+  if [ $(is_cluster_admin) != "OK" ]; then
+    check_error "ERROR: Can only execute --grant as cluster-admin."
+  fi
+
+  clusterwide=""
+  if [ $(hasflag --cluster) ]; then
+    clusterwide="--cluster"
+  fi
+
+  $SYNDESIS_CLI grant --user "$user_to_prepare" $clusterwide
+}
+
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -177,9 +200,37 @@ if [ $(hasflag --verbose -v) ]; then
     set -x
 fi
 
+#
+# Is the user executing this a cluster-admin?
+#
+cluster_admin=$(is_cluster_admin)
+if [ "${cluster_admin}" == "OK" ]; then
+  echo "User $(oc whoami) is a cluster-admin"
+fi
+
+#
+# If a project is given, only a cluster-admin
+# can create it new or recreate it
+#
+project=$(readopt --project -p)
+if [ -n "${project}" ]; then
+  if [ "$cluster_admin" == "OK" ]; then
+    recreate_project $project
+  else
+    check_error "ERROR: It is not possible to install into a new (or recreated) project without being a cluster-admin since artifacts required by the install cannot be (re)created."
+  fi
+fi
+
 prep_only="false"
 if [ $(hasflag -s --setup) ]; then
     echo "Installing Syndesis CRD"
+
+    #
+    # Check that the user calling --setup is a cluster-admin
+    #
+    if [ "$cluster_admin" != "OK" ]; then
+      check_error "ERROR: Can only execute --setup as cluster-admin."
+    fi
 
     $SYNDESIS_CLI install cluster
 
@@ -193,12 +244,7 @@ fi
 
 user_to_prepare="$(readopt -u --grant)"
 if [ -n  "$user_to_prepare" ]; then
-    echo "Grant permission to create Syndesis to user $user_to_prepare"
-    clusterwide=""
-    if [ $(hasflag --cluster) ]; then
-      clusterwide="--cluster"
-    fi
-    $SYNDESIS_CLI grant --user "$user_to_prepare" $clusterwide
+    grant_role "$user_to_prepare"
     prep_only="true"
 fi
 
@@ -206,24 +252,42 @@ if $prep_only; then
     exit 0
 fi
 
-# Check for OC
+# ===========================
+#
+# Do some pre-flight install checks
+#
+# ===========================
+
+#
+# Check for oc
+#
 setup_oc
 
-# ==================================================================
+#
 # make sure pull secret is present (required since 7.3)
+#
 create_secret_if_not_present
 
-# ==================================================================
-
-# If a project is given, create it new or recreate it
-project=$(readopt --project -p)
-if [ -n "${project}" ]; then
-    recreate_project $project
-else
-    project=$(oc project -q)
+#
+# If a cluster-admin and the role has not yet been granted
+# then ensure it is by grant it to the current user
+#
+if [ "$cluster_admin" == "OK" ]; then
+  if [ "$(is_role_granted)" != "OK" ]; then
+    echo "No syndesis-installer role has been granted so installing now"
+    grant_role "$(oc whoami)"
+  fi
 fi
 
-# Check for the proper setup
+#
+# Check that user has syndesis-installer role available
+#
+result=$(is_role_granted)
+check_error "$result"
+
+#
+# Check CRD installed
+#
 set +e
 oc get syndesis >/dev/null 2>&1
 if [ $? -ne 0 ]; then
@@ -237,7 +301,6 @@ if [ $(hasflag --camel-k) ]; then
     fi
 fi
 set -e
-
 
 # Deploy operator and wait until its up
 echo "Deploying Syndesis operator"
