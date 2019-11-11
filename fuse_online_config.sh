@@ -1,5 +1,5 @@
 # Tag for release. Update this before running release.sh
-git_fuse_online_install="1.7.26"
+git_fuse_online_install="1.7.27"
 
 # Image Streams to be updated
 imagestreams="server ui meta s2i"
@@ -24,9 +24,9 @@ repository="fuse7"
 repository_tech_preview="fuse7-tech-preview"
 
 # Test:
-registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
-maven_repository="https://origin-repository.jboss.org/nexus/content/groups/ea@id=redhat.ea"
+#registry="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888"
+#maven_repository="https://origin-repository.jboss.org/nexus/content/groups/ea@id=redhat.ea"
 
 # Official:
-#registry="registry.redhat.io"
-#maven_repository="https://maven.repository.redhat.com/ga@id=redhat.ga"
+registry="registry.redhat.io"
+maven_repository="https://maven.repository.redhat.com/ga@id=redhat.ga"
