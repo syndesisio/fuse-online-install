@@ -335,6 +335,9 @@ set -e
 echo "Deploying Syndesis operator"
 $SYNDESIS_CLI install operator
 
+result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+check_error $result
+
 if [ $(hasflag --camel-k) ]; then
     echo "Deploying Camel-K operator"
     $KAMEL_CLI install --skip-cluster-setup $(readopt --camel-k-options)
