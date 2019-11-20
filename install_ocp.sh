@@ -513,7 +513,6 @@ deploy_syndesis_operator() {
     do
       sleep 3
       local result=$(oc describe is/fuse-online-operator 2>&1)
-      echo "Result: $result" >> /tmp/pgr.log
       if [ -z "${result##*error*}" ]; then
         printf "ERROR: Cannot deploy operator as image stream has an error: %s" "$result"
         return
