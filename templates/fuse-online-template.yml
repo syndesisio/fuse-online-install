@@ -175,7 +175,7 @@ objects:
       SYNDESIS_ENCRYPT_KEY=${SYNDESIS_ENCRYPT_KEY}
       CLIENT_STATE_AUTHENTICATION_KEY=${CLIENT_STATE_AUTHENTICATION_KEY}
       CLIENT_STATE_ENCRYPTION_KEY=${CLIENT_STATE_ENCRYPTION_KEY}
-    postgresql: "9.5"
+    postgresql: "9.6"
     prometheus: v3.9
     syndesis: "1.5"
 - apiVersion: v1
@@ -795,7 +795,7 @@ objects:
         - postgresql
         from:
           kind: ImageStreamTag
-          name: postgresql:9.5
+          name: postgresql:9.6
           namespace: ${POSTGRESQL_IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - imageChangeParams:
