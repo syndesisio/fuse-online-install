@@ -78,8 +78,8 @@ my $EXTRA_IMAGES =
       target => "fuse-postgres-exporter:1.5"
     },
     {
-      source => "$config->{registry}/fuse7-tech-preview-fuse-dv:$config->{tag_komodo}",
-      target => "fuse-dv:1.5"
+      source => "$config->{registry}/fuse7-tech-preview-fuse-dv-rhel7:$config->{tag_komodo}",
+      target => "fuse-dv-rhel7:1.5"
     }
   ];
 
