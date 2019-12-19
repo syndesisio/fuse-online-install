@@ -95,7 +95,7 @@ EOT
 for my $image (sort keys %{$source->{images}}) {
     print YELLOW,"* ",GREEN,"Transfering ${image}:",$source->{images}->{$image},"\n",RESET;
 
-    my $pulled_image = &docker_pull(&format_osbs_image($image,$source));
+    my $pulled_image = &docker_pull(&format_image($image,$source));
     my $tagged_image = &docker_tag($pulled_image, &format_image($image,$target));
     &docker_push($tagged_image);
 
