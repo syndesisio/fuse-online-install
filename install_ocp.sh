@@ -120,6 +120,7 @@ with options:
                               (version is optional)
    --camel-k-options "opts"   Options used when installing the camel-k operator.
                               Use quotes and start with a space before appending the options.
+   --custom-resource          Provide a custom resource file to be installed by the operator.
    --help                     This help message
 -v --verbose                  Verbose logging
 
@@ -318,8 +319,15 @@ fi
 wait_for_deployments 1 syndesis-operator
 
 # Create syndesis resource
-echo "Creating Syndesis resource"
-$SYNDESIS_CLI install app
+customcr=$(readopt --custom-resource)
+if [ -n "${customcr}" ]; then
+    echo "Creating Syndesis with custom resource ${customcr}"
+    customcr=" --custom-resource ${customcr}"
+else
+    echo "Creating Syndesis resource"
+fi
+
+result=$($OPERATOR_BINARY install app ${customcr})
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
     wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta
