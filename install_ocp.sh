@@ -327,7 +327,7 @@ else
     echo "Creating Syndesis resource"
 fi
 
-result=$($OPERATOR_BINARY install app ${customcr})
+result=$($SYNDESIS_CLI install app ${customcr})
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
     wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta
