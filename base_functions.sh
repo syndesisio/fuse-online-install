@@ -4,7 +4,8 @@
 
 check_error() {
     local msg="$*"
-    if [ "${msg//ERROR/}" != "${msg}" ]; then
+    local umsg==${msg^^} # Upper-case everything to ensure 'error' is detected as well as 'ERROR'
+    if [ "${umsg//ERROR/}" != "${umsg}" ]; then
         if [ -n "${ERROR_FILE:-}" ] && [ -f "$ERROR_FILE" ] && ! grep "$msg" $ERROR_FILE ; then
             local tmp=$(mktemp /tmp/error-XXXX)
             echo ${msg} >> $tmp
@@ -23,15 +24,23 @@ check_error() {
 print_error() {
     local error_file="${1:-}"
     if [ -f $error_file ]; then
-        if grep -q "ERROR" $error_file; then
+        # The word 'error' can be upper or lower case
+        if grep -q "ERROR\|error" $error_file; then
             cat $error_file
         fi
         rm $error_file
     fi
 }
 
-ERROR_FILE="$(mktemp /tmp/syndesis-output-XXXXX)"
-trap "print_error $ERROR_FILE" EXIT
+#
+# Only initialize ERROR_FILE once regardless of how many times
+# this file is sourced, ie. its sourced by other scripts directly
+# or indirectly when sourced by common_config.sh
+#
+if [ -z ${ERROR_FILE+x} ]; then
+    ERROR_FILE="$(mktemp /tmp/syndesis-output-XXXXX)"
+    trap "print_error $ERROR_FILE" EXIT
+fi
 
 get_executable_file_extension() {
     local os=$(get_current_os)

@@ -258,8 +258,10 @@ create_secret_if_not_present() {
 
     echo "enter email address for registry.redhat.io and press [ENTER]: "
     read email
+    set +e
     local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password --docker-email=$email)
     check_error $result
+    set -e
   fi
 }
 

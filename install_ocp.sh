@@ -186,7 +186,9 @@ grant_role() {
     clusterwide="--cluster"
   fi
 
+  set +e
   $SYNDESIS_CLI grant --user "$user_to_prepare" $clusterwide
+  set -e
 }
 
 # ==============================================================
@@ -307,15 +309,19 @@ set -e
 echo "Deploying Syndesis operator"
 $SYNDESIS_CLI install operator
 
+set +e
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
 check_error $result
+set -e
 
 if [ $(hasflag --camel-k) ]; then
     echo "Deploying Camel-K operator"
     $KAMEL_CLI install --skip-cluster-setup $(readopt --camel-k-options)
 
+    set +e
     result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
     check_error $result
+    set -e
 fi
 
 # Wait for deployment
@@ -330,7 +336,10 @@ else
     echo "Creating Syndesis resource"
 fi
 
-result=$($SYNDESIS_CLI install app ${customcr})
+set +e
+result=$($SYNDESIS_CLI install app --custom-resource ${customcr})
+check_error $result
+set -e
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
     wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta
