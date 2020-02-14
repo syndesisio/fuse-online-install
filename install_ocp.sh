@@ -116,6 +116,7 @@ with options:
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
+   --datavirt                 Install also the datavirt operator
    --camel-k                  Install also the camel-k operator
                               (version is optional)
    --camel-k-options "opts"   Options used when installing the camel-k operator.
@@ -129,6 +130,70 @@ EOT
 }
 
 # ============================================================
+
+# Create syndesis resource
+create_syndesis() {
+    local syndesis_installed=$(oc get syndesis -o name | wc -l)
+    local force=$(hasflag --force)
+    if [ $syndesis_installed -gt 0 ]; then
+        if [ -n "${force}" ]; then
+            oc delete $(oc get syndesis -o name)
+        fi
+    fi
+
+    local syndesis=$(cat <<EOT
+apiVersion: "syndesis.io/v1beta1"
+kind: "Syndesis"
+metadata:
+  name: "app"
+spec:
+  integration:
+    # No limitations by default on OCP
+    limit: 0
+EOT
+)
+# jaeger enabled by default
+    local extra=$(cat <<EOT
+
+  addons:
+    jaeger:
+      enabled: true
+EOT
+)
+    syndesis="${syndesis}${extra}"
+
+    local datavirt=$(hasflag --datavirt)
+    if [ -n "${datavirt}" ]; then
+        extra=$(cat <<EOT
+
+    komodo:
+      enabled: true
+EOT
+)
+        syndesis="${syndesis}${extra}"
+    fi
+
+    local camelk=$(hasflag --camel-k)
+    if [ -n "${camelk}" ]; then
+        extra=$(cat <<EOT
+
+    camelk:
+      enabled: true
+EOT
+)
+        syndesis="${syndesis}${extra}"
+    fi
+
+    #
+    # tmpfile must end in .yml in order to be correctly parsed by
+    # the operator. If not 'install app' will fail with an error
+    #
+    tmpfile=$(mktemp --suffix=.yml /tmp/fuse-online-cr.XXXXXX)
+    echo "$syndesis" > $tmpfile
+
+    echo $tmpfile
+    return
+}
 
 open_url() {
     local url=$1
@@ -331,9 +396,11 @@ wait_for_deployments 1 syndesis-operator
 customcr=$(readopt --custom-resource)
 if [ -n "${customcr}" ]; then
     echo "Creating Syndesis with custom resource ${customcr}"
-    customcr=" --custom-resource ${customcr}"
 else
-    echo "Creating Syndesis resource"
+    echo "Creating Syndesis with default fuse-online resource"
+    customcr=$(create_syndesis)
+    # Remove the temporary file at the end of the script
+    trap "rm -f $customcr" EXIT
 fi
 
 set +e
