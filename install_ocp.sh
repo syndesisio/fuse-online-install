@@ -13,6 +13,8 @@ set -eu
 # Save global script args
 ARGS=("$@")
 
+DEFAULT_CR_FILE="./default-cr.yml"
+
 # Helper functions:
 
 # Dir where this script is located
@@ -116,12 +118,7 @@ with options:
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
-   --datavirt                 Install also the datavirt operator
-   --camel-k                  Install also the camel-k operator
                               (version is optional)
-   --camel-k-options "opts"   Options used when installing the camel-k operator.
-                              Use quotes and start with a space before appending the options.
-   --custom-resource          Provide a custom resource file to be installed by the operator.
    --help                     This help message
 -v --verbose                  Verbose logging
 
@@ -130,71 +127,6 @@ EOT
 }
 
 # ============================================================
-
-# Create syndesis resource
-create_syndesis() {
-    local syndesis_installed=$(oc get syndesis -o name | wc -l)
-    local force=$(hasflag --force)
-    if [ $syndesis_installed -gt 0 ]; then
-        if [ -n "${force}" ]; then
-            oc delete $(oc get syndesis -o name)
-        fi
-    fi
-
-    local syndesis=$(cat <<EOT
-apiVersion: "syndesis.io/v1beta1"
-kind: "Syndesis"
-metadata:
-  name: "app"
-spec:
-  integration:
-    # No limitations by default on OCP
-    limit: 0
-EOT
-)
-# jaeger enabled by default
-    local extra=$(cat <<EOT
-
-  addons:
-    jaeger:
-      enabled: true
-EOT
-)
-    syndesis="${syndesis}${extra}"
-
-    local datavirt=$(hasflag --datavirt)
-    if [ -n "${datavirt}" ]; then
-        extra=$(cat <<EOT
-
-    komodo:
-      enabled: true
-EOT
-)
-        syndesis="${syndesis}${extra}"
-    fi
-
-    local camelk=$(hasflag --camel-k)
-    if [ -n "${camelk}" ]; then
-        extra=$(cat <<EOT
-
-    camelk:
-      enabled: true
-EOT
-)
-        syndesis="${syndesis}${extra}"
-    fi
-
-    #
-    # tmpfile must end in .yml in order to be correctly parsed by
-    # the operator. If not 'install app' will fail with an error
-    #
-    tmpfile=$(mktemp --suffix=.yml /tmp/fuse-online-cr.XXXXXX)
-    echo "$syndesis" > $tmpfile
-
-    echo $tmpfile
-    return
-}
-
 open_url() {
     local url=$1
     local cmd="$(probe_commands open xdg-open chrome firefox)"
@@ -302,11 +234,11 @@ if [ $(hasflag -s --setup) ]; then
 
     $SYNDESIS_CLI install cluster
 
-    if [ $(hasflag --camel-k) ]; then
-      echo "Installing Camel-K CRDs"
-
-      $KAMEL_CLI install --cluster-setup
-    fi
+    #
+    # As camel-k addon may well be used we install these anyway
+    #
+    echo "Installing Camel-K CRDs"
+    $KAMEL_CLI install --cluster-setup
     prep_only="true"
 fi
 
@@ -362,11 +294,9 @@ if [ $? -ne 0 ]; then
     check_error "ERROR: No CRD Syndesis installed or no permissions to read them. Please run --setup and/or --grant as cluster-admin. Please use '--help' for more information."
 fi
 
-if [ $(hasflag --camel-k) ]; then
-    oc get integration >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        check_error "ERROR: Camel-K installation requested but no Camel-K CRDs accessible. Please run --setup --camel-k to register the proper CRDs."
-    fi
+oc get integration >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    check_error "ERROR: Failure to install Camel-K CRDs."
 fi
 set -e
 
@@ -379,32 +309,29 @@ result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERR
 check_error $result
 set -e
 
-if [ $(hasflag --camel-k) ]; then
-    echo "Deploying Camel-K operator"
-    $KAMEL_CLI install --skip-cluster-setup $(readopt --camel-k-options)
-
-    set +e
-    result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
-    check_error $result
-    set -e
-fi
-
 # Wait for deployment
 wait_for_deployments 1 syndesis-operator
 
+# Check syndesis cr already installed. If force then remove first.
+syndesis_installed=$(oc get syndesis -o name | wc -l)
+force=$(hasflag --force)
+if [ $syndesis_installed -gt 0 ]; then
+    echo "Warning ... Syndesis custom resource already installed: '${syndesis_installed}'"
+    if [ -n "${force}" ]; then
+        echo "Removing already installed Syndesis custom resource"
+        oc delete $(oc get syndesis -o name)
+    fi
+fi
+
 # Create syndesis resource
-customcr=$(readopt --custom-resource)
-if [ -n "${customcr}" ]; then
-    echo "Creating Syndesis with custom resource ${customcr}"
-else
-    echo "Creating Syndesis with default fuse-online resource"
-    customcr=$(create_syndesis)
-    # Remove the temporary file at the end of the script
-    trap "rm -f $customcr" EXIT
+echo "Creating Syndesis with fuse-online resource"
+if [ ! -f "${DEFAULT_CR_FILE}" ]; then
+    echo "Cannot custom-resource file '$DEFAULT_CR_FILE' ... exiting."
+    exit 1
 fi
 
 set +e
-result=$($SYNDESIS_CLI install app --custom-resource ${customcr})
+result=$($SYNDESIS_CLI install app --custom-resource ${DEFAULT_CR_FILE})
 check_error $result
 set -e
 
