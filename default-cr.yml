@@ -1,0 +1,15 @@
+apiVersion: syndesis.io/v1beta1
+kind: Syndesis
+metadata:
+  name: app
+spec:
+  integration:
+    # No limitations by default on OCP
+    limit: 0
+  addons:
+    jaeger:
+      enabled: true
+    camel-k:
+      enabled: false
+    komodo:
+      enabled: false

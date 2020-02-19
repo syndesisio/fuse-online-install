@@ -13,6 +13,8 @@ set -eu
 # Save global script args
 ARGS=("$@")
 
+DEFAULT_CR_FILE="./default-cr.yml"
+
 # Helper functions:
 
 # Dir where this script is located
@@ -116,11 +118,7 @@ with options:
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
-   --camel-k                  Install also the camel-k operator
                               (version is optional)
-   --camel-k-options "opts"   Options used when installing the camel-k operator.
-                              Use quotes and start with a space before appending the options.
-   --custom-resource          Provide a custom resource file to be installed by the operator.
    --help                     This help message
 -v --verbose                  Verbose logging
 
@@ -129,7 +127,6 @@ EOT
 }
 
 # ============================================================
-
 open_url() {
     local url=$1
     local cmd="$(probe_commands open xdg-open chrome firefox)"
@@ -186,7 +183,9 @@ grant_role() {
     clusterwide="--cluster"
   fi
 
+  set +e
   $SYNDESIS_CLI grant --user "$user_to_prepare" $clusterwide
+  set -e
 }
 
 # ==============================================================
@@ -235,11 +234,11 @@ if [ $(hasflag -s --setup) ]; then
 
     $SYNDESIS_CLI install cluster
 
-    if [ $(hasflag --camel-k) ]; then
-      echo "Installing Camel-K CRDs"
-
-      $KAMEL_CLI install --cluster-setup
-    fi
+    #
+    # As camel-k addon may well be used we install these anyway
+    #
+    echo "Installing Camel-K CRDs"
+    $KAMEL_CLI install --cluster-setup
     prep_only="true"
 fi
 
@@ -295,11 +294,9 @@ if [ $? -ne 0 ]; then
     check_error "ERROR: No CRD Syndesis installed or no permissions to read them. Please run --setup and/or --grant as cluster-admin. Please use '--help' for more information."
 fi
 
-if [ $(hasflag --camel-k) ]; then
-    oc get integration >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        check_error "ERROR: Camel-K installation requested but no Camel-K CRDs accessible. Please run --setup --camel-k to register the proper CRDs."
-    fi
+oc get integration >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    check_error "ERROR: Failure to install Camel-K CRDs."
 fi
 set -e
 
@@ -307,30 +304,36 @@ set -e
 echo "Deploying Syndesis operator"
 $SYNDESIS_CLI install operator
 
+set +e
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
 check_error $result
-
-if [ $(hasflag --camel-k) ]; then
-    echo "Deploying Camel-K operator"
-    $KAMEL_CLI install --skip-cluster-setup $(readopt --camel-k-options)
-
-    result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
-    check_error $result
-fi
+set -e
 
 # Wait for deployment
 wait_for_deployments 1 syndesis-operator
 
-# Create syndesis resource
-customcr=$(readopt --custom-resource)
-if [ -n "${customcr}" ]; then
-    echo "Creating Syndesis with custom resource ${customcr}"
-    customcr=" --custom-resource ${customcr}"
-else
-    echo "Creating Syndesis resource"
+# Check syndesis cr already installed. If force then remove first.
+syndesis_installed=$(oc get syndesis -o name | wc -l)
+force=$(hasflag --force)
+if [ $syndesis_installed -gt 0 ]; then
+    echo "Warning ... Syndesis custom resource already installed: '${syndesis_installed}'"
+    if [ -n "${force}" ]; then
+        echo "Removing already installed Syndesis custom resource"
+        oc delete $(oc get syndesis -o name)
+    fi
 fi
 
-result=$($SYNDESIS_CLI install app ${customcr})
+# Create syndesis resource
+echo "Creating Syndesis with fuse-online resource"
+if [ ! -f "${DEFAULT_CR_FILE}" ]; then
+    echo "Cannot custom-resource file '$DEFAULT_CR_FILE' ... exiting."
+    exit 1
+fi
+
+set +e
+result=$($SYNDESIS_CLI install app --custom-resource ${DEFAULT_CR_FILE})
+check_error $result
+set -e
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
     wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta
