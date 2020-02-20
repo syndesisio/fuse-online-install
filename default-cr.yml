@@ -3,13 +3,100 @@ kind: Syndesis
 metadata:
   name: app
 spec:
-  integration:
-    # No limitations by default on OCP
-    limit: 0
+  #
+  # Uncomment & modify if a custom route host name is required
+  # routeHostname: my-test-route.com
+  #
+  # Uncomment & modify to set a schedule for backing up application data and resources
+  # backup:
+  #   schedule: every 10m
+  #
+  components:
+    meta:
+      resources:
+        # Uncomment & modify to customise the memory requirement
+        # memory: "512Mi"
+        #
+        # Uncomment & modify to customise the persistent volume capacity
+        # volumeCapacity: 1Gi
+    server:
+      features:
+        # Uncomment & modify to restrict the number of running integrations (0 for no limit)
+        # integrationLimit: 0
+        #
+        # Uncomment & modify to include 3 scale capability
+        # managementUrlFor3scale: "https://your.3scale.server.com"
+        #
+        # Add additional maven repositories
+        mavenRepositories:
+          # customRepo1: https://customRepo1
+          # customRepo2: https://customRepo2
+      resources:
+        # Uncomment & modify to customise the memory requirement
+        # memory: "800Mi"
+        #
+    database:
+      # Uncomment & modify to point to an external postgres database w/ syndesis schema
+      # externalDbURL: postgresql://custom-postgres-sydnesis:5432
+      #
+      # The database user - uncomment & modify to customise
+      # user: syndesis
+      #
+      # The database name - uncomment & modify to customise
+      # name: syndesis
+      #
+      # The password (if using external db) should be added to the syndesis-global-config secret prior to installation
+      #
+      resources:
+        # Uncomment & modify to customise the memory requirement
+        # memory: 255Mi
+        #
+        # Uncomment & modify to customise the persistent volume configuration
+        # volumeCapacity: 1Gi
+        # volumeName: test-volume
+        # volumeAccessMode: ReadWriteMany <one of ReadWriteOnce, ReadOnlyMany, ReadWriteMany>
+        # volumeStorageClass: filesystem
+        # volumeLabels:
+        #   operator: test
+    prometheus:
+      resources:
+        # Uncomment & modify to customise the memory requirement
+        # memory: "512Mi"
+        #
+        # Uncomment & modify to customise the persistent volume capacity
+        # volumeCapacity: "1Gi"
   addons:
+    # Enables jaeger tracing functionality
     jaeger:
       enabled: true
+      # If true then only client agent will be installed
+      # clientOnly: false
+      #
+      # If true, then only client agent and jaeger operator will be installed
+      # operatorOnly: false
+      #
+      # Uncomment & modify to point to jaeger backend query component (if using external jaeger backend)
+      # queryUri: http://noauth-syndesis-jaeger-query:443/api
+      #
+      # Uncomment & modify to point to jaeger backend collector component (if using external jaeger backend)
+      # collectorUri: http://syndesis-jaeger-collector:14268/api/traces
+      #
+    # Enables the alternative camel-k runtime component
     camel-k:
       enabled: false
-    komodo:
+    # Enables the data virtualisation component
+    dv:
+      enabled: false
+      resources:
+        # Uncomment & modify to customise the memory requirement
+        # memory: "1024Mi"
+        #
+    # Enables the knative component
+    knative:
+      enabled: false
+    # Enables the ops monitoring component
+    ops:
+      enabled: false
+    # Enables a todo example application
+    todo:
       enabled: false
