@@ -84,6 +84,20 @@ wait_for_deployments() {
   kill $watch_pid
 }
 
+# wait for a resource. Ex: wait_for sa syndesis-operator
+wait_for() {
+  local res_type=$1
+  local resource=$2
+
+  local resource_ready=$(check_resource $res_type $resource)
+  while [ $resource_ready == "false" ]; do
+      resource_ready=$(check_resource $res_type $resource)
+      if [ $resource_ready == "false" ]; then
+        sleep 4
+      fi
+  done
+}
+
 # Check if a resource exist in OCP
 check_resource() {
   local kind=$1

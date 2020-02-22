@@ -335,6 +335,37 @@ result=$($SYNDESIS_CLI install app --custom-resource ${DEFAULT_CR_FILE})
 check_error $result
 set -e
 
+jaeger_enabled=$(oc get syndesis app -o jsonpath='{.spec.addons.jaeger.enabled}')
+check_error $jaeger_enabled
+if [ "$jaeger_enabled" == "true" ]; then
+    wait_for sa jaeger-operator
+    result=$(oc secrets link jaeger-operator syndesis-pull-secret --for=pull)
+    check_error $result
+    # force deployment reload and pod will be recreated
+    # workaround as the previous "oc secrets link" doesn't trigger a pod restart
+    oc patch deployment jaeger-operator --type json -p "[{'op':'add', 'path':'/spec/template/metadata/labels/force_reload', 'value':'$(date +%s)'}]"
+
+    wait_for sa syndesis-jaeger-ui-proxy
+    result=$(oc secrets link syndesis-jaeger-ui-proxy syndesis-pull-secret --for=pull)
+    check_error $result
+    # workaround as the previous "oc secrets link" doesn't trigger a pod restart
+    oc patch deployment syndesis-jaeger --type json -p "[{'op':'add', 'path':'/spec/template/metadata/labels/force_reload', 'value':'$(date +%s)'}]"
+fi
+
+camelk_enabled=$(oc get syndesis app -o jsonpath='{.spec.addons.camelk.enabled}')
+check_error $camelk_enabled
+if [ "$camelk_enabled" == "true" ]; then
+    echo "Deploying Camel-K operator"
+    $KAMEL_CLI install --skip-cluster-setup
+    wait_for sa camel-k-operator
+    result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull)
+    check_error $result
+    # force deployment reload and pod will be recreated
+    # workaround as the previous "oc secrets link" doesn't trigger a pod restart
+    oc patch deployment camel-k-operator --type json -p "[{'op':'add', 'path':'/spec/template/metadata/labels/force_reload', 'value':'$(date +%s)'}]"
+fi
+
+
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
     wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta
 fi
