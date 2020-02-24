@@ -4,7 +4,7 @@ metadata:
   name: app
 spec:
   #
-  # Uncomment & specify the OpenShift route for accessing Fuse Online.
+  # Uncomment & specify the OpenShift route for the Fuse Online console.
   # By default, the installation script calculates the route.
   # routeHostname: my-test-route.com
   #
@@ -22,7 +22,7 @@ spec:
         # volumeCapacity: 1Gi
     server:
       features:
-        # Uncomment & modify to restrict the number of running integrations (0 for no limit)
+        # Uncomment & modify to restrict the number of running integrations (0 for no limit).
         # integrationLimit: 0
         #
         # Uncomment & specify a 3scale URL to enable discovery of Fuse Online APIs by 3scale.
@@ -41,17 +41,17 @@ spec:
       # connection and integration definitions according to the syndesis schema.
       # externalDbURL: postgresql://custom-postgres-sydnesis:5432
       #
-      # Uncomment & modify to specify a user name for accessing the database.
+      # Uncomment & modify to specify a user name for accessing the external database.
       # user: syndesis
       #
-      # Uncomment & modify to specify the database name.
+      # Uncomment & modify to specify the external database name.
       # name: syndesis
       #
       # If specifying an external database, add the database password to the syndesis-global-config
       # secret before installing Fuse Online.
       #
       resources:
-        # Uncomment & modify to increase the default memory for the database.
+        # Uncomment & modify to increase the default memory for the internal database.
         # memory: 255Mi
         #
         # Uncomment & modify to increase default internal storage for connections & integrations.
@@ -105,7 +105,7 @@ spec:
     # Exposes public REST API endpoints for CI/CD pipelines.
    publicApi:
        enabled: false
-       # Uncomment & modify to specify the public address for accessing Fuse Online.
+       # Uncomment & modify to specify the public address for invoking REST API endpoints.
        routeHostname: public-syndesis.a.b.c.d.e
     # Enables the Todo application for confirming that sample integrations work.
     todo:
