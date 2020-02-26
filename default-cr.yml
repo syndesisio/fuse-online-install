@@ -67,25 +67,6 @@ spec:
   # Set to true to add a small, populated PostgreSQL database for creating sample integrations.
   demoData: false
   addons:
-    # Enables Jaeger tracing functionality.
-    jaeger:
-      enabled: true
-      # Set clientOnly to true to install the Jaeger client agent but not the Jaeger Operator
-      # nor the Syndesis Jaeger custom resource.
-      # clientOnly: false
-      #
-      # Set operatorOnly to true to install the Jaeger client agent and the Jaeger Operator
-      # but not the Syndesis Jaeger custom resource.
-      # operatorOnly: false
-      #
-      # If you are using an external Jaeger backend, uncomment & modify to specify the URL for the
-      # Jaeger backend query component.
-      # queryUri: http://noauth-syndesis-jaeger-query:443/api
-      #
-      # If you are using an external Jaeger backend, uncomment & modify to specify the URL for the
-      # Jaeger backend collector component.
-      # collectorUri: http://syndesis-jaeger-collector:14268/api/traces
-      #
     # Enables the alternative Camel K runtime component.
     camelk:
       enabled: false
