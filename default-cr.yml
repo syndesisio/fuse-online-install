@@ -67,7 +67,7 @@ spec:
   # Set to true to add a small, populated PostgreSQL database for creating sample integrations.
   demoData: false
   addons:
-    # Enables Jaeger tracing functionality.
+    # Enables Jaeger activity tracking. 
     jaeger:
       enabled: true
     # Enables the alternative Camel K runtime component.
