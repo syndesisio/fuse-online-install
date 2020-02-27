@@ -67,7 +67,7 @@ spec:
   # Set to true to add a small, populated PostgreSQL database for creating sample integrations.
   demoData: false
   addons:
-    # Enables Jaeger activity tracking. 
+    # Enables Jaeger activity tracking.
     jaeger:
       enabled: true
     # Enables the alternative Camel K runtime component.
@@ -87,10 +87,10 @@ spec:
     ops:
       enabled: false
     # Exposes public REST API endpoints for CI/CD pipelines.
-   publicApi:
-       enabled: false
-       # Uncomment & modify to specify the public address for invoking REST API endpoints.
-       routeHostname: public-syndesis.a.b.c.d.e
+    publicApi:
+      enabled: false
+      # Uncomment & modify to specify the public address for invoking REST API endpoints.
+      routeHostname: public-syndesis.a.b.c.d.e
     # Enables the Todo application for confirming that sample integrations work.
     todo:
       enabled: false
