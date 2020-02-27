@@ -19,7 +19,7 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis
   spec:
-    host: ${ROUTE_HOSTNAME}
+    host: null
     port:
       targetPort: 8443
     tls:
@@ -34,117 +34,17 @@ objects:
     labels:
       app: syndesis
       syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-server
-      syndesis.io/type: infrastructure
-    name: fuse-ignite-server
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-server:1.5
-      name: "1.5"
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-ui
-      syndesis.io/type: infrastructure
-    name: fuse-ignite-ui
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-ui:1.5
-      name: "1.5"
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-meta
-      syndesis.io/type: infrastructure
-    name: fuse-ignite-meta
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-meta:1.5
-      name: "1.5"
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-oauthproxy
-      syndesis.io/type: infrastructure
-    name: oauth-proxy
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: registry.redhat.io/openshift4/ose-oauth-proxy:4.2
-      importPolicy:
-        scheduled: true
-      name: "4.2"
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-prometheus
-      syndesis.io/type: infrastructure
-    name: prometheus
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: registry.redhat.io/openshift3/prometheus:v3.9
-      name: v3.9
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db-metrics
-      syndesis.io/type: infrastructure
-    name: fuse-postgres-exporter
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: ${SYNDESIS_REGISTRY}/fuse7-tech-preview/fuse-postgres-exporter:1.5
-      name: "1.5"
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
       syndesis.io/component: s2i-java
       syndesis.io/type: infrastructure
-    name: fuse-ignite-s2i
+    name: syndesis-s2i
   spec:
     tags:
     - from:
         kind: DockerImage
-        name: ${SYNDESIS_REGISTRY}/fuse7/fuse-ignite-s2i:1.5
-      name: "1.5"
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/type: infrastructure
-    name: syndesis-oauth-proxy-cookie-secret
-  stringData:
-    oauthCookieSecret: ${OAUTH_COOKIE_SECRET}
+        name: registry.redhat.io/fuse7/fuse-ignite-s2i:1.6
+      importPolicy:
+        scheduled: true
+      name: "1.6"
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -154,8 +54,8 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-server-secret
   stringData:
-    clientStateAuthenticationKey: ${CLIENT_STATE_AUTHENTICATION_KEY}
-    clientStateEncryptionKey: ${CLIENT_STATE_ENCRYPTION_KEY}
+    clientStateAuthenticationKey: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
+    clientStateEncryptionKey: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -165,19 +65,21 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-global-config
   stringData:
-    oauthproxy: "4.2"
+    CLIENT_STATE_AUTHENTICATION_KEY: JNJQ1qP32MN74y4Ofp4QlENwqAQuQKtV
+    CLIENT_STATE_ENCRYPTION_KEY: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
+    OAUTH_COOKIE_SECRET: vePfDmnag6gR8LWutpTujsymEU3Ru6j8
+    OPENSHIFT_OAUTH_CLIENT_SECRET: ozgYz2bDOU66MEfwrmGLACtpkMIcNngqmmurVChVB3q3O9wK1aiR86b8jEYCRKTz
+    POSTGRESQL_PASSWORD: 4ESc6h7MlDeKcV2g
+    POSTGRESQL_SAMPLEDB_PASSWORD: 6OaXARLC55O7B2w8
+    SYNDESIS_ENCRYPT_KEY: kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
     params: |-
-      OPENSHIFT_OAUTH_CLIENT_SECRET=${OPENSHIFT_OAUTH_CLIENT_SECRET}
-      POSTGRESQL_USER=${POSTGRESQL_USER}
-      POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
-      POSTGRESQL_SAMPLEDB_PASSWORD=${POSTGRESQL_SAMPLEDB_PASSWORD}
-      OAUTH_COOKIE_SECRET=${OAUTH_COOKIE_SECRET}
-      SYNDESIS_ENCRYPT_KEY=${SYNDESIS_ENCRYPT_KEY}
-      CLIENT_STATE_AUTHENTICATION_KEY=${CLIENT_STATE_AUTHENTICATION_KEY}
-      CLIENT_STATE_ENCRYPTION_KEY=${CLIENT_STATE_ENCRYPTION_KEY}
-    postgresql: "9.5"
-    prometheus: v3.9
-    syndesis: "1.5"
+      OPENSHIFT_OAUTH_CLIENT_SECRET=ozgYz2bDOU66MEfwrmGLACtpkMIcNngqmmurVChVB3q3O9wK1aiR86b8jEYCRKTz
+      POSTGRESQL_PASSWORD=4ESc6h7MlDeKcV2g
+      POSTGRESQL_SAMPLEDB_PASSWORD=6OaXARLC55O7B2w8
+      OAUTH_COOKIE_SECRET=vePfDmnag6gR8LWutpTujsymEU3Ru6j8
+      SYNDESIS_ENCRYPT_KEY=kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
+      CLIENT_STATE_AUTHENTICATION_KEY=JNJQ1qP32MN74y4Ofp4QlENwqAQuQKtV
+      CLIENT_STATE_ENCRYPTION_KEY=3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
@@ -227,13 +129,13 @@ objects:
         maxDeploymentsPerUser: ${MAX_INTEGRATIONS_PER_USER}
         maxIntegrationsPerUser: ${MAX_INTEGRATIONS_PER_USER}
       cors:
-        allowedOrigins: https://${ROUTE_HOSTNAME}
+        allowedOrigins: https://
       dao:
         kind: jsondb
       deployment:
         load-demo-data: ${DEMO_DATA_ENABLED}
       encrypt:
-        key: ${SYNDESIS_ENCRYPT_KEY}
+        key: kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
       endpoints:
         health:
           sensitive: false
@@ -254,15 +156,15 @@ objects:
         repositories:
           central: https://repo.maven.apache.org/maven2/
           repo-02-redhat-ga: https://maven.repository.redhat.com/ga/
-          repo-03-jboss-ga: https://repository.jboss.org/
+          repo-03-jboss-ea: https://repository.jboss.org/nexus/content/groups/ea/
       monitoring:
         kind: default
       openshift:
-        apiBaseUrl: ${OPENSHIFT_MASTER}/oapi/v1
-        builderImageStreamTag: fuse-ignite-s2i:1.5
+        apiBaseUrl: https://localhost:8443/oapi/v1
+        builderImageStreamTag: syndesis-s2i:1.6
         deploymentMemoryLimitMi: 512
         deploymentMemoryRequestMi: 200
-        imageStreamNamespace: ${IMAGE_STREAM_NAMESPACE}
+        imageStreamNamespace: ${OPENSHIFT_PROJECT}
         integrationLivenessProbeInitialDelaySeconds: 120
         mavenOptions: -XX:+UseG1GC -XX:+UseStringDeduplication -Xmx310m
         namespace: ${OPENSHIFT_PROJECT}
@@ -272,9 +174,9 @@ objects:
       spring:
         datasource:
           driver-class-name: org.postgresql.Driver
-          password: ${POSTGRESQL_PASSWORD}
+          password: 4ESc6h7MlDeKcV2g
           url: jdbc:postgresql://syndesis-db:5432/syndesis?sslmode=disable
-          username: ${POSTGRESQL_USER}
+          username: syndesis
         zipkin:
           enabled: false
   kind: ConfigMap
@@ -342,14 +244,17 @@ objects:
           syndesis.io/type: infrastructure
       spec:
         containers:
-        - image: ' '
+        - env:
+          - name: DEV_SUPPORT
+            value: "false"
+          image: registry.redhat.io/fuse7/fuse-ignite-ui:1.6
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
               path: /
               port: 8080
             initialDelaySeconds: 30
-          name: fuse-ignite-ui
+          name: syndesis-ui
           ports:
           - containerPort: 8080
           readinessProbe:
@@ -371,20 +276,11 @@ objects:
             name: syndesis-ui-config
           name: config-volume
     triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - fuse-ignite-ui
-        from:
-          kind: ImageStreamTag
-          name: fuse-ignite-ui:1.5
-          namespace: ${IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   data:
-    config.json: '{"apiBase":"https://${ROUTE_HOSTNAME}","apiEndpoint":"/api/v1","branding":{"appName":"Fuse
-      Online","favicon16":"/favicon-16x16.png","favicon32":"/favicon-32x32.png","productBuild":true,"touchIcon":"/apple-touch-icon.png"},"consoleUrl":"${OPENSHIFT_CONSOLE_URL}","datamapper":{"baseJSONInspectionServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/json/","baseJavaInspectionServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/java/","baseMappingServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/","baseXMLInspectionServiceUrl":"https://${ROUTE_HOSTNAME}/api/v1/atlas/xml/","disableMappingPreviewMode":false},"datavirt":{"dvUrl":"/vdb-builder/v1/","enabled":"${DATAVIRT_ENABLED}"},"features":{"logging":false},"project":"${OPENSHIFT_PROJECT}","title":"Syndesis"}'
+    config.json: '{"apiBase":"https://","apiEndpoint":"/api/v1","branding":{"appName":"Fuse
+      Online","favicon16":"/favicon-16x16.png","favicon32":"/favicon-32x32.png","productBuild":true,"touchIcon":"/apple-touch-icon.png"},"consoleUrl":"","datamapper":{"baseJSONInspectionServiceUrl":"https:///api/v1/atlas/json/","baseJavaInspectionServiceUrl":"https:///api/v1/atlas/java/","baseMappingServiceUrl":"https:///api/v1/atlas/","baseXMLInspectionServiceUrl":"https:///api/v1/atlas/xml/","disableMappingPreviewMode":false},"datavirt":{"dvUrl":"/dv/v1/","enabled":"${DATAVIRT_ENABLED}"},"features":{"logging":false},"project":"${OPENSHIFT_PROJECT}","title":"Syndesis"}'
   kind: ConfigMap
   metadata:
     labels:
@@ -436,7 +332,7 @@ objects:
       syndesis.io/example: broker-amq
     name: broker-amq
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       app: syndesis
       syndesis.io/app: syndesis
@@ -459,7 +355,7 @@ objects:
             value: topSecret
           - name: AMQ_TRANSPORTS
             value: openwire,stomp
-          image: jboss-amq-63
+          image: registry.access.redhat.com/jboss-amq-6/amq63-openshift@sha256:3981a66428347bd3874d1146390db35278ffab56d8eb736ceedf3971950d2631
           imagePullPolicy: Always
           name: broker-amq
           ports:
@@ -480,333 +376,7 @@ objects:
               - /opt/amq/bin/readinessProbe.sh
         terminationGracePeriodSeconds: 60
     triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - broker-amq
-        from:
-          kind: ImageStreamTag
-          name: jboss-amq-63:1.3
-      type: ImageChange
     - type: ConfigChange
-- apiVersion: v1
-  data:
-    queries.yaml: |
-      pg_database:
-        query: " SELECT pg_database.datname, pg_database_size(pg_database.datname) as size FROM pg_database"
-        metrics:
-          - datname:
-              usage: "LABEL"
-              description: "Name of the database"
-          - size:
-              usage: "GAUGE"
-              description: "Disk space used by the database"
-  kind: ConfigMap
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db-metrics
-      syndesis.io/type: infrastructure
-    name: syndesis-db-metrics-config
-- apiVersion: v1
-  data:
-    add-sample-db.sh: |
-      #!/bin/bash
-      until bash -c "psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'"; do
-        echo "Waiting for Postgres server..."
-        sleep 1
-      done
-      echo "***** creating sampledb"
-      psql <<EOF
-        CREATE DATABASE sampledb;
-        CREATE USER sampledb WITH PASSWORD '$POSTGRESQL_SAMPLEDB_PASSWORD';
-        GRANT ALL PRIVILEGES ON DATABASE sampledb to sampledb;
-      EOF
-      psql -d sampledb -U sampledb <<'EOF'
-        CREATE SCHEMA AUTHORIZATION sampledb;
-        CREATE TABLE IF NOT EXISTS contact (first_name VARCHAR, last_name VARCHAR, company VARCHAR, lead_source VARCHAR, create_date DATE);
-        INSERT INTO contact VALUES ('Joe','Jackson','Red Hat','db',current_timestamp);
-        CREATE TABLE IF NOT EXISTS todo (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);
-        CREATE TABLE IF NOT EXISTS winelist (id SERIAL PRIMARY KEY, wine VARCHAR, price INTEGER, year INTEGER, gws INTEGER, ci VARCHAR, nbj INTEGER, productcode VARCHAR, pricebookentryid VARCHAR);
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (42,'Abreu Vineyard, Las Posadas, Howell Mountain',275,2013,9802,'B',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (91,'Araujo Estate, Eisele Vineyard Cabernet Sauvignon, Napa Valley',499,2015,9728,'C+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (99,'Aubert Wines, Ritchie Vineyard Chardonnay, White, Sonoma Coast',225,2015,9717,'A+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (88,'Bond Estates, Pluribus Red, Napa Valley', 410,2015,9729,'A+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (33,'Cayuse Vineyards, Bionic Frog Syrah, Walla Walla Valley',280,2010,9817,'A+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (69,'Chappellet, Pritchard Hill Cabernet Sauvignon, Napa Valley',239,2014,9748,'A+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (20,'Colgin Cellars, Tychson Hill Vineyard Cabernet Sauvignon, Napa Valley',355,2002,9848,'A+',4) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (72,'Dalla Valle Vineyards, Maya, Napa Valley',489,2013,974,'A',4) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (5, 'Dana Estates, Lotus Vineyard Cabernet Sauvignon, Napa Valley',299,2010,9887,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (17,'Dominus Estate, Christian Moueix, Napa Valley',108,2013,9854,'A',6) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (11,'Dunn Vineyards, Trailer Vineyard Cabernet Sauvignon, Howell Mountain',375,2013,986,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (35,'Futo Estate, 5500 Sld - Cabernet Sauvignon, Stags Leap District',325,2015,9813,'A+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES ( 9,'Harlan Estate, Napa Valley',365,2001,9873,'A+',6) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (48,'Joseph Phelps Vineyards, Insignia, Napa Valley',264,1991,9794,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (27,'Kapcsandy Family Winery, State Lane Vineyard Grand-Vin Cabernet Sauvignon, Napa Valley',129,2015,9841,'A+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (10,'Kongsgaard, The Judge Chardonnay, White, Napa Valley',246,2005,9865,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (65,'Larkmead Vineyards, The Lark Cabernet Sauvignon, Napa Valley',118,2013,9755,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (59,'Lokoya Winery, Mount Veeder Cabernet Sauvignon, Napa Valley',313,2015,977,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (77,'Paul Hobbs, Beckstoffer To Kalon Vineyard Cabernet Sauvignon, Oakville',359,2013,9738,'A',4) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (86,'Peter Michael Winery, Point Rouge Chardonnay, White, Sonoma County',185,2008,9732,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (73,'Promontory, Napa Valley',595,2013,974,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (81,'Quilceda Creek, Cabernet Sauvignon, Columbia Valley',169,2009,9736,'A+',5) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (36,'Ridge Vineyards, Monte Bello, Santa Cruz Mountains',150,2015,9809,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (46,'Scarecrow, Cabernet Sauvignon, Rutherford',440,2014,9796,'A+',4) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (47,'Schrader Cellars, Beckstoffer Las Piedras Vineyard Colesworthy Cabernet Sauvignon, Napa Valley', 69,2013,9794,'A',4) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (04,'Screaming Eagle, Cabernet Sauvignon, Napa Valley', 2660,2010,9905,'A',6) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (71,'Sloan, Proprietary Red, Rutherford',230,2013,9741,'A+',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (93,'Spottswoode, Family Estate Grown Cabernet Sauvignon, St Helena',149,2013,9726,'A',9) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (66,'Verite, Le Desir, Sonoma County',269,2007,9753,'A',3) ON CONFLICT (id) DO NOTHING;
-        INSERT INTO winelist (id, wine, price,year, gws, ci, nbj) VALUES (100,'Continuum, Proprietary Red, Oakville',185,2007,9716,'A+',3) ON CONFLICT (id) DO NOTHING;
-        CREATE OR REPLACE FUNCTION add_lead(
-          first_and_last_name varchar,
-          company varchar,
-          phone varchar,
-          email varchar,
-          lead_source varchar,
-          lead_status varchar,
-          rating varchar)
-
-          RETURNS void
-          LANGUAGE 'plpgsql'
-
-        AS $BODY$
-        DECLARE
-          task varchar;
-        BEGIN
-          task := concat(lead_status || ' ', 'Lead: Please contact ', first_and_last_name, ' from ' || company, ' via phone: ' || phone, ' via email: ' || email, '. ', 'Lead is from ' || lead_source, '. Rating: ' || rating, '.');
-          insert into todo(task,completed) VALUES (task,0);
-        END;
-        $BODY$;
-
-        CREATE OR REPLACE FUNCTION create_lead(
-          OUT first_name text,
-          OUT last_name text,
-          OUT company text,
-          OUT lead_source text)
-          RETURNS SETOF record
-          AS
-          $$
-            SELECT first_name, last_name, company, lead_source
-            FROM contact;
-          $$
-           LANGUAGE 'sql' VOLATILE;
-      EOF
-
-      echo "***** sampledb created"
-    postStart.sh: |
-      #!/bin/bash
-      /var/lib/pgsql/sampledb/add-sample-db.sh &>  /proc/1/fd/1
-  kind: ConfigMap
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db
-      syndesis.io/type: infrastructure
-    name: syndesis-sampledb-config
-- apiVersion: v1
-  data:
-    syndesis-postgresql.conf: |
-      log_autovacuum_min_duration = 0
-      log_line_prefix = '%t %a %i %e %c '
-      logging_collector = off
-      autovacuum_max_workers = 6
-      autovacuum_naptime = 15s
-      autovacuum_vacuum_threshold = 25
-      autovacuum_vacuum_scale_factor = 0.1
-      autovacuum_analyze_threshold = 10
-      autovacuum_analyze_scale_factor = 0.05
-      autovacuum_vacuum_cost_delay = 10ms
-      autovacuum_vacuum_cost_limit = 2000
-  kind: ConfigMap
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db
-      syndesis.io/type: infrastructure
-    name: syndesis-db-conf
-- apiVersion: v1
-  kind: Service
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db
-      syndesis.io/type: infrastructure
-    name: syndesis-db
-  spec:
-    ports:
-    - name: postgresql
-      port: 5432
-      protocol: TCP
-      targetPort: 5432
-    selector:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db
-    sessionAffinity: None
-    type: ClusterIP
-  status:
-    loadBalancer: {}
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db
-      syndesis.io/type: infrastructure
-    name: syndesis-db
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: ${POSTGRESQL_VOLUME_CAPACITY}
-- apiVersion: apps.openshift.io/v1
-  kind: DeploymentConfig
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db
-      syndesis.io/type: infrastructure
-    name: syndesis-db
-  spec:
-    replicas: 1
-    selector:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-db
-    strategy:
-      resources:
-        limits:
-          memory: 256Mi
-        requests:
-          memory: 20Mi
-      type: Recreate
-    template:
-      metadata:
-        labels:
-          app: syndesis
-          syndesis.io/app: syndesis
-          syndesis.io/component: syndesis-db
-      spec:
-        containers:
-        - env:
-          - name: POSTGRESQL_USER
-            value: ${POSTGRESQL_USER}
-          - name: POSTGRESQL_PASSWORD
-            value: ${POSTGRESQL_PASSWORD}
-          - name: POSTGRESQL_DATABASE
-            value: ${POSTGRESQL_DATABASE}
-          - name: POSTGRESQL_SAMPLEDB_PASSWORD
-            value: ${POSTGRESQL_SAMPLEDB_PASSWORD}
-          image: ' '
-          imagePullPolicy: IfNotPresent
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                - /bin/sh
-                - -c
-                - /var/lib/pgsql/sampledb/postStart.sh
-          livenessProbe:
-            initialDelaySeconds: 60
-            tcpSocket:
-              port: 5432
-          name: postgresql
-          ports:
-          - containerPort: 5432
-            protocol: TCP
-          readinessProbe:
-            exec:
-              command:
-              - /bin/sh
-              - -i
-              - -c
-              - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c
-                'SELECT 1'
-            initialDelaySeconds: 5
-          resources:
-            limits:
-              memory: 255Mi
-            requests:
-              memory: 255Mi
-          volumeMounts:
-          - mountPath: /var/lib/pgsql/data
-            name: syndesis-db-data
-          - mountPath: /var/lib/pgsql/sampledb
-            name: syndesis-sampledb-config
-          - mountPath: /opt/app-root/src/postgresql-cfg/
-            name: syndesis-db-conf
-        - env:
-          - name: DATA_SOURCE_NAME
-            value: postgresql://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@localhost:5432/syndesis?sslmode=disable
-          - name: PG_EXPORTER_EXTEND_QUERY_PATH
-            value: /etc/postgres/exporter/queries.yaml
-          image: ' '
-          imagePullPolicy: IfNotPresent
-          livenessProbe:
-            failureThreshold: 5
-            initialDelaySeconds: 60
-            tcpSocket:
-              port: 9187
-          name: syndesis-db-metrics
-          ports:
-          - containerPort: 9187
-            name: metrics
-          readinessProbe:
-            failureThreshold: 5
-            initialDelaySeconds: 30
-            tcpSocket:
-              port: 9187
-          resources:
-            limits:
-              memory: 256Mi
-            requests:
-              memory: 20Mi
-          volumeMounts:
-          - mountPath: /etc/postgres/exporter
-            name: syndesis-db-metrics-config
-        serviceAccountName: syndesis-default
-        volumes:
-        - configMap:
-            name: syndesis-db-metrics-config
-          name: syndesis-db-metrics-config
-        - name: syndesis-db-data
-          persistentVolumeClaim:
-            claimName: syndesis-db
-        - configMap:
-            defaultMode: 511
-            name: syndesis-sampledb-config
-          name: syndesis-sampledb-config
-        - configMap:
-            name: syndesis-db-conf
-          name: syndesis-db-conf
-    triggers:
-    - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - postgresql
-        from:
-          kind: ImageStreamTag
-          name: postgresql:9.5
-          namespace: ${POSTGRESQL_IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - syndesis-db-metrics
-        from:
-          kind: ImageStreamTag
-          name: fuse-postgres-exporter:1.5
-          namespace: ${IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
 - apiVersion: v1
   kind: Service
   metadata:
@@ -840,7 +410,7 @@ objects:
     - ReadWriteOnce
     resources:
       requests:
-        storage: ${META_VOLUME_CAPACITY}
+        storage: 1Gi
 - apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
@@ -883,9 +453,7 @@ objects:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: JAVA_DEBUG
-            value: "false"
-          image: ' '
+          image: registry.redhat.io/fuse7/fuse-ignite-meta:1.6
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 5
@@ -895,7 +463,7 @@ objects:
               scheme: HTTP
             initialDelaySeconds: 300
             periodSeconds: 20
-          name: fuse-ignite-meta
+          name: syndesis-meta
           ports:
           - containerPort: 8080
             name: http
@@ -934,15 +502,6 @@ objects:
             name: syndesis-meta-config
           name: config-volume
     triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - fuse-ignite-meta
-        from:
-          kind: ImageStreamTag
-          name: fuse-ignite-meta:1.5
-          namespace: ${IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   data:
@@ -1018,14 +577,12 @@ objects:
         - args:
           - --provider=openshift
           - --client-id=system:serviceaccount:${OPENSHIFT_PROJECT}:syndesis-oauth-client
-          - --client-secret=${OPENSHIFT_OAUTH_CLIENT_SECRET}
           - --upstream=http://syndesis-server/api/
           - --upstream=http://syndesis-server/mapper/
           - --upstream=http://syndesis-ui/
-          - --upstream=http://syndesis-dv/vdb-builder/
+          - --upstream=http://syndesis-dv/dv/
           - --tls-cert=/etc/tls/private/tls.crt
           - --tls-key=/etc/tls/private/tls.key
-          - --cookie-secret=$(OAUTH_COOKIE_SECRET)
           - --pass-access-token
           - --skip-provider-button
           - --skip-auth-regex=/logout
@@ -1038,14 +595,19 @@ objects:
           - --skip-auth-preflight
           - --openshift-ca=/etc/pki/tls/certs/ca-bundle.crt
           - --openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-          - --openshift-sar={"namespace":"${SAR_PROJECT}","resource":"pods","verb":"get"}
+          - --openshift-sar={"namespace":"${OPENSHIFT_PROJECT}","resource":"pods","verb":"get"}
           env:
-          - name: OAUTH_COOKIE_SECRET
+          - name: OAUTH2_PROXY_COOKIE_SECRET
             valueFrom:
               secretKeyRef:
-                key: oauthCookieSecret
-                name: syndesis-oauth-proxy-cookie-secret
-          image: ' '
+                key: OAUTH_COOKIE_SECRET
+                name: syndesis-global-config
+          - name: OAUTH2_PROXY_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: OPENSHIFT_OAUTH_CLIENT_SECRET
+                name: syndesis-global-config
+          image: registry.redhat.io/openshift4/ose-oauth-proxy:4.2
           livenessProbe:
             httpGet:
               path: /oauth/healthz
@@ -1053,7 +615,7 @@ objects:
               scheme: HTTPS
             initialDelaySeconds: 15
             timeoutSeconds: 10
-          name: fuse-ignite-oauthproxy
+          name: oauthproxy
           ports:
           - containerPort: 8443
             name: public
@@ -1079,15 +641,6 @@ objects:
           secret:
             secretName: syndesis-oauthproxy-tls
     triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - fuse-ignite-oauthproxy
-        from:
-          kind: ImageStreamTag
-          name: oauth-proxy:4.2
-          namespace: ${IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   kind: Service
@@ -1153,7 +706,7 @@ objects:
           - name: CONTROLLERS_INTEGRATION_ENABLED
             value: ${CONTROLLERS_INTEGRATION_ENABLED}
           - name: POSTGRESQL_SAMPLEDB_PASSWORD
-            value: ${POSTGRESQL_SAMPLEDB_PASSWORD}
+            value: 6OaXARLC55O7B2w8
           - name: CLIENT_STATE_AUTHENTICATION_ALGORITHM
             value: HmacSHA1
           - name: CLIENT_STATE_AUTHENTICATION_KEY
@@ -1173,10 +726,8 @@ objects:
           - name: INTEGRATION_STATE_CHECK_INTERVAL
             value: ${INTEGRATION_STATE_CHECK_INTERVAL}
           - name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
-            value: ${OPENSHIFT_MANAGEMENT_URL_FOR3SCALE}
-          - name: JAVA_DEBUG
-            value: "false"
-          image: ' '
+            value: ""
+          image: registry.redhat.io/fuse7/fuse-ignite-server:1.6
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 5
@@ -1188,7 +739,7 @@ objects:
               port: 8080
             initialDelaySeconds: 300
             periodSeconds: 20
-          name: fuse-ignite-server
+          name: syndesis-server
           ports:
           - containerPort: 8080
             name: http
@@ -1220,15 +771,6 @@ objects:
             name: syndesis-server-config
           name: config-volume
     triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - fuse-ignite-server
-        from:
-          kind: ImageStreamTag
-          name: fuse-ignite-server:1.5
-          namespace: ${IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   data:
@@ -1254,6 +796,18 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-editor
   rules:
+  - apiGroups:
+    - camel.apache.org
+    resources:
+    - '*'
+    verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - deletecollection
+    - watch
   - apiGroups:
     - ""
     resources:
@@ -1822,7 +1376,7 @@ objects:
     - ReadWriteOnce
     resources:
       requests:
-        storage: ${PROMETHEUS_VOLUME_CAPACITY}
+        storage: 1Gi
 - apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
@@ -1857,7 +1411,7 @@ objects:
         - args:
           - --config.file=/etc/prometheus/prometheus.yml
           - --storage.tsdb.retention=30d
-          image: ' '
+          image: registry.redhat.io/openshift3/prometheus:v3.9
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -1889,168 +1443,99 @@ objects:
             name: syndesis-prometheus-config
           name: syndesis-prometheus-config
     triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - prometheus
-        from:
-          kind: ImageStreamTag
-          name: prometheus:v3.9
-          namespace: ${IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
     - type: ConfigChange
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: jaeger-operator
+    namespace: ${OPENSHIFT_PROJECT}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: jaeger-operator
+    namespace: ${OPENSHIFT_PROJECT}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        name: jaeger-operator
+    template:
+      metadata:
+        labels:
+          name: jaeger-operator
+      spec:
+        containers:
+        - args:
+          - start
+          env:
+          - name: WATCH_NAMESPACE
+            value: ${OPENSHIFT_PROJECT}
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: OPERATOR_NAME
+            value: jaeger-operator
+          image: jaegertracing/jaeger-operator:1.13.1
+          imagePullPolicy: Always
+          name: jaeger-operator
+          ports:
+          - containerPort: 8383
+            name: metrics
+        - args:
+          - --reporter.grpc.host-port=dns:///jaeger-collector-headless.$(POD_NAMESPACE).svc.cluster.local:14250
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          image: jaegertracing/jaeger-agent:1.13.1
+          name: jaeger-agent
+          ports:
+          - containerPort: 6831
+            name: jg-compact-trft
+            protocol: UDP
+        serviceAccountName: jaeger-operator
+- apiVersion: jaegertracing.io/v1
+  kind: Jaeger
+  metadata:
+    labels:
+      app: syndesis
+      syndesis.io/app: syndesis
+      syndesis.io/component: jaeger
+      syndesis.io/type: infrastructure
+    name: syndesis-jaeger
+  spec:
+    allInOne:
+      ingress:
+        enabled: false
+      options:
+        memory:
+          max-traces: 100000
+    strategy: allInOne
 - apiVersion: v1
   kind: Service
   metadata:
     labels:
       app: syndesis
-      syndesis.io/app: todo
-      syndesis.io/component: todo
-    name: todo
+      syndesis.io/app: syndesis
+      syndesis.io/component: jaeger
+      syndesis.io/type: infrastructure
+    name: noauth-syndesis-jaeger-query
   spec:
     ports:
-    - port: 8080
+    - name: query
+      port: 443
       protocol: TCP
-      targetPort: 8080
+      targetPort: 16686
     selector:
-      app: syndesis
-      syndesis.io/app: todo
-      syndesis.io/component: todo
-- apiVersion: route.openshift.io/v1
-  kind: Route
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: todo
-      syndesis.io/component: todo
-    name: todo
-  spec:
-    host: todo-${ROUTE_HOSTNAME}
-    path: /
-    port:
-      targetPort: 8080
-    tls:
-      insecureEdgeTerminationPolicy: Allow
-      termination: edge
-    to:
-      kind: Service
-      name: todo
-      weight: 100
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: todo
-    name: todo
-  spec:
-    lookupPolicy:
-      local: false
-  status:
-    tags:
-    - items: null
-      tag: latest
-- apiVersion: build.openshift.io/v1
-  kind: BuildConfig
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: todo
-    name: todo
-  spec:
-    output:
-      to:
-        kind: ImageStreamTag
-        name: todo:latest
-    postCommit: {}
-    resources: {}
-    runPolicy: Serial
-    source:
-      git:
-        uri: https://github.com/syndesisio/todo-example.git
-      type: Git
-    strategy:
-      sourceStrategy:
-        from:
-          kind: ImageStreamTag
-          name: php:7.0
-          namespace: openshift
-      type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: null
-      type: ImageChange
-- apiVersion: apps.openshift.io/v1
-  kind: DeploymentConfig
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: todo
-    name: todo
-  spec:
-    replicas: 1
-    selector:
-      app: syndesis
-      syndesis.io/app: todo
-      syndesis.io/component: todo
-    strategy:
-      resources:
-        limits:
-          memory: 256Mi
-        requests:
-          memory: 20Mi
-      type: Recreate
-    template:
-      metadata:
-        annotations:
-          openshift.io/container.todo.image.entrypoint: '["container-entrypoint","/bin/sh","-c","$STI_SCRIPTS_PATH/usage"]'
-        creationTimestamp: null
-        labels:
-          app: syndesis
-          syndesis.io/app: todo
-          syndesis.io/component: todo
-      spec:
-        containers:
-        - env:
-          - name: TODO_DB_SERVER
-            value: syndesis-db
-          - name: TODO_DB_NAME
-            value: sampledb
-          - name: TODO_DB_USER
-            value: sampledb
-          - name: TODO_DB_PASS
-            value: ${POSTGRESQL_SAMPLEDB_PASSWORD}
-          - name: TODO_DB_SCHEMA
-            value: sampledb
-          image: ' '
-          imagePullPolicy: Always
-          name: todo
-          ports:
-          - containerPort: 8080
-            name: http
-          resources:
-            limits:
-              memory: 256Mi
-            requests:
-              memory: 256Mi
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        schedulerName: default-scheduler
-        securityContext: {}
-        terminationGracePeriodSeconds: 30
-    test: false
-    triggers:
-    - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - todo
-        from:
-          kind: ImageStreamTag
-          name: todo:latest
-      type: ImageChange
+      app: jaeger
+      app.kubernetes.io/component: all-in-one
+      app.kubernetes.io/name: syndesis-jaeger
 - apiVersion: v1
   kind: Service
   metadata:
@@ -2105,10 +1590,7 @@ objects:
             value: /deployments
           - name: JAVA_OPTIONS
             value: -Djava.net.preferIPv4Stack=true -Duser.home=/tmp -Djava.net.preferIPv4Addresses=true
-              -Dlog4j.logger.org.apache.http=DEBUG -Dkomodo.user=${POSTGRESQL_USER}
-              -Dkomodo.password=${POSTGRESQL_PASSWORD} -Dkomodo.connectionUrl=jdbc:postgresql://syndesis-db:5432/${POSTGRESQL_DATABASE}
-              -Dkomodo.binaryStoreUrl=jdbc:postgresql://syndesis-db:5432/${POSTGRESQL_DATABASE}
-              -Dkomodo.connectionDriver=org.postgresql.Driver
+              -Dlog4j.logger.org.apache.http=DEBUG
           - name: NAMESPACE
             valueFrom:
               fieldRef:
@@ -2116,23 +1598,23 @@ objects:
           - name: GC_MAX_METASPACE_SIZE
             value: "512"
           - name: BUILD_IMAGE_STREAM
-            value: fuse-ignite-s2i:1.5
+            value: syndesis-s2i:1.6
           - name: POSTGRESQL_PASSWORD
-            value: ${POSTGRESQL_PASSWORD}
+            value: 4ESc6h7MlDeKcV2g
           - name: POSTGRESQL_USER
-            value: ${POSTGRESQL_USER}
+            value: syndesis
           - name: POSTGRESQL_DATABASE
-            value: ${POSTGRESQL_DATABASE}
+            value: syndesis
           - name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
-            value: ${OPENSHIFT_MANAGEMENT_URL_FOR3SCALE}
-          image: ' '
+            value: ""
+          image: registry.redhat.io/fuse7-tech-preview/fuse-dv-rhel7:1.6
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
               httpHeaders:
               - name: Accept
                 value: application/json
-              path: /vdb-builder/v1/swagger.json
+              path: /dv/v1/swagger.json
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 20
@@ -2150,7 +1632,7 @@ objects:
               httpHeaders:
               - name: Accept
                 value: application/json
-              path: /vdb-builder/v1/swagger.json
+              path: /dv/v1/swagger.json
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 20
@@ -2158,7 +1640,7 @@ objects:
           resources:
             limits:
               cpu: 750m
-              memory: 1Gi
+              memory: 1024Mi
             requests:
               cpu: 350m
               memory: 256Mi
@@ -2172,50 +1654,10 @@ objects:
             name: syndesis-server-config
           name: config-volume
     triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - syndesis-dv
-        from:
-          kind: ImageStreamTag
-          name: fuse-dv:1.5
-          namespace: ${IMAGE_STREAM_NAMESPACE}
-      type: ImageChange
     - type: ConfigChange
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: syndesis
-      syndesis.io/app: syndesis
-      syndesis.io/component: syndesis-dv
-      syndesis.io/type: infrastructure
-    name: fuse-dv
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: ${SYNDESIS_REGISTRY}/fuse7-tech-preview/fuse-dv:1.5
-      importPolicy:
-        scheduled: true
-      name: "1.5"
 parameters:
-- description: Key used to perform authentication of client side stored state
-  displayName: Client State Authentication Key
-  from: '[a-zA-Z0-9]{32}'
-  generate: expression
-  name: CLIENT_STATE_AUTHENTICATION_KEY
-  required: true
-- description: Key used to perform encryption of client side stored state
-  displayName: Client State Encryption Key
-  from: '[a-zA-Z0-9]{32}'
-  generate: expression
-  name: CLIENT_STATE_ENCRYPTION_KEY
-  required: true
-- description: Should deployment of integrations be enabled?
-  displayName: Controllers Integration Enabled
+- displayName: Controllers Integration Enabled
   name: CONTROLLERS_INTEGRATION_ENABLED
-  value: "true"
 - description: Set to 0 to disable data virtualization, set to 1 to enable data virtualization
   displayName: Datavirt Enabled
   name: DATAVIRT_ENABLED
@@ -2226,10 +1668,6 @@ parameters:
   name: DEMO_DATA_ENABLED
   required: true
   value: "false"
-- description: Namespace containing image streams
-  displayName: Image Stream Namespace
-  name: IMAGE_STREAM_NAMESPACE
-  value: ""
 - description: Interval for checking the state of the integrations
   displayName: Integration State Check Interval
   name: INTEGRATION_STATE_CHECK_INTERVAL
@@ -2240,99 +1678,12 @@ parameters:
   name: MAX_INTEGRATIONS_PER_USER
   required: true
   value: "1"
-- description: Volume space available for Meta data, e.g. 512Mi, 2Gi
-  displayName: Meta Volume Capacity
-  name: META_VOLUME_CAPACITY
-  required: true
-  value: 1Gi
-- description: Secret to use to encrypt oauth cookies
-  displayName: Oauth Cookie Secret
-  from: '[a-zA-Z0-9]{32}'
-  generate: expression
-  name: OAUTH_COOKIE_SECRET
-- description: The URL to the OpenShift console
-  displayName: Openshift Console Url
-  name: OPENSHIFT_CONSOLE_URL
-  value: https://localhost:8443
-- description: Url to 3scale for exposing services
-  displayName: Openshift Management Url For3scale
-  name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
-- description: Public OpenShift master address
-  displayName: Openshift Master
-  name: OPENSHIFT_MASTER
-  required: true
-  value: https://localhost:8443
-- description: OpenShift OAuth client secret
-  displayName: Openshift Oauth Client Secret
-  from: '[a-zA-Z0-9]{64}'
-  generate: expression
-  name: OPENSHIFT_OAUTH_CLIENT_SECRET
-  required: true
 - description: The name of the OpenShift project Syndesis is being deployed into
   displayName: Openshift Project
   name: OPENSHIFT_PROJECT
   required: true
-- description: Name of the PostgreSQL database accessed
-  displayName: Postgresql Database
-  name: POSTGRESQL_DATABASE
-  required: true
-  value: syndesis
-- description: The OpenShift Namespace where the PostgreSQL ImageStream resides
-  displayName: Postgresql Image Stream Namespace
-  name: POSTGRESQL_IMAGE_STREAM_NAMESPACE
-  value: openshift
-- description: Password for the PostgreSQL connection user
-  displayName: Postgresql Password
-  from: '[a-zA-Z0-9]{16}'
-  generate: expression
-  name: POSTGRESQL_PASSWORD
-  required: true
-- description: Password for the PostgreSQL sampledb user
-  displayName: Postgresql Sampledb Password
-  from: '[a-zA-Z0-9]{16}'
-  generate: expression
-  name: POSTGRESQL_SAMPLEDB_PASSWORD
-  required: true
-- description: Username for PostgreSQL user that will be used for accessing the database
-  displayName: Postgresql User
-  name: POSTGRESQL_USER
-  value: syndesis
-- description: Volume space available for PostgreSQL data, e.g. 512Mi, 2Gi
-  displayName: Postgresql Volume Capacity
-  name: POSTGRESQL_VOLUME_CAPACITY
-  required: true
-  value: 1Gi
-- description: Volume space available for Prometheus data, e.g. 512Mi, 2Gi
-  displayName: Prometheus Volume Capacity
-  name: PROMETHEUS_VOLUME_CAPACITY
-  required: true
-  value: 1Gi
-- description: The external hostname to access Syndesis
-  displayName: Route Hostname
-  name: ROUTE_HOSTNAME
-- description: The user needs to have permissions to at least get a list of pods in
-    the given project in order to be granted access to the Syndesis installation
-  displayName: Sar Project
-  name: SAR_PROJECT
-  required: true
-- description: The encryption key used to encrypt/decrypt stored secrets
-  displayName: Syndesis Encrypt Key
-  from: '[a-zA-Z0-9]{64}'
-  generate: expression
-  name: SYNDESIS_ENCRYPT_KEY
-  required: true
-- description: Registry from where to fetch Syndesis images
-  displayName: Syndesis Registry
-  name: SYNDESIS_REGISTRY
-  value: docker.io
 - description: Enables test-support endpoint on backend API
   displayName: Test Support Enabled
   name: TEST_SUPPORT_ENABLED
   required: true
   value: "false"
-- description: Volume space available for the upgrade process (backup data), e.g.
-    512Mi, 2Gi
-  displayName: Upgrade Volume Capacity
-  name: UPGRADE_VOLUME_CAPACITY
-  required: true
-  value: 1Gi
