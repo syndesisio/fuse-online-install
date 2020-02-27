@@ -4,7 +4,7 @@
 
 check_error() {
     local msg="$*"
-    local umsg==${msg^^} # Upper-case everything to ensure 'error' is detected as well as 'ERROR'
+    local umsg==`echo $msg | tr '[a-z]' '[A-Z]'` # Upper-case everything to ensure 'error' is detected as well as 'ERROR'
     if [ "${umsg//ERROR/}" != "${umsg}" ]; then
         if [ -n "${ERROR_FILE:-}" ] && [ -f "$ERROR_FILE" ] && ! grep "$msg" $ERROR_FILE ; then
             local tmp=$(mktemp /tmp/error-XXXX)
