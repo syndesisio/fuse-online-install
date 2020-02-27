@@ -1,23 +1,23 @@
 
-base_image_version=1.5
+base_image_version=1.6
 
 # Image Streams to be updated
 imagestreams="server ui meta s2i postgres_exporter komodo"
 
 # Tags used for the productised images
-tag_server="1.5-17"
-tag_ui="1.5-10"
-tag_meta="1.5-16"
-tag_s2i="1.5-14"
+tag_server="1.6-16"
+tag_ui="1.6-5"
+tag_meta="1.6-16"
+tag_s2i="1.6-9"
 
-tag_upgrade="1.5-7"
-tag_operator="1.5-9"
-tag_postgres_exporter="1.5-7"
+tag_upgrade="1.6-10"
+tag_operator="1.6-10"
+tag_postgres_exporter="1.6-5"
 
-tag_camel_k="1.5-14"
-tag_java_base_image="1.5-13"
+tag_camel_k="1.6-12"
+tag_java_base_image="1.6-12"
 
-tag_komodo="1.5-9"
+tag_komodo="1.6-13"
 
 # Docker repository for productised images
 repository="fuse7"
