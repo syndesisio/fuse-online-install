@@ -23,9 +23,9 @@ tag_komodo="1.5-9"
 repository="fuse7"
 
 # Test:
-registry="registry-proxy.engineering.redhat.com/rh-osbs"
-maven_repository="https://origin-repository.jboss.org/nexus/content/groups/ea@id=redhat.ea"
+#registry="registry-proxy.engineering.redhat.com/rh-osbs"
+#maven_repository="https://origin-repository.jboss.org/nexus/content/groups/ea@id=redhat.ea"
 
 # Official:
-#registry="registry.redhat.io"
-#maven_repository="https://maven.repository.redhat.com/ga@id=redhat.ga"
+registry="registry.redhat.io"
+maven_repository="https://maven.repository.redhat.com/ga@id=redhat.ga"
