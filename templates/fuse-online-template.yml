@@ -54,8 +54,8 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-server-secret
   stringData:
-    clientStateAuthenticationKey: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
-    clientStateEncryptionKey: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
+    clientStateAuthenticationKey: MJSkjUahTUS0HshoGkSkSOv0BnHQzd7f
+    clientStateEncryptionKey: MJSkjUahTUS0HshoGkSkSOv0BnHQzd7f
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -65,21 +65,21 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-global-config
   stringData:
-    CLIENT_STATE_AUTHENTICATION_KEY: JNJQ1qP32MN74y4Ofp4QlENwqAQuQKtV
-    CLIENT_STATE_ENCRYPTION_KEY: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
-    OAUTH_COOKIE_SECRET: vePfDmnag6gR8LWutpTujsymEU3Ru6j8
-    OPENSHIFT_OAUTH_CLIENT_SECRET: ozgYz2bDOU66MEfwrmGLACtpkMIcNngqmmurVChVB3q3O9wK1aiR86b8jEYCRKTz
-    POSTGRESQL_PASSWORD: 4ESc6h7MlDeKcV2g
-    POSTGRESQL_SAMPLEDB_PASSWORD: 6OaXARLC55O7B2w8
-    SYNDESIS_ENCRYPT_KEY: kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
+    CLIENT_STATE_AUTHENTICATION_KEY: qxbflgWlFeAQKCKEGZGVK4bI36KjlxPm
+    CLIENT_STATE_ENCRYPTION_KEY: MJSkjUahTUS0HshoGkSkSOv0BnHQzd7f
+    OAUTH_COOKIE_SECRET: ldDyvY6SnAF1foTQEpfjXDmq4lzwgS9O
+    OPENSHIFT_OAUTH_CLIENT_SECRET: r6FhkqYfLL62lnYNvLxs4FWLVgk7z2gbncSURNGZQiqEPP95yrwul4I1K5H9O5EH
+    POSTGRESQL_PASSWORD: GHMvWVWyikXRcZu6
+    POSTGRESQL_SAMPLEDB_PASSWORD: QAYCqozRYZAVRaNV
+    SYNDESIS_ENCRYPT_KEY: hUnZ2Hdmz780APPn3ceRS0O2R2toFyzO8Btwz5ImrkgqDJmCaU7z4Gm9WN2WTb3Y
     params: |-
-      OPENSHIFT_OAUTH_CLIENT_SECRET=ozgYz2bDOU66MEfwrmGLACtpkMIcNngqmmurVChVB3q3O9wK1aiR86b8jEYCRKTz
-      POSTGRESQL_PASSWORD=4ESc6h7MlDeKcV2g
-      POSTGRESQL_SAMPLEDB_PASSWORD=6OaXARLC55O7B2w8
-      OAUTH_COOKIE_SECRET=vePfDmnag6gR8LWutpTujsymEU3Ru6j8
-      SYNDESIS_ENCRYPT_KEY=kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
-      CLIENT_STATE_AUTHENTICATION_KEY=JNJQ1qP32MN74y4Ofp4QlENwqAQuQKtV
-      CLIENT_STATE_ENCRYPTION_KEY=3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
+      OPENSHIFT_OAUTH_CLIENT_SECRET=r6FhkqYfLL62lnYNvLxs4FWLVgk7z2gbncSURNGZQiqEPP95yrwul4I1K5H9O5EH
+      POSTGRESQL_PASSWORD=GHMvWVWyikXRcZu6
+      POSTGRESQL_SAMPLEDB_PASSWORD=QAYCqozRYZAVRaNV
+      OAUTH_COOKIE_SECRET=ldDyvY6SnAF1foTQEpfjXDmq4lzwgS9O
+      SYNDESIS_ENCRYPT_KEY=hUnZ2Hdmz780APPn3ceRS0O2R2toFyzO8Btwz5ImrkgqDJmCaU7z4Gm9WN2WTb3Y
+      CLIENT_STATE_AUTHENTICATION_KEY=qxbflgWlFeAQKCKEGZGVK4bI36KjlxPm
+      CLIENT_STATE_ENCRYPTION_KEY=MJSkjUahTUS0HshoGkSkSOv0BnHQzd7f
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
@@ -135,7 +135,7 @@ objects:
       deployment:
         load-demo-data: ${DEMO_DATA_ENABLED}
       encrypt:
-        key: kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
+        key: hUnZ2Hdmz780APPn3ceRS0O2R2toFyzO8Btwz5ImrkgqDJmCaU7z4Gm9WN2WTb3Y
       endpoints:
         health:
           sensitive: false
@@ -174,7 +174,7 @@ objects:
       spring:
         datasource:
           driver-class-name: org.postgresql.Driver
-          password: 4ESc6h7MlDeKcV2g
+          password: GHMvWVWyikXRcZu6
           url: jdbc:postgresql://syndesis-db:5432/syndesis?sslmode=disable
           username: syndesis
         zipkin:
@@ -706,7 +706,7 @@ objects:
           - name: CONTROLLERS_INTEGRATION_ENABLED
             value: ${CONTROLLERS_INTEGRATION_ENABLED}
           - name: POSTGRESQL_SAMPLEDB_PASSWORD
-            value: 6OaXARLC55O7B2w8
+            value: QAYCqozRYZAVRaNV
           - name: CLIENT_STATE_AUTHENTICATION_ALGORITHM
             value: HmacSHA1
           - name: CLIENT_STATE_AUTHENTICATION_KEY
@@ -1600,7 +1600,7 @@ objects:
           - name: BUILD_IMAGE_STREAM
             value: syndesis-s2i:1.6
           - name: POSTGRESQL_PASSWORD
-            value: 4ESc6h7MlDeKcV2g
+            value: GHMvWVWyikXRcZu6
           - name: POSTGRESQL_USER
             value: syndesis
           - name: POSTGRESQL_DATABASE
