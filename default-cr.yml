@@ -59,10 +59,10 @@ spec:
         # volumeName: test-volume
     prometheus:
       resources:
-        # Uncomment & modify to increase the memory for Prometheus.
+        # Uncomment & modify to increase the memory for the Prometheus component.
         # memory: "512Mi"
         #
-        # Uncomment & modify to increase the internal storage for Prometheus.
+        # Uncomment & modify to increase internal storage for the Prometheus component.
         # volumeCapacity: "1Gi"
   # Set to true to add a small, populated PostgreSQL database for creating sample integrations.
   demoData: false
@@ -70,20 +70,20 @@ spec:
     # Enables Jaeger activity tracking. 
     jaeger:
       enabled: true
-    # Enables the alternative Camel K runtime component.
+    # Enables the alternative Camel K runtime component (Technology Preview).
     camelk:
       enabled: false
-    # Enables the data virtualization component.
+    # Enables the data virtualization component (Technology Preview).
     dv:
       enabled: false
       resources:
         # Uncomment & modify to increase the default memory for data virtualization.
         # memory: "1024Mi"
         #
-    # Enables the Knative component.
+    # Enables the Knative component (Technology Preview).
     knative:
       enabled: false
-    # Enables the Prometheus monitoring component.
+    # Enables Prometheus monitoring.
     ops:
       enabled: false
     # Exposes public REST API endpoints for CI/CD pipelines.
