@@ -87,7 +87,7 @@ spec:
     ops:
       enabled: false
     # Exposes public REST API endpoints for CI/CD pipelines.
-   publicApi:
+    publicApi:
        enabled: false
        # Uncomment & modify to specify the public address for invoking REST API endpoints.
        routeHostname: public-syndesis.a.b.c.d.e
