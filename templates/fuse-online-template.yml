@@ -54,8 +54,8 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-server-secret
   stringData:
-    clientStateAuthenticationKey: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
-    clientStateEncryptionKey: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
+    clientStateAuthenticationKey: NNIsrOVxZHfAki49yEsZmssiycDlweYW
+    clientStateEncryptionKey: NNIsrOVxZHfAki49yEsZmssiycDlweYW
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -65,21 +65,21 @@ objects:
       syndesis.io/type: infrastructure
     name: syndesis-global-config
   stringData:
-    CLIENT_STATE_AUTHENTICATION_KEY: JNJQ1qP32MN74y4Ofp4QlENwqAQuQKtV
-    CLIENT_STATE_ENCRYPTION_KEY: 3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
-    OAUTH_COOKIE_SECRET: vePfDmnag6gR8LWutpTujsymEU3Ru6j8
-    OPENSHIFT_OAUTH_CLIENT_SECRET: ozgYz2bDOU66MEfwrmGLACtpkMIcNngqmmurVChVB3q3O9wK1aiR86b8jEYCRKTz
-    POSTGRESQL_PASSWORD: 4ESc6h7MlDeKcV2g
-    POSTGRESQL_SAMPLEDB_PASSWORD: 6OaXARLC55O7B2w8
-    SYNDESIS_ENCRYPT_KEY: kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
+    CLIENT_STATE_AUTHENTICATION_KEY: igZ089vrvT4omVGohPp7NAgW1C0lxOof
+    CLIENT_STATE_ENCRYPTION_KEY: NNIsrOVxZHfAki49yEsZmssiycDlweYW
+    OAUTH_COOKIE_SECRET: bGNrr0Z0r0VYp28sUNTfJbFNOwuHyd2I
+    OPENSHIFT_OAUTH_CLIENT_SECRET: sHyzF97CcGiDggyzGPFizgcPqchSixcTCqMqjRRWX8VJLRtWGW5koYctFYKS8Cma
+    POSTGRESQL_PASSWORD: 447fj6TjnCv796SR
+    POSTGRESQL_SAMPLEDB_PASSWORD: IvwhUx4Q0ncpB7PM
+    SYNDESIS_ENCRYPT_KEY: JPFCBEuKJVlnRnvFqtwAQRLQ14LIZOIla3reDnZPvVMgq6icuRQjC4388iNhFc3H
     params: |-
-      OPENSHIFT_OAUTH_CLIENT_SECRET=ozgYz2bDOU66MEfwrmGLACtpkMIcNngqmmurVChVB3q3O9wK1aiR86b8jEYCRKTz
-      POSTGRESQL_PASSWORD=4ESc6h7MlDeKcV2g
-      POSTGRESQL_SAMPLEDB_PASSWORD=6OaXARLC55O7B2w8
-      OAUTH_COOKIE_SECRET=vePfDmnag6gR8LWutpTujsymEU3Ru6j8
-      SYNDESIS_ENCRYPT_KEY=kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
-      CLIENT_STATE_AUTHENTICATION_KEY=JNJQ1qP32MN74y4Ofp4QlENwqAQuQKtV
-      CLIENT_STATE_ENCRYPTION_KEY=3vHW63CJYeB3sZek1Anhw9Ns8lgCRfZz
+      OPENSHIFT_OAUTH_CLIENT_SECRET=sHyzF97CcGiDggyzGPFizgcPqchSixcTCqMqjRRWX8VJLRtWGW5koYctFYKS8Cma
+      POSTGRESQL_PASSWORD=447fj6TjnCv796SR
+      POSTGRESQL_SAMPLEDB_PASSWORD=IvwhUx4Q0ncpB7PM
+      OAUTH_COOKIE_SECRET=bGNrr0Z0r0VYp28sUNTfJbFNOwuHyd2I
+      SYNDESIS_ENCRYPT_KEY=JPFCBEuKJVlnRnvFqtwAQRLQ14LIZOIla3reDnZPvVMgq6icuRQjC4388iNhFc3H
+      CLIENT_STATE_AUTHENTICATION_KEY=igZ089vrvT4omVGohPp7NAgW1C0lxOof
+      CLIENT_STATE_ENCRYPTION_KEY=NNIsrOVxZHfAki49yEsZmssiycDlweYW
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
@@ -135,7 +135,7 @@ objects:
       deployment:
         load-demo-data: ${DEMO_DATA_ENABLED}
       encrypt:
-        key: kjIa6qF3k2llkV4950D6dFGAvBjSfFdE6xsB9PG7S0EizkJv8Hco4yJLWkjg4PpG
+        key: JPFCBEuKJVlnRnvFqtwAQRLQ14LIZOIla3reDnZPvVMgq6icuRQjC4388iNhFc3H
       endpoints:
         health:
           sensitive: false
@@ -174,7 +174,7 @@ objects:
       spring:
         datasource:
           driver-class-name: org.postgresql.Driver
-          password: 4ESc6h7MlDeKcV2g
+          password: 447fj6TjnCv796SR
           url: jdbc:postgresql://syndesis-db:5432/syndesis?sslmode=disable
           username: syndesis
         zipkin:
@@ -706,7 +706,7 @@ objects:
           - name: CONTROLLERS_INTEGRATION_ENABLED
             value: ${CONTROLLERS_INTEGRATION_ENABLED}
           - name: POSTGRESQL_SAMPLEDB_PASSWORD
-            value: 6OaXARLC55O7B2w8
+            value: IvwhUx4Q0ncpB7PM
           - name: CLIENT_STATE_AUTHENTICATION_ALGORITHM
             value: HmacSHA1
           - name: CLIENT_STATE_AUTHENTICATION_KEY
@@ -1480,7 +1480,7 @@ objects:
                 fieldPath: metadata.namespace
           - name: OPERATOR_NAME
             value: jaeger-operator
-          image: jaegertracing/jaeger-operator:1.13.1
+          image: registry.redhat.io/distributed-tracing/jaeger-rhel7-operator:1.13
           imagePullPolicy: Always
           name: jaeger-operator
           ports:
@@ -1493,7 +1493,7 @@ objects:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          image: jaegertracing/jaeger-agent:1.13.1
+          image: registry.redhat.io/distributed-tracing/jaeger-agent-rhel7:1.13
           name: jaeger-agent
           ports:
           - containerPort: 6831
@@ -1511,6 +1511,7 @@ objects:
     name: syndesis-jaeger
   spec:
     allInOne:
+      image: registry.redhat.io/distributed-tracing/jaeger-all-in-one-rhel7:1.13
       ingress:
         enabled: false
       options:
@@ -1600,7 +1601,7 @@ objects:
           - name: BUILD_IMAGE_STREAM
             value: syndesis-s2i:1.6
           - name: POSTGRESQL_PASSWORD
-            value: 4ESc6h7MlDeKcV2g
+            value: 447fj6TjnCv796SR
           - name: POSTGRESQL_USER
             value: syndesis
           - name: POSTGRESQL_DATABASE
