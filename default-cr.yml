@@ -90,7 +90,7 @@ spec:
     publicApi:
       enabled: false
       # Uncomment & modify to specify the public address for invoking REST API endpoints.
-      routeHostname: public-syndesis.a.b.c.d.e
+      # routeHostname: public-syndesis.a.b.c.d.e
     # Enables the Todo application for confirming that sample integrations work.
     todo:
       enabled: false
