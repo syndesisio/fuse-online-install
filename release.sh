@@ -350,7 +350,7 @@ release_template() {
     # on some systems does not normally have this permission.
     # This will cause issues, as documented in ENTESB-11639, but that's a short-term balance to be struck.
     #
-    sed -i '/deploymentconfigs\/finalizers/d' $FUSE_TEMPLATE
+    sed -i '' '/deploymentconfigs\/finalizers/d' $FUSE_TEMPLATE
 
     mkdir -p $release_dir
     mv $FUSE_TEMPLATE $release_dir/
