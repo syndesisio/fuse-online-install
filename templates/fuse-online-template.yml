@@ -2244,7 +2244,7 @@ parameters:
 - description: Namespace containing image streams
   displayName: Image Stream Namespace
   name: IMAGE_STREAM_NAMESPACE
-  value: ""
+  value: "fuse-ignite"
 - description: Interval for checking the state of the integrations
   displayName: Integration State Check Interval
   name: INTEGRATION_STATE_CHECK_INTERVAL
