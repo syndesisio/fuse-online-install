@@ -718,7 +718,7 @@ objects:
             initialDelaySeconds: 60
             tcpSocket:
               port: 5432
-          name: postgresql
+          name: syndesis-db
           ports:
           - containerPort: 5432
             protocol: TCP
@@ -792,11 +792,11 @@ objects:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - postgresql
+        - syndesis-db
         from:
           kind: ImageStreamTag
-          name: syndesis-postgresql:latest
-          namespace: ${IMAGE_STREAM_NAMESPACE}
+          name: postgresql:9.6
+          namespace: ${POSTGRESQL_IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - imageChangeParams:
         automatic: true
@@ -2291,6 +2291,10 @@ parameters:
   displayName: Openshift Project
   name: OPENSHIFT_PROJECT
   required: true
+- description: The OpenShift Namespace where the PostgreSQL ImageStream resides
+  displayName: Postgresql Image Stream Namespace
+  name: POSTGRESQL_IMAGE_STREAM_NAMESPACE
+  value: openshift
 - description: Name of the PostgreSQL database accessed
   displayName: Postgresql Database
   name: POSTGRESQL_DATABASE
