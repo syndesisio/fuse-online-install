@@ -718,7 +718,7 @@ objects:
             initialDelaySeconds: 60
             tcpSocket:
               port: 5432
-          name: syndesis-db
+          name: postgresql
           ports:
           - containerPort: 5432
             protocol: TCP
@@ -792,7 +792,7 @@ objects:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - syndesis-db
+        - postgresql
         from:
           kind: ImageStreamTag
           name: postgresql:9.6
