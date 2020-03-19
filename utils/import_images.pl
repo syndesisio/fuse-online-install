@@ -79,7 +79,7 @@ my $EXTRA_IMAGES =
     },
     {
       source => "$config->{registry}/fuse7-tech-preview-fuse-dv-rhel7:$config->{tag_komodo}",
-      target => "fuse-dv:1.6"
+      target => "fuse-dv-rhel7:1.6"
     }
   ];
 
