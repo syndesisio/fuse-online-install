@@ -381,7 +381,8 @@ release() {
     release_binaries
 
     echo "==== Releasing template file"
-    release_template
+    #release_template
+    echo "Skip template generation, manual changes in place and required ..."
 
     echo "==== Committing"
     cd $topdir
