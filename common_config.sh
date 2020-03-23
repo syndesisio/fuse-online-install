@@ -2,7 +2,7 @@
 #
 # Global configuration for the install scripts
 
-source $BASEDIR/base_functions.sh
+source "$BASEDIR/base_functions.sh"
 
 # Tag for release. Update this before running release.sh
 TAG_FUSE_ONLINE_INSTALL=1.8.18

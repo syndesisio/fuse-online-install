@@ -85,11 +85,11 @@ readopt() {
 BASEDIR=$(basedir)
 
 # Get configuration and other scripts
-pushd > /dev/null . && cd $BASEDIR
-source $BASEDIR/base_functions.sh
-source $BASEDIR/common_config.sh
-source $BASEDIR/libs/download_functions.sh
-source $BASEDIR/libs/openshift_functions.sh
+pushd > /dev/null . && cd "${BASEDIR}"
+source "$BASEDIR/base_functions.sh"
+source "$BASEDIR/common_config.sh"
+source "$BASEDIR/libs/download_functions.sh"
+source "$BASEDIR/libs/openshift_functions.sh"
 popd > /dev/null
 
 SYNDESIS_CLI=$(get_syndesis_bin)

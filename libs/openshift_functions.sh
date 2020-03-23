@@ -2,7 +2,7 @@
 #
 # Common openshift functions for install scripts
 
-source $BASEDIR/common_config.sh
+source "$BASEDIR/common_config.sh"
 
 recreate_project() {
     local project=$1
