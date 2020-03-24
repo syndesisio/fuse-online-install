@@ -341,15 +341,14 @@ if [ "$jaeger_enabled" == "true" ]; then
     wait_for sa jaeger-operator
     result=$(oc secrets link jaeger-operator syndesis-pull-secret --for=pull)
     check_error $result
-    # force deployment reload and pod will be recreated
     # workaround as the previous "oc secrets link" doesn't trigger a pod restart
-    oc patch deployment jaeger-operator --type json -p "[{'op':'add', 'path':'/spec/template/metadata/labels/force_reload', 'value':'$(date +%s)'}]"
+    oc delete `oc get -o name pod -l name=jaeger-operator`
 
     wait_for sa syndesis-jaeger-ui-proxy
     result=$(oc secrets link syndesis-jaeger-ui-proxy syndesis-pull-secret --for=pull)
     check_error $result
     # workaround as the previous "oc secrets link" doesn't trigger a pod restart
-    oc patch deployment syndesis-jaeger --type json -p "[{'op':'add', 'path':'/spec/template/metadata/labels/force_reload', 'value':'$(date +%s)'}]"
+    oc delete `oc get -o name pod -l app.kubernetes.io/name=syndesis-jaeger`
 fi
 
 camelk_enabled=$(oc get syndesis app -o jsonpath='{.spec.addons.camelk.enabled}')
@@ -360,9 +359,8 @@ if [ "$camelk_enabled" == "true" ]; then
     wait_for sa camel-k-operator
     result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull)
     check_error $result
-    # force deployment reload and pod will be recreated
     # workaround as the previous "oc secrets link" doesn't trigger a pod restart
-    oc patch deployment camel-k-operator --type json -p "[{'op':'add', 'path':'/spec/template/metadata/labels/force_reload', 'value':'$(date +%s)'}]"
+    oc delete `oc get -o name pod -l name=camel-k-operator`
 fi
 
 
