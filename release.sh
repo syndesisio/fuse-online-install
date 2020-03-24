@@ -75,12 +75,12 @@ readopt() {
 BASEDIR=$(basedir)
 
 # Get configuration and other scripts
-pushd > /dev/null . && cd $BASEDIR
-source $BASEDIR/base_functions.sh
-source $BASEDIR/common_config.sh
-source $BASEDIR/libs/download_functions.sh
-source $BASEDIR/libs/openshift_functions.sh
-source $BASEDIR/libs/docker_functions.sh
+pushd > /dev/null . && cd "$BASEDIR"
+source "$BASEDIR/base_functions.sh"
+source "$BASEDIR/common_config.sh"
+source "$BASEDIR/libs/download_functions.sh"
+source "$BASEDIR/libs/openshift_functions.sh"
+source "$BASEDIR/libs/docker_functions.sh"
 popd > /dev/null
 
 
@@ -127,7 +127,7 @@ git_push() {
     local release_version=${2:-}
     local moving_tag=${3:-}
 
-    cd $topdir
+    cd "$topdir"
 
     if [ $(hasflag --git-push) ]; then
         local remote=$(readopt --git-remote)
@@ -207,7 +207,7 @@ release_binaries() {
     fi
 
     local release_dir=$(extract_binaries)
-    check_error $release_dir
+    check_error "$release_dir"
 
     if [ ! $(hasflag --dry-run -n) ]; then
         local github_username=$(get_github_username)
@@ -216,7 +216,7 @@ release_binaries() {
         local github_token=$(get_github_access_token)
         check_error $github_token
 
-        result=$(publish_artifacts $release_dir)
+        result=$(publish_artifacts "$release_dir")
         check_error $result
     fi
 }
@@ -228,7 +228,7 @@ extract_binaries() {
     chmod a+rw $tmp_dir
 
     local release_dir=$tmp_dir/release
-    mkdir -p $release_dir
+    mkdir -p "$release_dir"
 
     local syndesis_dir=$tmp_dir/syndesis
     mkdir -p $syndesis_dir
@@ -241,8 +241,8 @@ extract_binaries() {
     check_error $result
 
     set +e
-    pushd > /dev/null . && cd $syndesis_dir/darwin-amd64 && gunzip syndesis-operator.gz && \
-      tar czvf $release_dir/syndesis-${SYNDESIS_VERSION}-mac-64bit.tar.gz syndesis-operator > /dev/null 2>&1 && \
+    pushd > /dev/null . && cd "$syndesis_dir/darwin-amd64" && gunzip syndesis-operator.gz && \
+      tar czvf "$release_dir/syndesis-${SYNDESIS_VERSION}-mac-64bit.tar.gz" syndesis-operator > /dev/null 2>&1 && \
       popd > /dev/null
     local err=$?
     set -e
@@ -252,9 +252,9 @@ extract_binaries() {
     fi
 
     set +e
-    pushd > /dev/null . && cd $syndesis_dir/windows-amd64 && gunzip syndesis-operator.gz && \
+    pushd > /dev/null . && cd "$syndesis_dir/windows-amd64" && gunzip syndesis-operator.gz && \
       mv syndesis-operator syndesis-operator.exe && \
-      tar czvf $release_dir/syndesis-${SYNDESIS_VERSION}-windows-64bit.tar.gz syndesis-operator.exe > /dev/null 2>&1 && \
+      tar czvf "$release_dir/syndesis-${SYNDESIS_VERSION}-windows-64bit.tar.gz" syndesis-operator.exe > /dev/null 2>&1 && \
       popd > /dev/null
     local err=$?
     set -e
@@ -264,8 +264,8 @@ extract_binaries() {
     fi
 
     set +e
-    pushd > /dev/null . && cd $syndesis_dir/linux-amd64 && \
-      tar czvf $release_dir/syndesis-${SYNDESIS_VERSION}-linux-64bit.tar.gz syndesis-operator > /dev/null 2>&1 \
+    pushd > /dev/null . && cd "$syndesis_dir/linux-amd64" && \
+      tar czvf "$release_dir/syndesis-${SYNDESIS_VERSION}-linux-64bit.tar.gz" syndesis-operator > /dev/null 2>&1 \
       && popd > /dev/null
     local err=$?
     set -e
@@ -384,7 +384,7 @@ release() {
     release_template
 
     echo "==== Committing"
-    cd $topdir
+    cd "$topdir"
     git add common_config.sh
     git_commit "common_config.sh" "Update release config for $TAG_FUSE_ONLINE_INSTALL" "$TAG_FUSE_ONLINE_INSTALL"
 

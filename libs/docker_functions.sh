@@ -2,7 +2,7 @@
 #
 # Functions related to extracting artifacts from docker images
 
-source $BASEDIR/common_config.sh
+source "$BASEDIR/common_config.sh"
 
 # Download CLI
 extract_from_docker() {
