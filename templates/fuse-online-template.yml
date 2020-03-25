@@ -2164,6 +2164,10 @@ parameters:
   displayName: Openshift Project
   name: SAR_PROJECT
   required: true
+- description: Kept for backwards compatibility with provisioning app
+  displayName: Openshift Project
+  name: OPENSHIFT_PROJECT
+  required: false
 - description: The OpenShift Namespace where the PostgreSQL ImageStream resides
   displayName: Postgresql Image Stream Namespace
   name: POSTGRESQL_IMAGE_STREAM_NAMESPACE
