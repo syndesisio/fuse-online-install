@@ -64,8 +64,6 @@ spec:
         #
         # Uncomment & modify to increase the internal storage for Prometheus.
         # volumeCapacity: "1Gi"
-  # Set to true to add a small, populated PostgreSQL database for creating sample integrations.
-  demoData: false
   addons:
     # Enables Jaeger activity tracking.
     jaeger:
