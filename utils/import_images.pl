@@ -74,6 +74,10 @@ my $EXTRA_IMAGES =
       target => "prometheus:v3.9"
     },
     {
+      source => "registry.redhat.io/rhscl/postgresql-96-rhel7:latest",
+      target => "fuse-postgres:9.6"
+    },
+    {
       source => "$config->{registry}/fuse7-tech-preview-fuse-postgres-exporter:$config->{tag_postgres_exporter}",
       target => "fuse-postgres-exporter:1.5"
     },
