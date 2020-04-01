@@ -1146,19 +1146,7 @@ objects:
       syndesis.io/component: syndesis-server
       syndesis.io/type: infrastructure
     name: syndesis-editor
-  rules:
-  - apiGroups:
-    - camel.apache.org
-    resources:
-    - '*'
-    verbs:
-    - get
-    - list
-    - create
-    - update
-    - delete
-    - deletecollection
-    - watch
+  rules:  
   - apiGroups:
     - ""
     resources:
