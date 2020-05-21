@@ -201,6 +201,12 @@ if [ $(hasflag --verbose -v) ]; then
 fi
 
 #
+# Check for oc
+#
+err=$(setup_oc)
+check_error $err
+
+#
 # Is the user executing this a cluster-admin?
 #
 cluster_admin=$(is_cluster_admin)
@@ -257,11 +263,6 @@ fi
 # Do some pre-flight install checks
 #
 # ===========================
-
-#
-# Check for oc
-#
-setup_oc
 
 #
 # make sure pull secret is present (required since 7.3)
