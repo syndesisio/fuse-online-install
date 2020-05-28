@@ -56,7 +56,18 @@ spec:
         #
         # Uncomment & modify to increase default internal storage for connections & integrations.
         # volumeCapacity: 1Gi
-        # volumeName: test-volume
+        #
+        # Uncomment & modify to select a storage volume of a different mode (possible values ReadWriteOnce or ReadOnlyMany)
+        # Warning: this should be rarely changed as mounting the database from a ReadOnlyMany volume will render the db read-only
+        # volumeAccessMode: ReadWriteOnce
+        #
+        # For advanced use-cases only
+        # (please refer to openshift documentation on persistent storage & the fuse-online knowledgebase):
+        # volumeName: <a specific volume identifier>
+        # volumeStorageClass: <a configured persistent storage class>
+        # volumeLabels:
+        #  <name>: <value>
+        #
     prometheus:
       resources:
         # Uncomment & modify to increase the memory for the Prometheus component.
