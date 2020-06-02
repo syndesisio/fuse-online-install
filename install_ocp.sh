@@ -123,6 +123,7 @@ with options:
 -v --verbose                  Verbose logging
 
 You have to run "--setup --grant <user>" as a cluster-admin before you can install Fuse Online as a user.
+If there is no oc command on the PATH and there is minishift, it uses the oc command from the minishift installation.
 EOT
 }
 

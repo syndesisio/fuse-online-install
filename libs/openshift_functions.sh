@@ -147,11 +147,21 @@ setup_oc() {
     # Check for minishift
     which minishift &>/dev/null
     if [ $? -eq 0 ]; then
-      set -e
-      eval $(minishift oc-env)
-      err=$(check_oc_version)
-      check_error $err
-      return
+      mini_running=$(minishift oc-env|grep -c PATH)
+      if [[ ${mini_running} == 1 ]]; then
+        eval $(minishift oc-env)
+        err=$(check_oc_version)
+        check_error $err
+        return
+      fi
+    fi
+    if [[ -d $HOME/.minishift ]]; then
+      oc_bin=$(find $HOME/.minishift/ -name oc -type f | sort | tail -1)
+      if [ -n "$oc_bin" ]; then
+        oc_dir=$(dirname $oc_bin)
+        export PATH=$PATH:$oc_dir
+        return
+      fi
     fi
 
     set -e
