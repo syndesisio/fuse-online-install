@@ -189,6 +189,14 @@ grant_role() {
   set -e
 }
 
+patch_env() {
+  oc set env dc/syndesis-operator RELATED_IMAGE_SERVER=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-server:1.7
+  oc set env dc/syndesis-operator RELATED_IMAGE_UI=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-ui:1.7
+  oc set env dc/syndesis-operator RELATED_IMAGE_META=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-meta:1.7
+  oc set env dc/syndesis-operator RELATED_IMAGE_S2I=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-s2i:1.7
+  oc set env dc/syndesis-operator RELATED_IMAGE_PSQL_EXPORTER=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-tech-preview-fuse-postgres-exporter:1.7
+  oc set env dc/syndesis-operator RELATED_IMAGE_DV=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-tech-preview-fuse-postgres-exporter:1.7
+}
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -310,6 +318,11 @@ set +e
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
 check_error $result
 set -e
+
+if [ $(hasflag -pre --pre-release) ]; then
+  echo "Patching DC to refer to pre-release images"
+  patch_env
+fi
 
 # Wait for deployment
 wait_for_deployments 1 syndesis-operator
