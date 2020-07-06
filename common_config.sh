@@ -28,6 +28,7 @@ CAMEL_K_DOWNLOAD_URL=https://github.com/${CAMEL_K_GIT_ORG}/${CAMEL_K_GIT_REPO}/r
 CAMEL_K_IMAGE=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-tech-preview-fuse-camel-k-rhel7-operator:1.7-6
 
 # Syndesis settings
+SYNDESIS_MOVING_TAG=1.7
 SYNDESIS_VERSION=$TAG_FUSE_ONLINE_INSTALL
 SYNDESIS_BINARY=syndesis-operator
 SYNDESIS_GIT_ORG=$COMMON_RELEASE_GIT_ORG
