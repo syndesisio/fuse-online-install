@@ -189,6 +189,16 @@ grant_role() {
   set -e
 }
 
+patch_env() {
+  oc set env dc/syndesis-operator RELATED_IMAGE_SERVER=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-server:$SYNDESIS_MOVING_TAG
+  oc set env dc/syndesis-operator RELATED_IMAGE_UI=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-ui:$SYNDESIS_MOVING_TAG
+  oc set env dc/syndesis-operator RELATED_IMAGE_META=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-meta:$SYNDESIS_MOVING_TAG
+  oc set env dc/syndesis-operator RELATED_IMAGE_S2I=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-s2i:$SYNDESIS_MOVING_TAG
+  oc set env dc/syndesis-operator RELATED_IMAGE_PSQL_EXPORTER=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-tech-preview-fuse-postgres-exporter:$SYNDESIS_MOVING_TAG
+  oc set env dc/syndesis-operator RELATED_IMAGE_DV=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-tech-preview-fuse-postgres-exporter:$SYNDESIS_MOVING_TAG
+
+  oc import-image --insecure syndesis-operator:$SYNDESIS_MOVING_TAG
+}
 # ==============================================================
 
 if [ $(hasflag --help -h) ]; then
@@ -304,12 +314,19 @@ set -e
 
 # Deploy operator and wait until its up
 echo "Deploying Syndesis operator"
-$SYNDESIS_CLI install operator
+$SYNDESIS_CLI install operator --image "registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-online-operator" --tag $SYNDESIS_MOVING_TAG
 
 set +e
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
 check_error $result
 set -e
+
+if [ $(hasflag -pre --pre-release) ]; then
+  echo "Patching DC to refer to pre-release images"
+  set +e
+  patch_env
+  set -e
+fi
 
 # Wait for deployment
 wait_for_deployments 1 syndesis-operator
