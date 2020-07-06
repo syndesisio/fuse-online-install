@@ -79,11 +79,11 @@ my $EXTRA_IMAGES =
     },
     {
       source => "$config->{registry}/fuse7-tech-preview-fuse-postgres-exporter:$config->{tag_postgres_exporter}",
-      target => "fuse-postgres-exporter:1.5"
+      target => "fuse-postgres-exporter:1.7"
     },
     {
       source => "$config->{registry}/fuse7-tech-preview-fuse-dv-rhel7:$config->{tag_komodo}",
-      target => "fuse-dv:1.5"
+      target => "fuse-dv:1.7"
     }
   ];
 
@@ -99,7 +99,7 @@ EOT
 for my $image (sort keys %{$source->{images}}) {
     print YELLOW,"* ",GREEN,"Transfering ${image}:",$source->{images}->{$image},"\n",RESET;
 
-    my $pulled_image = &docker_pull(&format_image($image,$source));
+    my $pulled_image = &docker_pull(&format_osbs_image($image,$source));
     my $tagged_image = &docker_tag($pulled_image, &format_image($image,$target));
     &docker_push($tagged_image);
 
