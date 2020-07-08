@@ -196,6 +196,8 @@ patch_env() {
   oc set env dc/syndesis-operator RELATED_IMAGE_S2I=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-ignite-s2i:$SYNDESIS_MOVING_TAG
   oc set env dc/syndesis-operator RELATED_IMAGE_PSQL_EXPORTER=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-tech-preview-fuse-postgres-exporter:$SYNDESIS_MOVING_TAG
   oc set env dc/syndesis-operator RELATED_IMAGE_DV=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-tech-preview-fuse-postgres-exporter:$SYNDESIS_MOVING_TAG
+
+  oc import-image --insecure syndesis-operator:$SYNDESIS_MOVING_TAG
 }
 # ==============================================================
 
