@@ -323,7 +323,9 @@ set -e
 
 if [ $(hasflag -pre --pre-release) ]; then
   echo "Patching DC to refer to pre-release images"
+  set +e
   patch_env
+  set -e
 fi
 
 # Wait for deployment
