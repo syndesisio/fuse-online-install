@@ -1987,3 +1987,154 @@ objects:
           kind: ImageStreamTag
           name: todo:latest
       type: ImageChange
+parameters:
+- description: Key used to perform authentication of client side stored state
+  displayName: Client State Authentication Key
+  from: '[a-zA-Z0-9]{32}'
+  generate: expression
+  name: CLIENT_STATE_AUTHENTICATION_KEY
+  required: true
+- description: Key used to perform encryption of client side stored state
+  displayName: Client State Encryption Key
+  from: '[a-zA-Z0-9]{32}'
+  generate: expression
+  name: CLIENT_STATE_ENCRYPTION_KEY
+  required: true
+- description: Should deployment of integrations be enabled?
+  displayName: Controllers Integration Enabled
+  name: CONTROLLERS_INTEGRATION_ENABLED
+  value: "true"
+- description: Enables starting up with demo data
+  displayName: Demo Data Enabled
+  name: DEMO_DATA_ENABLED
+  required: true
+  value: "false"
+- description: The Fuse Database Exporter image and tag
+  displayName: Fuse Db Exporter Image
+  name: FUSE_DB_EXPORTER_IMAGE
+  required: true
+  value: fuse-postgres-exporter:1.6
+- description: The Fuse Database image and tag
+  displayName: Fuse Db Image
+  name: FUSE_DB_IMAGE
+  required: true
+  value: postgresql-96-rhel7:latest
+- description: The Fuse Meta image and tag
+  displayName: Fuse Meta Image
+  name: FUSE_META_IMAGE
+  required: true
+  value: fuse-ignite-meta:1.6
+- description: The Fuse Oauth Proxy image and tag
+  displayName: Fuse Oauth Image
+  name: FUSE_OAUTH_IMAGE
+  required: true
+  value: ose-oauth-proxy:4.2
+- description: The Fuse Prometheus image and tag
+  displayName: Fuse Prometheus Image
+  name: FUSE_PROMETHEUS_IMAGE
+  required: true
+  value: prometheus:v3.9
+- description: The Fuse S2i image and tag
+  displayName: Fuse S2i Image
+  name: FUSE_S2I_IMAGE
+  required: true
+  value: fuse-ignite-s2i:1.6
+- description: The Fuse Server image and tag
+  displayName: Fuse Server Image
+  name: FUSE_SERVER_IMAGE
+  required: true
+  value: fuse-ignite-server:1.6
+- description: The Fuse UI image and tag
+  displayName: Fuse Ui Image
+  name: FUSE_UI_IMAGE
+  required: true
+  value: fuse-ignite-ui:1.6
+- description: Namespace containing image streams
+  displayName: Image Stream Namespace
+  name: IMAGE_STREAM_NAMESPACE
+  value: ""
+- description: Interval for checking the state of the integrations
+  displayName: Integration State Check Interval
+  name: INTEGRATION_STATE_CHECK_INTERVAL
+  required: true
+  value: "60"
+- description: Maximum number of integrations single user can create
+  displayName: Max Integrations Per User
+  name: MAX_INTEGRATIONS_PER_USER
+  required: true
+  value: "1"
+- description: Secret to use to encrypt oauth cookies
+  displayName: Oauth Cookie Secret
+  from: '[a-zA-Z0-9]{32}'
+  generate: expression
+  name: OAUTH_COOKIE_SECRET
+- description: The URL to the OpenShift console
+  displayName: Openshift Console Url
+  name: OPENSHIFT_CONSOLE_URL
+  value: https://localhost:8443
+- description: Url to 3scale for exposing services
+  displayName: Openshift Management Url For3scale
+  name: OPENSHIFT_MANAGEMENT_URL_FOR3SCALE
+- description: Public OpenShift master address
+  displayName: Openshift Master
+  name: OPENSHIFT_MASTER
+  required: true
+  value: https://localhost:8443
+- description: OpenShift OAuth client secret
+  displayName: Openshift Oauth Client Secret
+  from: '[a-zA-Z0-9]{64}'
+  generate: expression
+  name: OPENSHIFT_OAUTH_CLIENT_SECRET
+  required: true
+- description: The name of the OpenShift project Syndesis is being deployed into
+  displayName: Openshift Project
+  name: OPENSHIFT_PROJECT
+  required: true
+- description: Name of the PostgreSQL database accessed
+  displayName: Postgresql Database
+  name: POSTGRESQL_DATABASE
+  required: true
+  value: syndesis
+- description: The OpenShift Namespace where the PostgreSQL ImageStream resides
+  displayName: Postgresql Image Stream Namespace
+  name: POSTGRESQL_IMAGE_STREAM_NAMESPACE
+  value: openshift
+- description: Password for the PostgreSQL connection user
+  displayName: Postgresql Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: POSTGRESQL_PASSWORD
+  required: true
+- description: Password for the PostgreSQL sampledb user
+  displayName: Postgresql Sampledb Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: POSTGRESQL_SAMPLEDB_PASSWORD
+  required: true
+- description: Username for PostgreSQL user that will be used for accessing the database
+  displayName: Postgresql User
+  name: POSTGRESQL_USER
+  value: syndesis
+- description: The external hostname to access Syndesis
+  displayName: Route Hostname
+  name: ROUTE_HOSTNAME
+- description: The user needs to have permissions to at least get a list of pods in
+    the given project in order to be granted access to the Syndesis installation
+  displayName: Sar Project
+  name: SAR_PROJECT
+  required: true
+- description: The encryption key used to encrypt/decrypt stored secrets
+  displayName: Syndesis Encrypt Key
+  from: '[a-zA-Z0-9]{64}'
+  generate: expression
+  name: SYNDESIS_ENCRYPT_KEY
+  required: true
+- description: Registry from where to fetch Syndesis images
+  displayName: Syndesis Registry
+  name: SYNDESIS_REGISTRY
+  value: docker-registry.default.svc:5000
+- description: Enables test-support endpoint on backend API
+  displayName: Test Support Enabled
+  name: TEST_SUPPORT_ENABLED
+  required: true
+  value: "false"
