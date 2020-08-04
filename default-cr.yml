@@ -82,13 +82,6 @@ spec:
     # Enables the alternative Camel K runtime component (Technology Preview).
     camelk:
       enabled: false
-    # Enables the data virtualization component (Technology Preview).
-    dv:
-      enabled: false
-      resources:
-        # Uncomment & modify to increase the default memory for data virtualization.
-        # memory: "1024Mi"
-        #
     # Enables the Knative component (Technology Preview).
     knative:
       enabled: false

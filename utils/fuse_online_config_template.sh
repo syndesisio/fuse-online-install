@@ -4,7 +4,7 @@
 git_fuse_online_install="version.fuse.online"
 
 # Image Streams to be updated
-imagestreams="server ui meta s2i postgres_exporter komodo"
+imagestreams="server ui meta s2i postgres_exporter"
 
 # Tags used for the productised images
 tag_server="version.tag.server"
@@ -18,8 +18,6 @@ tag_operator="version.tag.operator"
 
 tag_camel_k="version.tag.camel.k"
 tag_java_base_image="version.tag.java.base.image"
-
-tag_komodo="version.tag.komodo"
 
 
 # Docker repository for productised images
