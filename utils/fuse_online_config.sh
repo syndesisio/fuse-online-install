@@ -17,8 +17,6 @@ tag_postgres_exporter="1.7-11"
 tag_camel_k="1.7-6"
 tag_java_base_image="1.7-11"
 
-tag_komodo="1.7-10"
-
 # Docker repository for productised images
 repository="fuse7"
 
