@@ -76,12 +76,9 @@ spec:
         # Uncomment & modify to increase internal storage for the Prometheus component.
         # volumeCapacity: "1Gi"
   addons:
-    # Enables Jaeger activity tracking. 
+    # Enables Jaeger activity tracking.
     jaeger:
       enabled: true
-    # Enables the alternative Camel K runtime component (Technology Preview).
-    camelk:
-      enabled: false
     # Enables the Knative component (Technology Preview).
     knative:
       enabled: false
