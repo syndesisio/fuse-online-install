@@ -105,10 +105,6 @@ with options:
                               if it already exists. By default, install into the current project (without deleting)
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
-   --camel-k                  Install also the camel-k operator
-                              (version is optional)
-   --camel-k-options "opts"   Options used when installing the camel-k operator.
-                              Use quotes and start with a space before appending the options.
    --datavirt                 Install Data Virtualizations.
    --help                     This help message
 -v --verbose                  Verbose logging
@@ -159,8 +155,6 @@ with options:
 
    --version                  Print target version to update to and exit.
 
-   --camel-k                  Update also the camel-k operator
-
 -v --verbose                  Verbose logging
 ```
 
@@ -174,7 +168,6 @@ $ bash update_ocp.sh --version
 Update to Fuse Online 1.8
 
 syndesis-operator:  1.8.1-20190920
-camel-k-operator:  0.3.4
 ```
 
 ## Release
@@ -196,13 +189,6 @@ TAG=1.8
 CURRENT_OS=$(get_current_os)
 BINARY_FILE_EXTENSION=$(get_executable_file_extension)
 OC_MIN_VERSION=3.9.0
-
-# Camel K settings
-CAMEL_K_VERSION=0.3.4
-CAMEL_K_BINARY=kamel
-CAMEL_K_GIT_ORG=jboss-fuse
-CAMEL_K_GIT_REPO=camel-k
-CAMEL_K_DOWNLOAD_URL=https://github.com/${CAMEL_K_GIT_ORG}/${CAMEL_K_GIT_REPO}/releases/download/${CAMEL_K_VERSION}/camel-k-client-${CAMEL_K_VERSION}-${CURRENT_OS}-64bit.tar.gz
 
 # Syndesis settings
 SYNDESIS_VERSION=1.8.1-20190920

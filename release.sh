@@ -274,17 +274,6 @@ extract_binaries() {
       return
     fi
 
-    set +e
-    mv $camel_k_dir/camel-k-client-linux.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-linux-64bit.tar.gz && \
-      mv $camel_k_dir/camel-k-client-mac.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-mac-64bit.tar.gz && \
-      mv $camel_k_dir/camel-k-client-windows.tar.gz $release_dir/camel-k-client-${CAMEL_K_VERSION}-windows-64bit.tar.gz
-    local err=$?
-    set -e
-    if [ $err -ne 0 ]; then
-      echo "ERROR: Cannot extract camel-k client binaries"
-      return
-    fi
-
     echo $release_dir
 }
 

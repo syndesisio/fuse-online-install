@@ -241,11 +241,6 @@ if [ $(hasflag -s --setup) ]; then
 
     $SYNDESIS_CLI install cluster
 
-    #
-    # As camel-k addon may well be used we install these anyway
-    #
-    echo "Installing Camel-K CRDs"
-    $KAMEL_CLI install --cluster-setup
     prep_only="true"
 fi
 
@@ -294,11 +289,6 @@ set +e
 oc get syndesis >/dev/null 2>&1
 if [ $? -ne 0 ]; then
     check_error "ERROR: No CRD Syndesis installed or no permissions to read them. Please run --setup and/or --grant as cluster-admin. Please use '--help' for more information."
-fi
-
-oc get integration >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-    check_error "ERROR: Failure to install Camel-K CRDs."
 fi
 set -e
 
@@ -352,19 +342,6 @@ if [ "$jaeger_enabled" == "true" ]; then
     # workaround as the previous "oc secrets link" doesn't trigger a pod restart
     oc delete `oc get -o name pod -l app.kubernetes.io/name=syndesis-jaeger`
 fi
-
-camelk_enabled=$(oc get syndesis app -o jsonpath='{.spec.addons.camelk.enabled}')
-check_error $camelk_enabled
-if [ "$camelk_enabled" == "true" ]; then
-    echo "Deploying Camel-K operator"
-    $KAMEL_CLI install --skip-cluster-setup
-    wait_for sa camel-k-operator
-    result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull)
-    check_error $result
-    # workaround as the previous "oc secrets link" doesn't trigger a pod restart
-    oc delete `oc get -o name pod -l name=camel-k-operator`
-fi
-
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
     wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta

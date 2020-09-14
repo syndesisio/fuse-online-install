@@ -107,8 +107,6 @@ with options:
 
    --version                  Print target version to update to and exit.
 
-   --camel-k                  Update also the camel-k operator
-
 -v --verbose                  Verbose logging
 EOT
 }
@@ -150,7 +148,6 @@ if [ $(hasflag --version) ]; then
     echo "Update to Fuse Online $TAG"
     echo
     echo "syndesis-operator:  ${SYNDESIS_VERSION}"
-    echo "camel-k-operator:  ${CAMEL_K_VERSION}"
     exit 0
 fi
 
@@ -170,15 +167,6 @@ $SYNDESIS_CLI install operator
 
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
 check_error $result
-
-if [ $(hasflag --camel-k) ]; then
-    echo "Update Camel k operator"
-    oc delete deployment camel-k-operator --ignore-not-found
-    $KAMEL_CLI install --skip-cluster-setup
-
-    result=$(oc secrets link camel-k-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
-    check_error $result
-fi
 
 cat <<EOT
 ========================================================
