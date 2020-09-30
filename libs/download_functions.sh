@@ -8,10 +8,6 @@ get_syndesis_bin() {
   get_cli_bin $SYNDESIS_DOWNLOAD_URL $SYNDESIS_BINARY $SYNDESIS_VERSION
 }
 
-get_kamel_bin() {
-  get_cli_bin $CAMEL_K_DOWNLOAD_URL $CAMEL_K_BINARY $CAMEL_K_VERSION
-}
-
 # Download CLI
 get_cli_bin() {
   local url=${1}
