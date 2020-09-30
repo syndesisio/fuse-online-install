@@ -95,10 +95,6 @@ popd > /dev/null
 SYNDESIS_CLI=$(get_syndesis_bin)
 check_error $SYNDESIS_CLI
 
-# Download binary files
-KAMEL_CLI=$(get_kamel_bin)
-check_error $KAMEL_CLI
-
 display_usage() {
   cat <<EOT
 Fuse Online Installation Tool for OCP
