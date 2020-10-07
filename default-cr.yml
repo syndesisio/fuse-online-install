@@ -1,4 +1,4 @@
-apiVersion: syndesis.io/v1beta1
+apiVersion: syndesis.io/v1beta2
 kind: Syndesis
 metadata:
   name: app
@@ -15,8 +15,13 @@ spec:
   components:
     meta:
       resources:
-        # Uncomment & modify to increase the default memory for this component.
-        # memory: "512Mi"
+        # Uncomment & modify to increase the memory / cpu resources for this component.
+        # limit:
+        #   memory: "512Mi"
+        #   cpu: "0"
+        # request:
+        #   memory: "280Mi"
+        #   cpu: "0"
         #
         # Uncomment & modify to increase the persistent volume capacity for this component.
         # volumeCapacity: 1Gi
@@ -33,9 +38,13 @@ spec:
           # customRepo1: https://customRepo1
           # customRepo2: https://customRepo2
       resources:
-        # Uncomment & modify to increase the default memory for the server.
-        # memory: "800Mi"
-        #
+        # Uncomment & modify to increase the memory / cpu resources for this component.
+        # limit:
+        #   memory: "800Mi"
+        #   cpu: "750m"
+        # request:
+        #   memory: "256Mi"
+        #   cpu: "450m"
     database:
       # Uncomment & specify an external Postgres database URL to use that external database to persist
       # connection and integration definitions according to the syndesis schema.
@@ -51,8 +60,13 @@ spec:
       # secret before installing Fuse Online.
       #
       resources:
-        # Uncomment & modify to increase the default memory for the internal database.
-        # memory: 255Mi
+        # Uncomment & modify to increase the memory / cpu resources for this component.
+        # limit:
+        #   memory: "256Mi"
+        #   cpu: "100m"
+        # request:
+        #   memory: "20Mi"
+        #   cpu: "10m"
         #
         # Uncomment & modify to increase default internal storage for connections & integrations.
         # volumeCapacity: 1Gi
@@ -70,8 +84,13 @@ spec:
         #
     prometheus:
       resources:
-        # Uncomment & modify to increase the memory for the Prometheus component.
-        # memory: "512Mi"
+        # Uncomment & modify to increase the memory / cpu resources for this component.
+        # limit:
+        #   memory: "512Mi"
+        #   cpu: "0"
+        # request:
+        #   memory: "512Mi"
+        #   cpu: "0"
         #
         # Uncomment & modify to increase internal storage for the Prometheus component.
         # volumeCapacity: "1Gi"
