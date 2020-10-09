@@ -13,7 +13,6 @@ set -eu
 # Save global script args
 ARGS=("$@")
 
-DEFAULT_CR_FILE="./default-cr.yml"
 
 # Helper functions:
 
@@ -91,6 +90,8 @@ source "$BASEDIR/common_config.sh"
 source "$BASEDIR/libs/download_functions.sh"
 source "$BASEDIR/libs/openshift_functions.sh"
 popd > /dev/null
+
+DEFAULT_CR_FILE="$BASEDIR/default-cr.yml"
 
 SYNDESIS_CLI=$(get_syndesis_bin)
 check_error $SYNDESIS_CLI
