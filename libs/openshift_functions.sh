@@ -98,6 +98,19 @@ wait_for() {
   done
 }
 
+wait_for_resource_is_deleted() {
+  local res_type=$1
+  local resource=$2
+
+  local resource_ready=$(check_resource $res_type $resource)
+  while [ $resource_ready == "true" ]; do
+      resource_ready=$(check_resource $res_type $resource)
+      if [ $resource_ready == "true" ]; then
+        sleep 4
+      fi
+  done
+}
+
 # Check if a resource exist in OCP
 check_resource() {
   local kind=$1
