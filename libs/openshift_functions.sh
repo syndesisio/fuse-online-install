@@ -324,3 +324,21 @@ is_role_granted() {
 
   echo "ERROR: The user '${user}' does not have the 'syndesis-installer' role. Please execute '... --grant' as a cluster-admin first."
 }
+
+is_ocp3() {
+    # oc version outputs the kubernetes version
+    # openshift 3.11 supports kubernetes 1.11.0
+    # openshift 4.x starts with kubernetes 1.13
+    # output is:
+    #   ocp 4.6  Kubernetes Version: v1.19.0+d59ce34
+    #   ocp 3.11 kubernetes v1.11.0+d4cacc0
+    local version=$(oc version|tail -1|awk -F 'v1.' '{print $2}'|awk -F '.' '{print $1}')
+    if [ -z $version ]; then
+        echo "ERROR: Unable to detect kubernetes version with 'oc version'"
+    fi
+    if [ $version -gt 12 ]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
