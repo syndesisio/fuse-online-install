@@ -169,19 +169,25 @@ check_error $jaeger_enabled
 if [ "$jaeger_enabled" == "true" ]; then
     # on OCP 4 the jaeger-operator is installed from operatorhub on openshift-operator namespace
     # in that case there is no need to set secrets for it
-    if [ $(is_ocp3) ]; then
+    if [ $(is_ocp3) == "true" ]; then
+        # we need to wait till the update process is started and the previous jaeger-operator SA is deleted ENTESB-15363
+        echo "Waiting till jaeger-operator service account will be deleted and created again (ENTESB-15363)"
+        wait_for_resource_is_deleted sa jaeger-operator
+        
         wait_for sa jaeger-operator
         result=$(oc secrets link jaeger-operator syndesis-pull-secret --for=pull)
         check_error $result
         # workaround as the previous "oc secrets link" doesn't trigger a pod restart
         oc delete `oc get -o name pod -l name=jaeger-operator`
+       
+        wait_for sa syndesis-jaeger-ui-proxy
+        result=$(oc secrets link syndesis-jaeger-ui-proxy syndesis-pull-secret --for=pull)
+        check_error $result
+        # workaround as the previous "oc secrets link" doesn't trigger a pod restart
+        oc delete `oc get -o name pod -l app.kubernetes.io/name=syndesis-jaeger`
     fi
 
-    wait_for sa syndesis-jaeger-ui-proxy
-    result=$(oc secrets link syndesis-jaeger-ui-proxy syndesis-pull-secret --for=pull)
-    check_error $result
-    # workaround as the previous "oc secrets link" doesn't trigger a pod restart
-    oc delete `oc get -o name pod -l app.kubernetes.io/name=syndesis-jaeger`
+
 fi
 
 cat <<EOT
