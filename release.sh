@@ -235,11 +235,6 @@ extract_binaries() {
     result=$(extract_from_docker $SYNDESIS_IMAGE /opt/clients/* $syndesis_dir)
     check_error $result
 
-    local camel_k_dir=$tmp_dir/camel_k
-    mkdir -p $camel_k_dir
-    result=$(extract_from_docker $CAMEL_K_IMAGE /opt/clients/* $camel_k_dir)
-    check_error $result
-
     set +e
     pushd > /dev/null . && cd "$syndesis_dir/darwin-amd64" && gunzip syndesis-operator.gz && \
       tar czvf "$release_dir/syndesis-${SYNDESIS_VERSION}-mac-64bit.tar.gz" syndesis-operator > /dev/null 2>&1 && \
