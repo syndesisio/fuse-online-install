@@ -260,7 +260,7 @@ fi
 #
 # make sure pull secret is present (required since 7.3)
 #
-create_secret_if_not_present
+create_or_replace_secret
 
 #
 # If a cluster-admin and the role has not yet been granted
