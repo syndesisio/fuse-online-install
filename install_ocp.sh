@@ -113,6 +113,7 @@ with options:
    --force                    Override an existing installation if present
 -p --project <project>        Install into this project. The project will be deleted
                               if it already exists. By default, install into the current project (without deleting)
+   --skip-pull-secret         Skip the creation of the pull-secret. By default, will create or replace the pull-secret.
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
                               (version is optional)
@@ -260,7 +261,9 @@ fi
 #
 # make sure pull secret is present (required since 7.3)
 #
-create_secret_if_not_present
+if [ ! $(hasflag --skip-pull-secret) ]; then
+  create_or_replace_secret
+fi
 
 #
 # If a cluster-admin and the role has not yet been granted

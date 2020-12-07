@@ -155,7 +155,7 @@ check_error "$(check_syndesis)"
 
 
 # make sure pull secret is present, only required from
-create_secret_if_not_present
+create_or_replace_secret
 
 # Update syndesis operator
 echo "Update Syndesis operator"
