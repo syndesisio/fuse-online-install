@@ -164,6 +164,11 @@ $SYNDESIS_CLI install operator
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
 check_error $result
 
+echo "Hotfix for ENTESB-15361"
+oc scale dc syndesis-operator --replicas 0
+oc set env dc/syndesis-operator RELATED_IMAGE_PSQL_EXPORTER='registry.redhat.io/fuse7/fuse-postgres-exporter-rhel7:1.8'
+oc scale dc syndesis-operator --replicas 1
+
 jaeger_enabled=$(oc get syndesis app -o jsonpath='{.spec.addons.jaeger.enabled}')
 check_error $jaeger_enabled
 if [ "$jaeger_enabled" == "true" ]; then

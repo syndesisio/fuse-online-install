@@ -301,6 +301,11 @@ set -e
 # Wait for deployment
 wait_for_deployments 1 syndesis-operator
 
+echo "Hotfix for ENTESB-15361"
+oc scale dc syndesis-operator --replicas 0
+oc set env dc/syndesis-operator RELATED_IMAGE_PSQL_EXPORTER='registry.redhat.io/fuse7/fuse-postgres-exporter-rhel7:1.8'
+oc scale dc syndesis-operator --replicas 1
+
 # Check syndesis cr already installed. If force then remove first.
 syndesis_installed=$(oc get syndesis -o name | wc -l)
 force=$(hasflag --force)
