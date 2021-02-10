@@ -254,52 +254,88 @@ compare_oc_version() {
 # Check whether syndesis-pull-secret secret is present and create
 # it otherwise
 #
-create_secret_if_not_present() {
+create_or_replace_secret() {
   if $(check_resource secret syndesis-pull-secret) ; then
-    echo "pull secret 'syndesis-pull-secret' present, skipping creation ..."
-  else
-    #
-    # Test the credentials entered and give a couple of subsequent tries
-    # then exit if still not right
-    #
-    iterations=0
-    max=2
-    while [  $iterations -le $max ];
-    do
-      echo "pull secret 'syndesis-pull-secret' is missing, creating ..."
-      echo "enter username for registry.redhat.io and press [ENTER]: "
-      read username
-      echo "enter password for registry.redhat.io and press [ENTER]: "
-      read -s password
-
-      # Testing access that credentials are correct
-      local reply=$(curl -IsL -u ${username}:${password} "https://sso.redhat.com/auth/realms/rhcc/protocol/redhat-docker-v2/auth?service=docker-registry&client_id=curl&scope=repository:rhel:pull")
-
-      # Does reply contain "200 OK".
-      if [ -z "${reply##*200 OK*}" ]; then
-        # All good so break out of loop & carry on ...
-        break
-      else
-        # Credentials wrong ... give a couple more tries or exit
-        echo "ERROR: Credentials cannot be verified with redhat registry."
-        if [ $iterations -lt $max ]; then
-          echo "Please try again ... ($((iterations+1))/$((max+1)))"
-        else
-          echo "Exiting ... ($((iterations+1))/$((max+1)))"
-          exit 1
-        fi
-      fi
-
-      let iterations=iterations+1
-    done
-
-    echo "enter email address for registry.redhat.io and press [ENTER]: "
-    read email
-    set +e
-    local result=$(oc create secret docker-registry syndesis-pull-secret --docker-server=registry.redhat.io --docker-username=$username --docker-password=$password --docker-email=$email)
+    echo "Removing syndesis-pull-secret & replacing with updated version ..."
+    local result=$(oc delete secret syndesis-pull-secret)
     check_error $result
-    set -e
   fi
+
+  #
+  # Test the credentials entered and give a couple of subsequent tries
+  # then exit if still not right
+  #
+  iterations=0
+  max=2
+  while [  $iterations -le $max ];
+  do
+    echo "creating pull secret 'syndesis-pull-secret' ..."
+    echo "enter username for redhat registry access and press [ENTER]: "
+    read username
+    echo "enter password for redhat registry access and press [ENTER]: "
+    read -s password
+
+    # Testing access that credentials are correct
+    local reply=$(curl -IsL -u ${username}:${password} "https://sso.redhat.com/auth/realms/rhcc/protocol/redhat-docker-v2/auth?service=docker-registry&client_id=curl&scope=repository:rhel:pull")
+
+    # Does reply contain "200 OK".
+    if [ -z "${reply##*200 OK*}" ]; then
+      # All good so break out of loop & carry on ...
+      break
+    else
+      # Credentials wrong ... give a couple more tries or exit
+      echo "ERROR: Credentials cannot be verified with redhat registry."
+      if [ $iterations -lt $max ]; then
+        echo "Please try again ... ($((iterations+1))/$((max+1)))"
+      else
+        echo "Exiting ... ($((iterations+1))/$((max+1)))"
+        exit 1
+      fi
+    fi
+
+    let iterations=iterations+1
+  done
+
+  set +e
+
+  #
+  # Need to ensure there are no extra carriage returns
+  #
+  local auth=$(printf "%s:%s" "${username}" "${password}" | base64 -w 0)
+
+  #
+  # Encode the whole pull secret for both registries
+  #
+  local pull_secret=$(base64 -w 0 <<EOF
+{
+  "auths": {
+    "registry.redhat.io": {
+      "auth":"${auth}"
+    },
+    "registry.connect.redhat.com": {
+      "auth":"${auth}"
+    }
+  }
+}
+EOF
+)
+
+  #
+  # Create the new secret on the cluster
+  #
+  local result=$(oc create -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: syndesis-pull-secret
+data:
+  .dockerconfigjson: ${pull_secret}
+type: kubernetes.io/dockerconfigjson
+EOF
+)
+
+  check_error $result
+  set -e
 }
 
 #
