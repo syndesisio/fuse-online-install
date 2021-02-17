@@ -66,7 +66,9 @@ create_or_delete_openshift_resource() {
 }
 
 wait_for_deployments() {
-  local replicas_desired=$1
+  local res_type=$1
+  local replicas_desired=$2
+  shift
   shift
   local dcs="$@"
 
@@ -74,11 +76,11 @@ wait_for_deployments() {
   watch_pid=$!
   for dc in $dcs; do
       echo "Waiting for $dc to be scaled to ${replicas_desired}"
-      local replicas=$(get_replicas $dc)
+      local replicas=$(get_replicas $dc $res_type)
       while [ -z "$replicas" ] || [ "$replicas" -ne $replicas_desired ]; do
           echo "Sleeping 10s ..."
           sleep 10
-          replicas=$(get_replicas $dc)
+          replicas=$(get_replicas $dc $res_type)
       done
   done
   kill $watch_pid
@@ -124,13 +126,14 @@ check_resource() {
 }
 
 get_replicas() {
-  local dc=${1}
-  local hasDc=$(oc get dc -o name | grep $dc)
+  local name=${1}
+  local res_type=$2
+  local hasDc=$(oc get $res_type -o name | grep $name)
   if [ -z "$hasDc" ]; then
       echo "0"
       return
   fi
-  oc get dc $dc -o jsonpath="{.status.availableReplicas}"
+  oc get $res_type $name -o jsonpath="{.status.availableReplicas}"
 }
 
 check_oc_version()

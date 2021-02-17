@@ -302,7 +302,7 @@ check_error $result
 set -e
 
 # Wait for deployment
-wait_for_deployments 1 syndesis-operator
+wait_for_deployments deployment 1 syndesis-operator
 
 # Check syndesis cr already installed. If force then remove first.
 syndesis_installed=$(oc get syndesis -o name | wc -l)
@@ -348,7 +348,7 @@ if [ "$jaeger_enabled" == "true" ]; then
 fi
 
 if [ $(hasflag --watch -w) ] || [ $(hasflag --open -o) ]; then
-    wait_for_deployments 1 syndesis-server syndesis-ui syndesis-meta
+    wait_for_deployments dc 1 syndesis-server syndesis-ui syndesis-meta
 fi
 
 # ==========================================================
