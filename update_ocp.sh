@@ -101,8 +101,8 @@ Usage: update_ocp.sh [options]
 
 with options:
 
+   --skip-pull-secret         Skip the creation of the pull-secret. By default, will create or replace the pull-secret.
    --version                  Print target version to update to and exit.
-
 -v --verbose                  Verbose logging
 EOT
 }
@@ -155,7 +155,9 @@ check_error "$(check_syndesis)"
 
 
 # make sure pull secret is present, only required from
-create_or_replace_secret
+if [ ! $(hasflag --skip-pull-secret) ]; then
+  create_or_replace_secret
+fi
 
 # Update syndesis operator
 echo "Update Syndesis operator"
