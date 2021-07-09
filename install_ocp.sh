@@ -297,7 +297,10 @@ echo "Deploying Syndesis operator"
 $SYNDESIS_CLI install operator
 
 set +e
+oc scale deployment syndesis-operator --replicas 0
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
+oc scale deployment syndesis-operator --replicas 1
+
 check_error $result
 set -e
 
