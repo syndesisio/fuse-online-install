@@ -25,4 +25,4 @@ SYNDESIS_BINARY=syndesis-operator
 SYNDESIS_GIT_ORG=$COMMON_RELEASE_GIT_ORG
 SYNDESIS_GIT_REPO=$COMMON_RELEASE_GIT_REPO
 SYNDESIS_DOWNLOAD_URL=https://github.com/${SYNDESIS_GIT_ORG}/${SYNDESIS_GIT_REPO}/releases/download/${BIN_TAG_PREFIX}${SYNDESIS_VERSION}/syndesis-${SYNDESIS_VERSION}-${CURRENT_OS}-64bit.tar.gz
-SYNDESIS_IMAGE=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-online-operator:1.9
+SYNDESIS_IMAGE=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-online-rhel8-operator:1.9
