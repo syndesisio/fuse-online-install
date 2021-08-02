@@ -96,16 +96,13 @@ with options:
                               in her projects. You have to run this as cluster-admin
     --cluster                 Add the permission for all projects in the cluster
                               (only when used together with --grant)
-    --route                   Route to use. If not given, the route is trying to be detected from the currently
-                              connected cluster.
-   --console <console-url>    The URL to the openshift console
    --force                    Override an existing installation if present
-
 -p --project <project>        Install into this project. The project will be deleted
                               if it already exists. By default, install into the current project (without deleting)
+   --skip-pull-secret         Skip the creation of the pull-secret. By default, will create or replace the pull-secret.
 -w --watch                    Wait until the installation has completed
 -o --open                     Open Fuse Online after installation (implies --watch)
-   --datavirt                 Install Data Virtualizations.
+                              (version is optional)
    --help                     This help message
 -v --verbose                  Verbose logging
 
@@ -118,27 +115,19 @@ You can choose a different project with the option `--project <project>`.
 Please be aware that this project will be deleted if it already exists.
 Also, you must have used the option `--cluster` when you set up the CRDs.
 
-The route under which Fuse Ignite can be reached will be calculated by default with some heuristics.
-When this should fail or when you want to be more specific you can specify the route explicitly with `--route`.
-
-One specific feature needs also some additional configuration: For enabling a link to an integration's runtime log in "Activity" tab, the URL to the OpenShift console must be provided with `--console`
-
 ### Example
 
-The simplest way to install Fuse Ignite with an autodected route an no log URL enabled is
+The simplest way to install Fuse Ignite with no log URL enabled is
 
 ```
-# Install with an autodetected route and no link to the runtime pod's log
+# Install with no link to the runtime pod's log
 $ bash install_ocp.sh
 ```
 
-For recreating the current project, specifying an explicit route and OpenShift console URL explicitely use:
+For recreating the current project:
 
 ```
-$ bash install_ocp.sh \
-       --project $(oc project -q) \
-       --route $(oc project -q).6a63.fuse-ignite.openshiftapps.com \
-       --console https://console.fuse-ignite.openshift.com/console
+$ bash install_ocp.sh --project $(oc project -q)
 ```
 
 ## Update
@@ -153,8 +142,8 @@ Usage: update_ocp.sh [options]
 
 with options:
 
+   --skip-pull-secret         Skip the creation of the pull-secret. By default, will create or replace the pull-secret.
    --version                  Print target version to update to and exit.
-
 -v --verbose                  Verbose logging
 ```
 
