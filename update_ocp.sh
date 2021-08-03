@@ -163,8 +163,11 @@ fi
 echo "Update Syndesis operator"
 $SYNDESIS_CLI install operator
 
+oc scale deployment syndesis-operator --replicas 0
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
 check_error $result
+oc set env deployment/syndesis-operator RELATED_IMAGE_PROMETHEUS='registry.redhat.io/openshift3/prometheus:v3.9'
+oc scale deployment syndesis-operator --replicas 1
 
 jaeger_enabled=$(oc get syndesis app -o jsonpath='{.spec.addons.jaeger.enabled}')
 check_error $jaeger_enabled
