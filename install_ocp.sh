@@ -299,9 +299,11 @@ $SYNDESIS_CLI install operator
 set +e
 oc scale deployment syndesis-operator --replicas 0
 result=$(oc secrets link syndesis-operator syndesis-pull-secret --for=pull >$ERROR_FILE 2>&1)
-oc scale deployment syndesis-operator --replicas 1
-
 check_error $result
+if [ $(is_ocp3) == "true" ]; then
+   oc set env deployment/syndesis-operator RELATED_IMAGE_PROMETHEUS='registry.redhat.io/openshift3/prometheus:v3.9'
+fi
+oc scale deployment syndesis-operator --replicas 1
 set -e
 
 # Wait for deployment
