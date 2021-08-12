@@ -294,7 +294,7 @@ set -e
 
 # Deploy operator and wait until its up
 echo "Deploying Syndesis operator"
-$SYNDESIS_CLI install operator
+$SYNDESIS_CLI install operator --tag 1.9
 
 set +e
 oc scale deployment syndesis-operator --replicas 0
@@ -303,6 +303,13 @@ check_error $result
 if [ $(is_ocp3) == "true" ]; then
    oc set env deployment/syndesis-operator RELATED_IMAGE_PROMETHEUS='registry.redhat.io/openshift3/prometheus:v3.9'
 fi
+#Hotfix for ENTESB-
+oc set env deployment/syndesis-operator RELATED_IMAGE_UI=registry.redhat.io/fuse7/fuse-online-ui-rhel8:1.9
+oc set env deployment/syndesis-operator RELATED_IMAGE_S2I=registry.redhat.io/fuse7/fuse-online-builder-rhel8:1.9
+oc set env deployment/syndesis-operator RELATED_IMAGE_UPGRADE=registry.redhat.io/fuse7/fuse-online-upgrade-rhel8:1.9
+oc set env deployment/syndesis-operator RELATED_IMAGE_META=registry.redhat.io/fuse7/fuse-online-meta-rhel8:1.9
+oc set env deployment/syndesis-operator RELATED_IMAGE_PSQL_EXPORTER=registry.redhat.io/fuse7/fuse-postgres-exporter-rhel8:1.9
+oc set env deployment/syndesis-operator RELATED_IMAGE_SERVER=registry.redhat.io/fuse7/fuse-online-server-rhel8:1.9
 oc scale deployment syndesis-operator --replicas 1
 set -e
 
