@@ -197,6 +197,12 @@ if [ "$jaeger_enabled" == "true" ]; then
 
 fi
 
+#ENTESB-17354
+if [ $(is_ocp3) == "true" ]; then
+   oc patch syndesises/app --type=merge -p '{"status":{"forceUpgrade": "false"}}'
+fi
+
+
 cat <<EOT
 ========================================================
 Fuse Online operator has been updated to $TAG !
