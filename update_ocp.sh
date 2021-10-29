@@ -128,6 +128,30 @@ check_syndesis() {
 
 # ==============================================================
 
+waiting_api_error_is_gone() {
+  set +e
+  output=$(oc get syndesis 2>&1 > /dev/null)
+  if [[ $output == *"Error from server (NotFound): Unable to list"* ]]; then
+    echo "Waiting (up to 10 minutes) until 'oc get syndesis' command recognize a new Syndesis api version (ENTESB-17668)"
+    i=0
+    while [[ $(oc get syndesis 2>&1 > /dev/null) == *"Error from server (NotFound): Unable to list"* ]];
+    do
+      ((i=i+1))
+      echo -ne "."
+      sleep 10
+      if [[ "$i" -gt 60 ]]; then
+        echo -ne '\n'
+        echo "ERROR: 'oc get syndesis' command is still not working properly after 10 minutes. See the error which it returns for more info!"
+        exit 1
+      fi
+    done
+    echo -ne '\n'
+  fi
+  set -e
+}
+
+# ==============================================================
+
 if [ $(hasflag --help -h) ]; then
     display_usage
     exit 0
@@ -149,6 +173,9 @@ fi
 
 # Check for OC
 setup_oc
+
+# Workaround for ENTESB-17668
+waiting_api_error_is_gone
 
 # Check whether there is an installation
 check_error "$(check_syndesis)"
@@ -197,7 +224,7 @@ if [ "$jaeger_enabled" == "true" ]; then
 
 fi
 
-#ENTESB-17354
+# Workaround for ENTESB-17354
 if [ $(is_ocp3) == "true" ]; then
    oc patch syndesises/app --type=merge -p '{"status":{"forceUpgrade": "false"}}'
 fi
