@@ -8,10 +8,10 @@ Installation is performed with `install_ocp.sh`.
 This script can be downloaded or executed directly from a cloned git repository:
 
 ```
-# or git clone the repository and switch to tag 1.8.0
+# or git clone the repository and switch to tag 1.10
 $ git clone https://github.com/syndesisio/fuse-online-install
 $ cd fuse-online-install
-$ git checkout 1.8.0
+$ git checkout 1.10
 ```
 
 Installation of Fuse Online consists of three steps:
@@ -171,10 +171,10 @@ Use `--version` to see what are you going to update to:
 
 ```
 $ bash update_ocp.sh --version
-Update to Fuse Online 1.8
+Update to Fuse Online 1.10
 
-syndesis-operator:  1.8.1-20190920
-camel-k-operator:  0.3.4
+syndesis-operator:  1.10.4
+camel-k-operator:  1.10.4
 ```
 
 ## Release
