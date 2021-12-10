@@ -173,8 +173,8 @@ Use `--version` to see what are you going to update to:
 $ bash update_ocp.sh --version
 Update to Fuse Online 1.9
 
-syndesis-operator:  1.9.1-20190920
-camel-k-operator:  0.3.4
+syndesis-operator:  1.9.9
+camel-k-operator:  1.9.9
 ```
 
 ## Release
