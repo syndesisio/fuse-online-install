@@ -5,7 +5,7 @@
 source "$BASEDIR/base_functions.sh"
 
 # Tag for release. Update this before running release.sh
-TAG_FUSE_ONLINE_INSTALL=1.13.3
+TAG_FUSE_ONLINE_INSTALL=1.13.4
 
 # Fuse minor version (update it manually)
 TAG=1.13
@@ -25,5 +25,5 @@ SYNDESIS_BINARY=syndesis-operator
 SYNDESIS_GIT_ORG=$COMMON_RELEASE_GIT_ORG
 SYNDESIS_GIT_REPO=$COMMON_RELEASE_GIT_REPO
 SYNDESIS_DOWNLOAD_URL=https://github.com/${SYNDESIS_GIT_ORG}/${SYNDESIS_GIT_REPO}/releases/download/${BIN_TAG_PREFIX}${SYNDESIS_VERSION}/syndesis-${SYNDESIS_VERSION}-${CURRENT_OS}-64bit.tar.gz
-SYNDESIS_IMAGE=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-online-rhel8-operator:1.10
-#SYNDESIS_IMAGE=registry.redhat.io/fuse7/fuse-online-rhel8-operator:1.10
+#SYNDESIS_IMAGE=registry-proxy.engineering.redhat.com/rh-osbs/fuse7-fuse-online-rhel8-operator:1.10
+SYNDESIS_IMAGE=registry.redhat.io/fuse7/fuse-online-rhel8-operator:1.10
