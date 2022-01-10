@@ -8,10 +8,10 @@ Installation is performed with `install_ocp.sh`.
 This script can be downloaded or executed directly from a cloned git repository:
 
 ```
-# or git clone the repository and switch to tag 1.13
+# or git clone the repository and switch to tag 1.14
 $ git clone https://github.com/syndesisio/fuse-online-install
 $ cd fuse-online-install
-$ git checkout 1.13
+$ git checkout 1.14
 ```
 
 Installation of Fuse Online consists of three steps:
@@ -154,9 +154,9 @@ Use `--version` to see what are you going to update to:
 
 ```
 $ bash update_ocp.sh --version
-Update to Fuse Online 1.13
+Update to Fuse Online 1.14
 
-syndesis-operator:  1.13.1
+syndesis-operator: 1.14
 ```
 
 ## Release
@@ -237,7 +237,7 @@ $ git clone https://github.com/syndesisio/fuse-online-install.git
 $ cd fuse-online-install
 
 # Checkout tag
-$ git checkout 1.8.0
+$ git checkout 1.14
 
 # Login into the target registry for your docker daemon
 $ docker login -u $(oc whoami) -p $(oc whoami -t) mytarget.registry.openshift.com
