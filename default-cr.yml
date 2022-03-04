@@ -98,9 +98,6 @@ spec:
     # Enables Jaeger activity tracking.
     jaeger:
       enabled: true
-    # Enables the Knative component (Technology Preview).
-    knative:
-      enabled: false
     # Enables Prometheus monitoring.
     ops:
       enabled: false
